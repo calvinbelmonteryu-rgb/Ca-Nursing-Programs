@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}{{ program.hospital }} — CA RN Tracker{% endblock %}
+
+{% block content %}
+<a href="/programs" class="back-link">&larr; Back to Programs</a>
+
+<article class="detail-card">
+    <header>
+        <div class="detail-header">
+            <div>
+                <h1>{{ program.hospital }}</h1>
+                <p class="detail-program-name">{{ program.program_name }}</p>
+            </div>
+            <div class="detail-header-right">
+                <span class="status-badge status-{{ program.application_status|replace(' ', '-')|lower }} detail-status-badge">{{ program.application_status }}</span>
+                <span class="stars detail-stars">{{ '★' * program.reputation }}{{ '☆' * (5 - program.reputation) }}</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="grid">
+        <div>
+            <h3>Location & Requirements</h3>
+            <dl>
+                <dt>Region</dt>
+                <dd>{{ program.region }}</dd>
+                <dt>City</dt>
+                <dd>{{ program.city }}</dd>
+                <dt>BSN Required</dt>
+                <dd>
+                    {% if program.bsn_required == 'Yes' %}
+                    <span class="bsn-req">Required</span>
+                    {% elif program.bsn_required == 'Preferred' %}
+                    <span class="bsn-pref">Preferred</span>
+                    {% else %}
+                    <span class="bsn-no">Not Required (ADN accepted)</span>
+                    {% endif %}
+                </dd>
+                <dt>Program Length</dt>
+                <dd>{{ program.program_length_months }} months</dd>
+                <dt>Pay Range</dt>
+                <dd>{{ program.pay_range or 'Unknown' }}</dd>
+            </dl>
+        </div>
+        <div>
+            <h3>Key Dates</h3>
+            <dl>
+                <dt>App Open</dt>
+                <dd>{{ program.app_open_date or 'TBD' }}</dd>
+                <dt>App Close</dt>
+                <dd>{{ program.app_close_date or 'TBD' }}</dd>
+                <dt>Cohort Start</dt>
+                <dd>{{ program.cohort_start or 'TBD' }}</dd>
+            </dl>
+            {% if program.info_session_dates is defined and program.info_session_dates %}
+            <dl>
+                <dt>Info Sessions</dt>
+                <dd>{{ program.info_session_dates|join(', ') }}</dd>
+            </dl>
+            {% endif %}
+        </div>
+    </div>
+
+    <h3>Specialties</h3>
+    <div class="tags">
+        {% for unit in program.specialty_units %}
+        <span class="tag">{{ unit }}</span>
+        {% endfor %}
+        {% if not program.specialty_units %}
+        <span class="muted">None listed</span>
+        {% endif %}
+    </div>
+
+    <h3>Requirements</h3>
+    <p>{{ program.requirements or 'None listed' }}</p>
+
+    {% if program.reputation_notes %}
+    <h3>Reputation Notes</h3>
+    <p>{{ program.reputation_notes }}</p>
+    {% endif %}
+
+    <hr>
+
+    <h3>Your Application</h3>
+    <div class="grid">
+        <div>
+            <label for="status-select">Status</label>
+            <select id="status-select" class="status-select" data-id="{{ program.id }}">
+                {% for s in statuses %}
+                <option value="{{ s }}" {% if program.application_status == s %}selected{% endif %}>{{ s }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            {% if program.application_url %}
+            <label>Apply</label>
+            <a href="{{ program.application_url }}" target="_blank" role="button" class="apply-btn-large">Apply Now &rarr;</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <label for="personal-notes">Personal Notes <small class="muted">(auto-saves as you type)</small></label>
+    <textarea id="personal-notes" data-id="{{ program.id }}" rows="4">{{ program.personal_notes or '' }}</textarea>
+
+    <footer>
+        <small>Last updated: {{ program.last_updated }}</small>
+    </footer>
+</article>
+{% endblock %}

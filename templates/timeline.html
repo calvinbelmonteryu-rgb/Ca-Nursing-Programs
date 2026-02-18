@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}Timeline — CA RN Tracker{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>Application Timeline</h1>
+    <p>Visual overview of application windows &bull; Feb – Dec 2026</p>
+</hgroup>
+
+<!-- Legend -->
+<div class="timeline-legend">
+    <span class="legend-item"><span class="legend-bar legend-app"></span> App Window</span>
+    <span class="legend-item"><span class="legend-bar legend-open-bar"></span> Open Now</span>
+    <span class="legend-item"><span class="legend-dot legend-cohort"></span> Cohort Start</span>
+    <span class="legend-item"><span class="legend-line legend-today-line"></span> Today</span>
+    <span class="legend-item"><span class="legend-line legend-nclex-line"></span> NCLEX</span>
+</div>
+
+<!-- Gantt chart -->
+<div class="gantt-container">
+    <!-- Month headers -->
+    <div class="gantt-header">
+        <div class="gantt-label-col"></div>
+        <div class="gantt-bar-col">
+            {% for m in months %}
+            <span class="gantt-month" style="left: {{ m.offset }}%">{{ m.name }}</span>
+            {% endfor %}
+            <!-- Today marker -->
+            <div class="gantt-today" style="left: {{ today_pct }}%" title="Today ({{ metadata._nclex_days }}d to NCLEX)"></div>
+            {% if nclex_pct %}
+            <div class="gantt-nclex" style="left: {{ nclex_pct }}%" title="NCLEX Target"></div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Program rows -->
+    {% for p in programs %}
+    {% if p.app_open_date or p.app_close_date or p.cohort_start %}
+    <div class="gantt-row {% if p._is_open %}gantt-row-open{% endif %}">
+        <div class="gantt-label-col">
+            <a href="/programs/{{ p.id }}" class="gantt-hospital">{{ p.hospital }}</a>
+            <span class="status-badge status-{{ p.application_status|replace(' ', '-')|lower }} gantt-status">{{ p.application_status }}</span>
+        </div>
+        <div class="gantt-bar-col">
+            <!-- Today line -->
+            <div class="gantt-today-line" style="left: {{ today_pct }}%"></div>
+            {% if nclex_pct %}
+            <div class="gantt-nclex-line" style="left: {{ nclex_pct }}%"></div>
+            {% endif %}
+
+            <!-- App window bar -->
+            {% if p._bar_start is not none and p._bar_width is not none %}
+            <div class="gantt-bar {% if p._is_open %}gantt-bar-open{% elif p._days_left is not none and p._days_left < 0 %}gantt-bar-past{% endif %}"
+                 style="left: {{ p._bar_start }}%; width: {{ p._bar_width }}%"
+                 title="{{ p.app_open_date }} — {{ p.app_close_date }}{% if p._days_left is not none %} ({{ p._days_left }}d){% endif %}">
+                {% if p._days_left is not none and p._days_left >= 0 and p._days_left <= 14 %}
+                <span class="gantt-days">{{ p._days_left }}d</span>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Cohort marker -->
+            {% if p._cohort_pos is not none %}
+            <div class="gantt-cohort-marker" style="left: {{ p._cohort_pos }}%" title="Cohort: {{ p.cohort_start }}"></div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+
+    <!-- Dates TBD section -->
+    {% set tbd_programs = [] %}
+    {% for p in programs %}
+    {% if not p.app_open_date and not p.app_close_date and not p.cohort_start %}
+    {% set _ = tbd_programs.append(p) %}
+    {% endif %}
+    {% endfor %}
+
+    {% if tbd_programs %}
+    <div class="gantt-section-header">Dates TBD ({{ tbd_programs|length }} programs)</div>
+    {% for p in tbd_programs %}
+    <div class="gantt-row gantt-row-tbd">
+        <div class="gantt-label-col">
+            <a href="/programs/{{ p.id }}" class="gantt-hospital">{{ p.hospital }}</a>
+        </div>
+        <div class="gantt-bar-col">
+            <div class="gantt-today-line" style="left: {{ today_pct }}%"></div>
+            <span class="gantt-tbd-text">Dates not yet announced</span>
+        </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+</div>
+
+<!-- Key milestones -->
+<article>
+    <header><strong>Key Milestones</strong></header>
+    <div class="grid">
+        <div>
+            <dl>
+                <dt>NCLEX Target</dt>
+                <dd>{{ metadata.nclex_target_date }}{% if metadata._nclex_days %} <strong>({{ metadata._nclex_days }}d away)</strong>{% endif %}</dd>
+            </dl>
+        </div>
+        <div>
+            <dl>
+                <dt>Programs Tracked</dt>
+                <dd><strong>{{ programs|length }}</strong> total</dd>
+            </dl>
+        </div>
+    </div>
+</article>
+{% endblock %}

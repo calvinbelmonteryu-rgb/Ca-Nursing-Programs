@@ -1,0 +1,22 @@
+# OS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Secrets
+.env
+credentials.json
+token.json
+
+# Temp files
+.tmp/
+
+# IDE
+.vscode/
+.idea/
+
+# Claude Code
+.claude/

@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — CA RN Tracker{% endblock %}
+
+{% block content %}
+<!-- Header with NCLEX countdown -->
+<div class="dash-header">
+    <div>
+        <h1>CA New Grad RN Tracker</h1>
+        <p class="dash-subtitle">{{ stats.today }} &bull; Tracking {{ stats.total }} programs across California</p>
+    </div>
+    {% if stats.nclex_days_left is not none %}
+    <div class="nclex-countdown">
+        <div class="nclex-number">{{ stats.nclex_days_left }}</div>
+        <div class="nclex-label">days to NCLEX</div>
+        <div class="nclex-date">Target: {{ stats.nclex_date }}</div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Quick stat cards -->
+<div class="grid">
+    <article class="stat-card">
+        <div class="stat-card-number">{{ stats.total }}</div>
+        <div class="stat-card-label">Total Programs</div>
+    </article>
+    <article class="stat-card">
+        <div class="stat-card-number stat-green">{{ stats.open_now }}</div>
+        <div class="stat-card-label">Open Now</div>
+        {% if stats.open_now > 0 %}<a href="/programs?sort=deadline" class="stat-card-link">View &rarr;</a>{% endif %}
+    </article>
+    <article class="stat-card">
+        <div class="stat-card-number {% if stats.urgent > 0 %}stat-red{% endif %}">{{ stats.urgent }}</div>
+        <div class="stat-card-label">Urgent (&le;14d)</div>
+        {% if stats.urgent > 0 %}<a href="/programs?sort=deadline" class="stat-card-link">View &rarr;</a>{% endif %}
+    </article>
+    <article class="stat-card">
+        <div class="stat-card-number">{{ stats.upcoming }}</div>
+        <div class="stat-card-label">Upcoming</div>
+    </article>
+</div>
+
+<!-- Action Items -->
+{% if action_items %}
+<article class="action-items-card">
+    <header>
+        <strong>Action Items</strong>
+        <small class="muted">What you should do next</small>
+    </header>
+    {% for item in action_items %}
+    <div class="action-item action-{{ item.priority }}">
+        <span class="action-priority">
+            {% if item.priority == 'critical' %}!!!
+            {% elif item.priority == 'high' %}!!
+            {% elif item.priority == 'medium' %}!
+            {% else %}&middot;{% endif %}
+        </span>
+        <div class="action-content">
+            <a href="/programs/{{ item.program_id }}" class="action-title">{{ item.action }}</a>
+            <span class="action-detail">{{ item.detail }}</span>
+        </div>
+        {% if item.url %}
+        <a href="{{ item.url }}" target="_blank" role="button" class="outline apply-btn">Apply &rarr;</a>
+        {% endif %}
+    </div>
+    {% endfor %}
+</article>
+{% endif %}
+
+<!-- Upcoming Deadlines -->
+{% if upcoming %}
+<article>
+    <header>
+        <strong>Upcoming Deadlines</strong>
+        <small class="muted">sorted by closing date</small>
+    </header>
+    <div class="overflow-auto">
+        <table class="striped">
+            <thead>
+                <tr>
+                    <th>Hospital</th>
+                    <th>App Close</th>
+                    <th>Days Left</th>
+                    <th>Status</th>
+                    <th>Apply</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in upcoming %}
+                <tr class="{% if d.days_left <= 5 %}urgent-row{% elif d.days_left <= 14 %}warning-row{% endif %}">
+                    <td><a href="/programs/{{ d.id }}">{{ d.hospital }}</a></td>
+                    <td>{{ d.app_close }}</td>
+                    <td>
+                        {% if d.days_left <= 7 %}
+                            <span class="deadline-urgent">{{ d.days_left }}d</span>
+                        {% elif d.days_left <= 14 %}
+                            <span class="deadline-warning">{{ d.days_left }}d</span>
+                        {% elif d.days_left <= 30 %}
+                            <span class="deadline-soon">{{ d.days_left }}d</span>
+                        {% else %}
+                            {{ d.days_left }}d
+                        {% endif %}
+                        {% if d.is_open %}<span class="badge-open">OPEN</span>{% endif %}
+                    </td>
+                    <td><span class="status-badge status-{{ d.status|replace(' ', '-')|lower }}">{{ d.status }}</span></td>
+                    <td>
+                        {% if d.application_url %}
+                        <a href="{{ d.application_url }}" target="_blank" role="button" class="outline apply-btn">Apply</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</article>
+{% endif %}
+
+<!-- Charts row -->
+<div class="grid">
+    <article>
+        <header><strong>By Region</strong></header>
+        {% for region, count in stats.regions.items() %}
+        <a href="/programs?region={{ region }}" class="bar-row bar-link">
+            <span class="bar-label">{{ region }}</span>
+            <div class="bar-track"><div class="bar-fill" style="width: {{ (count / stats.total * 100)|round }}%"></div></div>
+            <span class="bar-count">{{ count }}</span>
+        </a>
+        {% endfor %}
+    </article>
+    <article>
+        <header><strong>BSN Requirements</strong></header>
+        <div class="bar-row">
+            <span class="bar-label">Required</span>
+            <div class="bar-track"><div class="bar-fill bar-red" style="width: {{ (stats.bsn.yes / stats.total * 100)|round }}%"></div></div>
+            <span class="bar-count">{{ stats.bsn.yes }}</span>
+        </div>
+        <div class="bar-row">
+            <span class="bar-label">Preferred</span>
+            <div class="bar-track"><div class="bar-fill bar-yellow" style="width: {{ (stats.bsn.preferred / stats.total * 100)|round }}%"></div></div>
+            <span class="bar-count">{{ stats.bsn.preferred }}</span>
+        </div>
+        <div class="bar-row">
+            <span class="bar-label">Not Req</span>
+            <div class="bar-track"><div class="bar-fill bar-green" style="width: {{ (stats.bsn.no / stats.total * 100)|round }}%"></div></div>
+            <span class="bar-count">{{ stats.bsn.no }}</span>
+        </div>
+        <hr>
+        <header><strong>Application Status</strong></header>
+        {% for status_name in ['Not Started', 'In Progress', 'Submitted', 'Interview', 'Offer', 'Rejected'] %}
+        {% set count = stats.statuses.get(status_name, 0) %}
+        {% if count > 0 %}
+        <a href="/programs?status={{ status_name }}" class="bar-row bar-link">
+            <span class="bar-label"><span class="status-badge status-{{ status_name|replace(' ', '-')|lower }}">{{ status_name }}</span></span>
+            <div class="bar-track"><div class="bar-fill" style="width: {{ (count / stats.total * 100)|round }}%"></div></div>
+            <span class="bar-count">{{ count }}</span>
+        </a>
+        {% endif %}
+        {% endfor %}
+    </article>
+</div>
+
+<!-- Quick links -->
+<div class="grid">
+    <article>
+        <header><strong>Quick Filters</strong></header>
+        <div class="quick-links">
+            <a href="/programs?cohort=jul-sep-2026" role="button" class="outline">Jul-Sep 2026 Cohorts</a>
+            <a href="/programs?cohort=q4-2026" role="button" class="outline">Oct-Dec 2026 Cohorts</a>
+            <a href="/programs?bsn=no" role="button" class="outline">ADN Accepted</a>
+            <a href="/programs?sort=reputation" role="button" class="outline">Top Rated</a>
+            <a href="/programs?sort=pay" role="button" class="outline">Highest Pay</a>
+            <a href="/timeline" role="button" class="outline">Timeline View</a>
+        </div>
+    </article>
+</div>
+{% endblock %}

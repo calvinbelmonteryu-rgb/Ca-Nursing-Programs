@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}Compare — CA RN Tracker{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>Compare Programs</h1>
+    <p>{{ programs|length }} programs selected</p>
+</hgroup>
+
+{% if programs|length < 2 %}
+<article>
+    <p>Select at least 2 programs from the <a href="/programs">Programs</a> page to compare.</p>
+</article>
+{% else %}
+<div class="overflow-auto">
+    <table class="compare-table">
+        <thead>
+            <tr>
+                <th class="compare-label"></th>
+                {% for p in programs %}
+                <th><a href="/programs/{{ p.id }}">{{ p.hospital }}</a></th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="compare-label">Region</td>
+                {% for p in programs %}<td>{{ p.region }}</td>{% endfor %}
+            </tr>
+            <tr>
+                <td class="compare-label">City</td>
+                {% for p in programs %}<td>{{ p.city }}</td>{% endfor %}
+            </tr>
+            <tr>
+                <td class="compare-label">BSN</td>
+                {% for p in programs %}
+                <td>
+                    {% if p.bsn_required == 'Yes' %}<span class="bsn-req">Required</span>
+                    {% elif p.bsn_required == 'Preferred' %}<span class="bsn-pref">Preferred</span>
+                    {% else %}<span class="bsn-no">Not Req</span>{% endif %}
+                </td>
+                {% endfor %}
+            </tr>
+            <tr>
+                <td class="compare-label">Reputation</td>
+                {% for p in programs %}<td class="stars">{{ '★' * p.reputation }}{{ '☆' * (5 - p.reputation) }}</td>{% endfor %}
+            </tr>
+            <tr>
+                <td class="compare-label">Pay</td>
+                {% for p in programs %}<td>{{ p.pay_range or '—' }}</td>{% endfor %}
+            </tr>
+            <tr>
+                <td class="compare-label">Length</td>
+                {% for p in programs %}<td>{{ p.program_length_months }} months</td>{% endfor %}
+            </tr>
+            <tr>
+                <td class="compare-label">App Open</td>
+                {% for p in programs %}<td>{{ p.app_open_date or 'TBD' }}</td>{% endfor %}
+            </tr>
+            <tr>
+                <td class="compare-label">App Close</td>
+                {% for p in programs %}<td>{{ p.app_close_date or 'TBD' }}</td>{% endfor %}
+            </tr>
+            <tr>
+                <td class="compare-label">Cohort Start</td>
+                {% for p in programs %}<td>{{ p.cohort_start or 'TBD' }}</td>{% endfor %}
+            </tr>
+            <tr>
+                <td class="compare-label">Status</td>
+                {% for p in programs %}<td><span class="status-badge status-{{ p.application_status|replace(' ', '-')|lower }}">{{ p.application_status }}</span></td>{% endfor %}
+            </tr>
+            <tr>
+                <td class="compare-label">Specialties</td>
+                {% for p in programs %}<td class="specialties-cell">{{ p.specialty_units|join(', ') or '—' }}</td>{% endfor %}
+            </tr>
+            <tr>
+                <td class="compare-label">Apply</td>
+                {% for p in programs %}
+                <td>
+                    {% if p.application_url %}
+                    <a href="{{ p.application_url }}" target="_blank" role="button" class="outline apply-btn">Apply</a>
+                    {% endif %}
+                </td>
+                {% endfor %}
+            </tr>
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<p><a href="/programs" class="back-link">&larr; Back to Programs</a></p>
+{% endblock %}

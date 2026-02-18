@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}CA New Grad RN Tracker{% endblock %}
+{% block main_class %}container-fluid sheet-page{% endblock %}
+
+{% block content %}
+<!-- Compact stats bar -->
+<div class="stats-bar">
+    <span><strong>{{ stats.total }}</strong> programs</span>
+    <span class="stats-sep">|</span>
+    <span class="stat-highlight-green"><strong>{{ stats.open_now }}</strong> open now</span>
+    <span class="stats-sep">|</span>
+    <span class="{% if stats.urgent > 0 %}stat-highlight-red{% endif %}"><strong>{{ stats.upcoming }}</strong> upcoming{% if stats.urgent > 0 %} ({{ stats.urgent }} urgent){% endif %}</span>
+    <span class="stats-sep">|</span>
+    <span>NCLEX: {% if stats.nclex_days_left is not none %}<strong>{{ stats.nclex_days_left }}d</strong>{% else %}{{ stats.nclex_date }}{% endif %}</span>
+</div>
+
+<!-- Filters toolbar -->
+<div class="sheet-toolbar">
+    <div class="sheet-filters">
+        <input type="search" name="q" placeholder="Search... ( / )" value="{{ filters.q }}">
+        <select data-instant="region">
+            <option value="">All Regions</option>
+            {% for r in regions %}
+            <option value="{{ r }}" {% if filters.region == r %}selected{% endif %}>{{ r }}</option>
+            {% endfor %}
+        </select>
+        <select data-instant="city">
+            <option value="">All Cities</option>
+            {% for c in cities %}
+            <option value="{{ c }}">{{ c }}</option>
+            {% endfor %}
+        </select>
+        <!-- BSN filter hidden -->
+
+        <select data-instant="status">
+            <option value="">All Statuses</option>
+            {% for s in statuses %}
+            <option value="{{ s }}" {% if filters.status == s %}selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+        </select>
+        <select data-instant="cohort-status">
+            <option value="">All Cohorts</option>
+            <option value="released">Released</option>
+            <option value="not-released">Not Released</option>
+            <option value="rolling">Rolling</option>
+            <option value="paused">Paused</option>
+        </select>
+        <span class="sheet-count">{{ programs|length }} rows</span>
+        <span class="filter-spacer"></span>
+        <a href="/programs?cohort=jul-sep-2026" class="cohort-btn {% if filters.cohort == 'jul-sep-2026' %}active{% endif %}">Jul-Sep</a>
+        <a href="/programs?cohort=q4-2026" class="cohort-btn {% if filters.cohort == 'q4-2026' %}active{% endif %}">Oct-Dec</a>
+        {% if filters.cohort %}<a href="/programs" class="clear-filter">Clear</a>{% endif %}
+        <span class="filter-spacer"></span>
+        <button type="button" id="compare-btn" disabled onclick="goCompare()">Compare</button>
+        <button type="button" onclick="exportCSV()" title="Export CSV">Export</button>
+        <a href="/programs?sort=deadline" class="{% if filters.sort == 'deadline' %}active{% endif %}">By Deadline</a>
+        <a href="/programs?sort=reputation" class="{% if filters.sort == 'reputation' %}active{% endif %}">By Rep</a>
+        <a href="/programs?sort=pay" class="{% if filters.sort == 'pay' %}active{% endif %}">By Pay</a>
+    </div>
+</div>
+
+<!-- Full programs table -->
+<div class="sheet-wrapper">
+    <table class="sheet">
+        <thead>
+            <tr>
+                <th class="col-check"><input type="checkbox" id="select-all"></th>
+                <th class="col-hospital frozen-col"><a href="/?{{ sort_link('hospital') }}">Hospital</a></th>
+                <th class="col-program">Program</th>
+                <th class="col-region">Region</th>
+                <th class="col-city">City</th>
+                <th class="col-date"><a href="/?{{ sort_link('deadline') }}">App Open</a></th>
+                <th class="col-date"><a href="/?{{ sort_link('deadline') }}">App Close</a></th>
+                <th class="col-date">Cohort</th>
+                <!-- BSN column hidden -->
+
+                <th class="col-rep"><a href="/?{{ sort_link('reputation') }}">Rep</a></th>
+                <th class="col-pay"><a href="/?{{ sort_link('pay') }}">Pay</a></th>
+                <th class="col-len">Len</th>
+                <th class="col-specialties">Specialties</th>
+                <th class="col-status">Status</th>
+                <th class="col-notes">Notes</th>
+                <th class="col-apply">Apply</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in programs %}
+            <tr data-id="{{ p.id }}">
+                <td class="col-check"><input type="checkbox" class="compare-check" value="{{ p.id }}"></td>
+                <td class="col-hospital frozen-col"><a href="/programs/{{ p.id }}">{{ p.hospital }}</a></td>
+                <td class="col-program">{{ p.program_name }}</td>
+                <td class="col-region">{{ p.region }}</td>
+                <td class="col-city" title="{{ p.city }}">{{ short_city(p.city) }}</td>
+                <td class="col-date">{{ p.app_open_date or '' }}</td>
+                <td class="col-date">{{ p.app_close_date or '' }}</td>
+                <td class="col-date">{{ p.cohort_start or '' }}</td>
+                <!-- BSN cell hidden -->
+
+                <td class="col-rep stars">{{ '★' * p.reputation }}{{ '☆' * (5 - p.reputation) }}</td>
+                <td class="col-pay">{{ base_pay(p.pay_range) }}</td>
+                <td class="col-len">{{ p.program_length_months }}mo</td>
+                <td class="col-specialties">{{ p.specialty_units|join(', ') }}</td>
+                <td class="col-status">
+                    <select class="status-select" data-id="{{ p.id }}">
+                        {% for s in statuses %}
+                        <option value="{{ s }}" {% if p.application_status == s %}selected{% endif %}>{{ s }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td class="col-notes">{{ p.personal_notes or '' }}</td>
+                <td class="col-apply">
+                    {% if p.application_url %}
+                    <a href="{{ p.application_url }}" target="_blank" class="apply-link">Apply &rarr;</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
