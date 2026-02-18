@@ -260,7 +260,7 @@ def export_csv():
 
 
 if __name__ == "__main__":
-    port = 8080
+    port = int(os.environ.get("PORT", 8080))
     if "--port" in sys.argv:
         idx = sys.argv.index("--port")
         if idx + 1 < len(sys.argv):
@@ -268,4 +268,4 @@ if __name__ == "__main__":
 
     print(f"\n  CA New Grad RN Tracker")
     print(f"  http://localhost:{port}\n")
-    app.run(debug=True, port=port)
+    app.run(debug=True, port=port, host="0.0.0.0")
