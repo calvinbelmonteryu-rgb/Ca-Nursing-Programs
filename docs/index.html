@@ -1,0 +1,2310 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CA New Grad RN Tracker</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏥</text></svg>">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <style>
+/* CA New Grad RN Tracker — Custom Styles */
+
+/* ===== NAV ===== */
+nav {
+    background: #1e293b;
+    padding: 0 16px;
+}
+
+nav strong {
+    color: white !important;
+}
+
+nav ul li a {
+    color: #94a3b8 !important;
+    text-decoration: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    transition: background 0.15s, color 0.15s;
+}
+
+nav ul li a:hover {
+    color: white !important;
+    background: rgba(255,255,255,0.1);
+}
+
+nav a.active {
+    color: white !important;
+    background: rgba(59, 130, 246, 0.3);
+    font-weight: 600;
+}
+
+/* ===== STATS BAR ===== */
+.stats-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: #1e293b;
+    color: #e2e8f0;
+    font-size: 0.8rem;
+    flex-wrap: wrap;
+}
+
+.stats-bar strong {
+    color: white;
+}
+
+.stats-sep {
+    color: #475569;
+}
+
+.stat-highlight-green strong {
+    color: #4ade80;
+}
+
+.stat-highlight-red {
+    color: #fca5a5;
+}
+
+.stat-highlight-red strong {
+    color: #f87171;
+}
+
+.filter-spacer {
+    flex: 1;
+}
+
+/* ===== SPREADSHEET PAGE ===== */
+.sheet-page {
+    padding: 0 8px !important;
+    max-width: 100% !important;
+}
+
+/* Toolbar */
+.sheet-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 4px;
+    border-bottom: 2px solid #d1d5db;
+    background: #f9fafb;
+    flex-wrap: wrap;
+}
+
+.sheet-title {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.sheet-title strong {
+    font-size: 1rem;
+}
+
+.sheet-count {
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+.sheet-filters {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin: 0;
+}
+
+.sheet-filters input[type="search"],
+.sheet-filters select {
+    padding: 4px 8px;
+    font-size: 0.75rem;
+    margin: 0;
+    height: 28px;
+    border: 1px solid #d1d5db;
+    border-radius: 3px;
+    background: white;
+}
+
+.sheet-filters input[type="search"] {
+    width: 160px;
+}
+
+.sheet-filters select {
+    width: auto;
+    min-width: 90px;
+}
+
+.sheet-filters button,
+.sheet-filters a {
+    padding: 4px 10px;
+    font-size: 0.75rem;
+    height: 28px;
+    line-height: 1;
+    border: 1px solid #d1d5db;
+    border-radius: 3px;
+    background: white;
+    color: #374151;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+}
+
+.sheet-filters button:hover,
+.sheet-filters a:hover {
+    background: #f3f4f6;
+}
+
+.sheet-filters button:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+/* Sheet wrapper */
+.sheet-wrapper {
+    overflow: auto;
+    max-height: calc(100vh - 140px);
+    border: 1px solid #d1d5db;
+    background: white;
+}
+
+/* The spreadsheet table */
+.sheet {
+    width: max-content;
+    min-width: 100%;
+    border-collapse: collapse;
+    font-size: 0.78rem;
+    line-height: 1.3;
+}
+
+.sheet thead {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.sheet th {
+    background: #f3f4f6;
+    border: 1px solid #d1d5db;
+    padding: 5px 8px;
+    font-weight: 600;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #374151;
+    white-space: nowrap;
+    text-align: left;
+    position: sticky;
+    top: 0;
+}
+
+.sheet th a {
+    color: #374151;
+    text-decoration: none;
+}
+
+.sheet th a:hover {
+    text-decoration: underline;
+}
+
+.sheet td {
+    border: 1px solid #e5e7eb;
+    padding: 4px 8px;
+    vertical-align: top;
+    color: #1f2937;
+}
+
+.sheet tbody tr:hover {
+    background: #eff6ff;
+}
+
+.sheet tbody tr:nth-child(even) {
+    background: #fafafa;
+}
+
+.sheet tbody tr:nth-child(even):hover {
+    background: #eff6ff;
+}
+
+/* Column sizing */
+.col-check { width: 28px; text-align: center; }
+.col-id { width: 30px; text-align: center; color: #9ca3af; }
+.col-hospital { min-width: 180px; max-width: 220px; font-weight: 500; }
+.col-hospital a { color: #1d4ed8; text-decoration: none; }
+.col-hospital a:hover { text-decoration: underline; }
+.col-program { min-width: 160px; max-width: 240px; color: #6b7280; font-size: 0.74rem; }
+.col-region { min-width: 80px; white-space: nowrap; }
+.col-city { min-width: 100px; white-space: nowrap; }
+.col-bsn { width: 40px; text-align: center; }
+.col-rep { width: 70px; white-space: nowrap; }
+.col-len { width: 40px; text-align: center; white-space: nowrap; }
+.col-pay { min-width: 140px; white-space: nowrap; font-size: 0.74rem; }
+.col-date { width: 90px; white-space: nowrap; font-family: monospace; font-size: 0.74rem; }
+.col-specialties { min-width: 160px; max-width: 280px; font-size: 0.72rem; color: #6b7280; }
+.col-req { min-width: 160px; max-width: 280px; font-size: 0.72rem; color: #6b7280; }
+.col-status { width: 130px; }
+.col-notes { min-width: 180px; max-width: 320px; font-size: 0.72rem; color: #6b7280; }
+.col-apply { width: 60px; text-align: center; }
+
+/* Row status colors */
+.row-in-progress { background: #fefce8 !important; }
+.row-in-progress .frozen-col { background: #fefce8 !important; }
+.row-submitted { background: #eff6ff !important; }
+.row-submitted .frozen-col { background: #eff6ff !important; }
+.row-interview { background: #f5f3ff !important; }
+.row-interview .frozen-col { background: #f5f3ff !important; }
+.row-offer { background: #ecfdf5 !important; }
+.row-offer .frozen-col { background: #ecfdf5 !important; }
+.row-rejected { background: #fef2f2 !important; opacity: 0.6; }
+.row-rejected .frozen-col { background: #fef2f2 !important; }
+
+/* Frozen hospital column */
+.frozen-col {
+    position: sticky;
+    left: 0;
+    z-index: 5;
+    background: inherit;
+}
+
+thead .frozen-col {
+    z-index: 15;
+    background: #f3f4f6;
+}
+
+tbody tr:nth-child(odd) .frozen-col {
+    background: white;
+}
+
+tbody tr:nth-child(even) .frozen-col {
+    background: #fafafa;
+}
+
+tbody tr:hover .frozen-col {
+    background: #eff6ff;
+}
+
+/* Status select in spreadsheet */
+.sheet .status-select {
+    padding: 2px 4px;
+    font-size: 0.74rem;
+    margin: 0;
+    height: 24px;
+    width: 100%;
+    border: 1px solid transparent;
+    border-radius: 2px;
+    background: transparent;
+    cursor: pointer;
+}
+
+.sheet .status-select:hover,
+.sheet .status-select:focus {
+    border-color: #d1d5db;
+    background: white;
+}
+
+/* Apply link in spreadsheet */
+.apply-link {
+    color: #1d4ed8;
+    text-decoration: none;
+    font-size: 0.74rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.apply-link:hover {
+    text-decoration: underline;
+}
+
+/* Checkbox in sheet */
+.sheet input[type="checkbox"] {
+    margin: 0;
+    width: 14px;
+    height: 14px;
+}
+
+/* ===== STATUS BADGES ===== */
+.status-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.status-not-started { background: #e5e7eb; color: #374151; }
+.status-in-progress { background: #fef3c7; color: #92400e; }
+.status-submitted { background: #dbeafe; color: #1e40af; }
+.status-interview { background: #ede9fe; color: #5b21b6; }
+.status-offer { background: #d1fae5; color: #065f46; }
+.status-rejected { background: #fee2e2; color: #991b1b; }
+
+/* ===== BSN BADGES ===== */
+.bsn-req { color: #dc2626; font-weight: 600; }
+.bsn-pref { color: #d97706; font-weight: 600; }
+.bsn-no { color: #16a34a; font-weight: 600; }
+
+/* ===== STARS ===== */
+.stars {
+    color: #f59e0b;
+    letter-spacing: 1px;
+    white-space: nowrap;
+}
+
+/* ===== STAT CARDS (Dashboard) ===== */
+.stat-number {
+    font-size: 2rem;
+    font-weight: bold;
+    margin: 0;
+}
+
+.stat-open { color: #22c55e; }
+
+.stat-urgent {
+    color: #ef4444;
+    font-size: 1rem;
+}
+
+/* ===== APPLY BUTTONS (non-sheet pages) ===== */
+.apply-btn {
+    padding: 4px 12px !important;
+    font-size: 0.85rem !important;
+    white-space: nowrap;
+}
+
+.apply-btn-large {
+    display: inline-block;
+    margin-top: 4px;
+}
+
+/* ===== TAGS ===== */
+.tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 1rem;
+}
+
+.tag {
+    display: inline-block;
+    padding: 3px 10px;
+    background: #f3f4f6;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    color: #374151;
+}
+
+/* ===== MUTED ===== */
+.muted { opacity: 0.5; }
+
+/* ===== FILTER BAR (legacy, used on dashboard) ===== */
+.filter-bar { margin-bottom: 1.5rem; }
+.filter-actions { display: flex; gap: 8px; margin-top: 8px; }
+.filter-actions button, .filter-actions a { padding: 6px 16px !important; font-size: 0.85rem !important; }
+
+/* ===== URGENT / WARNING ROWS ===== */
+.urgent-row { border-left: 4px solid #ef4444; }
+.warning-row { border-left: 4px solid #f59e0b; }
+
+/* ===== BADGE ===== */
+.badge-open {
+    display: inline-block;
+    padding: 1px 6px;
+    background: #22c55e;
+    color: white;
+    border-radius: 3px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    margin-left: 4px;
+    vertical-align: middle;
+}
+
+/* ===== BAR CHARTS (Dashboard) ===== */
+.bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.bar-label { min-width: 100px; font-size: 0.85rem; }
+.bar-track { flex: 1; height: 18px; background: #f3f4f6; border-radius: 3px; overflow: hidden; }
+.bar-fill { height: 100%; background: #3b82f6; border-radius: 3px; transition: width 0.3s; }
+.bar-red { background: #ef4444; }
+.bar-yellow { background: #f59e0b; }
+.bar-green { background: #22c55e; }
+.bar-count { min-width: 24px; text-align: right; font-weight: 600; font-size: 0.85rem; }
+a.bar-link { text-decoration: none; color: inherit; border-radius: 4px; padding: 2px 4px; margin: -2px -4px; }
+a.bar-link:hover { background: #f3f4f6; }
+
+/* ===== DETAIL CARD ===== */
+.detail-card dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 16px; }
+.detail-card dt { font-weight: 600; color: #6b7280; font-size: 0.9rem; }
+.detail-card dd { margin: 0; }
+
+.back-link {
+    display: inline-block;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    text-decoration: none;
+    color: #6b7280;
+}
+
+.back-link:hover {
+    color: #1d4ed8;
+}
+
+.detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.detail-header h1 {
+    margin-bottom: 0.25rem;
+}
+
+.detail-program-name {
+    color: #6b7280;
+    margin: 0;
+}
+
+.detail-header-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+}
+
+.detail-status-badge {
+    font-size: 0.9rem !important;
+    padding: 4px 12px !important;
+}
+
+.detail-stars {
+    font-size: 1.2rem;
+}
+
+/* ===== COMPARE TABLE ===== */
+.compare-table { width: 100%; }
+.compare-label { font-weight: 600; color: #6b7280; white-space: nowrap; min-width: 120px; }
+.specialties-cell { font-size: 0.85rem; }
+
+/* ===== TIMELINE ===== */
+.timeline-legend {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 1.5rem;
+    font-size: 0.85rem;
+    flex-wrap: wrap;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.legend-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.legend-bar {
+    display: inline-block;
+    width: 24px;
+    height: 8px;
+    border-radius: 3px;
+}
+
+.legend-line {
+    display: inline-block;
+    width: 2px;
+    height: 14px;
+    border-radius: 1px;
+}
+
+.legend-app { background: #93c5fd; }
+.legend-open-bar { background: #22c55e; }
+.legend-cohort { background: #8b5cf6; }
+.legend-today-line { background: #ef4444; }
+.legend-nclex-line { background: #f59e0b; }
+
+/* Gantt chart */
+.gantt-container {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 2rem;
+    background: white;
+}
+
+.gantt-header {
+    display: flex;
+    border-bottom: 2px solid #d1d5db;
+    background: #f9fafb;
+}
+
+.gantt-label-col {
+    min-width: 240px;
+    max-width: 240px;
+    padding: 6px 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    border-right: 1px solid #e5e7eb;
+}
+
+.gantt-bar-col {
+    flex: 1;
+    position: relative;
+    min-height: 32px;
+    overflow: hidden;
+}
+
+.gantt-header .gantt-bar-col {
+    min-height: 28px;
+}
+
+.gantt-month {
+    position: absolute;
+    top: 6px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transform: translateX(4px);
+}
+
+.gantt-month::before {
+    content: '';
+    position: absolute;
+    left: -4px;
+    top: -6px;
+    bottom: -6px;
+    width: 1px;
+    background: #e5e7eb;
+}
+
+.gantt-today {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #ef4444;
+    z-index: 5;
+}
+
+.gantt-nclex {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #f59e0b;
+    z-index: 5;
+}
+
+.gantt-today-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: rgba(239, 68, 68, 0.2);
+    z-index: 1;
+}
+
+.gantt-nclex-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: rgba(245, 158, 11, 0.15);
+    z-index: 1;
+}
+
+.gantt-row {
+    display: flex;
+    border-bottom: 1px solid #f3f4f6;
+    transition: background 0.15s;
+}
+
+.gantt-row:hover {
+    background: #f8fafc;
+}
+
+.gantt-row-open {
+    background: #f0fdf4;
+}
+
+.gantt-row-open:hover {
+    background: #dcfce7;
+}
+
+.gantt-row-tbd {
+    opacity: 0.5;
+}
+
+.gantt-hospital {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #1d4ed8;
+    text-decoration: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 160px;
+}
+
+.gantt-hospital:hover {
+    text-decoration: underline;
+}
+
+.gantt-status {
+    font-size: 0.6rem !important;
+    padding: 1px 5px !important;
+    flex-shrink: 0;
+}
+
+.gantt-bar {
+    position: absolute;
+    top: 6px;
+    bottom: 6px;
+    background: #93c5fd;
+    border-radius: 4px;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 20px;
+    cursor: default;
+    transition: opacity 0.15s;
+}
+
+.gantt-bar:hover {
+    opacity: 0.85;
+}
+
+.gantt-bar-open {
+    background: #22c55e;
+}
+
+.gantt-bar-past {
+    background: #d1d5db;
+}
+
+.gantt-days {
+    font-size: 0.6rem;
+    font-weight: 700;
+    color: white;
+    text-shadow: 0 1px 1px rgba(0,0,0,0.2);
+}
+
+.gantt-cohort-marker {
+    position: absolute;
+    top: 4px;
+    bottom: 4px;
+    width: 8px;
+    height: 8px;
+    background: #8b5cf6;
+    border-radius: 50%;
+    z-index: 3;
+    transform: translateX(-4px);
+    top: calc(50% - 4px);
+}
+
+.gantt-section-header {
+    padding: 8px 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #6b7280;
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+    border-top: 1px solid #e5e7eb;
+}
+
+.gantt-tbd-text {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    padding: 0 12px;
+    line-height: 32px;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .dash-header {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .nclex-countdown {
+        align-self: flex-start;
+    }
+
+    .gantt-label-col {
+        min-width: 140px;
+        max-width: 140px;
+    }
+
+    .gantt-hospital {
+        max-width: 100px;
+        font-size: 0.7rem;
+    }
+
+    .gantt-status {
+        display: none;
+    }
+
+    .sheet-filters {
+        gap: 4px;
+    }
+
+    .sheet-filters input[type="search"] {
+        width: 120px;
+    }
+
+    .col-program,
+    .col-specialties,
+    .col-notes {
+        display: none;
+    }
+
+    .action-item {
+        flex-wrap: wrap;
+    }
+
+    .quick-links {
+        gap: 6px;
+    }
+
+    .quick-links a {
+        font-size: 0.75rem !important;
+        padding: 4px 10px !important;
+    }
+
+    .detail-header {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .detail-header-right {
+        align-items: flex-start;
+        flex-direction: row;
+        gap: 10px;
+    }
+}
+
+/* ===== TOAST ===== */
+.toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    background: #1e293b;
+    color: white;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    z-index: 1000;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.3s, transform 0.3s;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ===== OVERFLOW ===== */
+.overflow-auto { overflow-x: auto; }
+
+/* ===== FOOTER ===== */
+footer {
+    text-align: center;
+    padding: 2rem 0;
+    opacity: 0.5;
+    border-top: 1px solid #e5e7eb;
+    margin-top: 2rem;
+}
+
+/* ===== DEADLINE INDICATORS ===== */
+.deadline-urgent {
+    display: inline-block;
+    background: #ef4444;
+    color: white;
+    padding: 0 4px;
+    border-radius: 3px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    margin-left: 4px;
+    vertical-align: middle;
+}
+
+.deadline-warning {
+    display: inline-block;
+    background: #f59e0b;
+    color: white;
+    padding: 0 4px;
+    border-radius: 3px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    margin-left: 4px;
+    vertical-align: middle;
+}
+
+.deadline-soon {
+    display: inline-block;
+    background: #3b82f6;
+    color: white;
+    padding: 0 4px;
+    border-radius: 3px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    margin-left: 4px;
+    vertical-align: middle;
+}
+
+.deadline-past {
+    display: inline-block;
+    background: #9ca3af;
+    color: white;
+    padding: 0 4px;
+    border-radius: 3px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    margin-left: 4px;
+    vertical-align: middle;
+}
+
+/* ===== SORT LINKS ===== */
+.sheet-filters a.active {
+    background: #3b82f6;
+    color: white;
+    border-color: #3b82f6;
+}
+
+/* ===== PAY CELL ===== */
+.pay-cell { font-size: 0.85rem; white-space: nowrap; }
+
+/* ===== DASHBOARD ===== */
+.dash-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+}
+
+.dash-header h1 {
+    margin-bottom: 0.25rem;
+}
+
+.dash-subtitle {
+    color: #6b7280;
+    margin: 0;
+}
+
+.nclex-countdown {
+    text-align: center;
+    background: linear-gradient(135deg, #1e40af, #3b82f6);
+    color: white;
+    padding: 16px 24px;
+    border-radius: 12px;
+    min-width: 120px;
+}
+
+.nclex-number {
+    font-size: 2.5rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.nclex-label {
+    font-size: 0.85rem;
+    opacity: 0.9;
+    margin-top: 2px;
+}
+
+.nclex-date {
+    font-size: 0.7rem;
+    opacity: 0.7;
+    margin-top: 4px;
+}
+
+/* Stat cards */
+.stat-card {
+    text-align: center;
+    padding: 16px !important;
+}
+
+.stat-card-number {
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.stat-card-label {
+    font-size: 0.85rem;
+    color: #6b7280;
+    margin-top: 4px;
+}
+
+.stat-card-link {
+    font-size: 0.8rem;
+    display: block;
+    margin-top: 8px;
+}
+
+.stat-green { color: #16a34a; }
+.stat-red { color: #dc2626; }
+
+/* Action items */
+.action-items-card {
+    margin-bottom: 1.5rem;
+}
+
+.action-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-bottom: 1px solid #f3f4f6;
+    border-left: 4px solid transparent;
+}
+
+.action-item:last-child {
+    border-bottom: none;
+}
+
+.action-critical {
+    border-left-color: #dc2626;
+    background: #fef2f2;
+}
+
+.action-high {
+    border-left-color: #f59e0b;
+    background: #fffbeb;
+}
+
+.action-medium {
+    border-left-color: #3b82f6;
+    background: #eff6ff;
+}
+
+.action-low {
+    border-left-color: #9ca3af;
+}
+
+.action-priority {
+    font-weight: 800;
+    min-width: 24px;
+    text-align: center;
+    font-size: 0.85rem;
+}
+
+.action-critical .action-priority { color: #dc2626; }
+.action-high .action-priority { color: #f59e0b; }
+.action-medium .action-priority { color: #3b82f6; }
+
+.action-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.action-title {
+    font-weight: 600;
+    color: #1f2937;
+    text-decoration: none;
+}
+
+.action-title:hover {
+    text-decoration: underline;
+}
+
+.action-detail {
+    font-size: 0.8rem;
+    color: #6b7280;
+}
+
+/* Quick links */
+.quick-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.quick-links a {
+    font-size: 0.85rem !important;
+    padding: 6px 14px !important;
+}
+
+/* Cohort filter buttons */
+.cohort-btn {
+    font-weight: 600 !important;
+}
+
+.clear-filter {
+    color: #dc2626 !important;
+    font-size: 0.7rem !important;
+    border: none !important;
+}
+
+.clear-filter:hover {
+    background: #fef2f2 !important;
+}
+
+    </style>
+</head>
+<body>
+    <nav class="container-fluid">
+        <ul>
+            <li><strong>CA New Grad RN Tracker</strong></li>
+        </ul>
+        <ul>
+            <li><a href="#" class="active">Programs</a></li>
+        </ul>
+    </nav>
+
+    <main class="container-fluid sheet-page">
+        <div class="stats-bar">
+            <span><strong>57</strong> programs</span>
+            <span class="stats-sep">|</span>
+            <span class="stat-highlight-green"><strong>2</strong> open now</span>
+            <span class="stats-sep">|</span>
+            <span class=" stat-highlight-red"><strong>17</strong> upcoming (1 urgent)</span>
+            <span class="stats-sep">|</span>
+            <span>NCLEX: <strong>72d</strong></span>
+        </div>
+
+        <div class="sheet-toolbar">
+            <div class="sheet-filters">
+                <input type="search" name="q" placeholder="Search... ( / )" value="">
+                <select data-instant="region">
+                    <option value="">All Regions</option>
+                    <option value="Bay Area">Bay Area</option><option value="Central Valley">Central Valley</option><option value="NorCal">NorCal</option><option value="SoCal">SoCal</option><option value="Statewide">Statewide</option>
+                </select>
+                <select data-instant="city">
+                    <option value="">All Cities</option>
+                    <option value="Arcadia">Arcadia</option><option value="Bakersfield">Bakersfield</option><option value="Colton">Colton</option><option value="Downey">Downey</option><option value="Duarte">Duarte</option><option value="Escondido / Poway">Escondido / Poway</option><option value="Fairfield / Vacaville">Fairfield / Vacaville</option><option value="Fountain Valley">Fountain Valley</option><option value="Fremont">Fremont</option><option value="Fresno / Clovis">Fresno / Clovis</option><option value="Glendale">Glendale</option><option value="Hanford / Bakersfield">Hanford / Bakersfield</option><option value="Laguna Hills">Laguna Hills</option><option value="Loma Linda">Loma Linda</option><option value="Long Beach">Long Beach</option><option value="Los Angeles">Los Angeles</option><option value="Los Angeles (Boyle Heights)">Los Angeles (Boyle Heights)</option><option value="Los Angeles (West LA)">Los Angeles (West LA)</option><option value="Madera">Madera</option><option value="Moreno Valley">Moreno Valley</option><option value="Mountain View / Los Gatos">Mountain View / Los Gatos</option><option value="Multiple (Burbank, Mission Hills, Tarzana, Santa Monica, Torrance)">Multiple (Burbank, Mission Hills, Tarzana, Santa Monica, Torrance)</option><option value="Multiple (Los Angeles, Orange County, San Diego, Inland Empire)">Multiple (Los Angeles, Orange County, San Diego, Inland Empire)</option><option value="Multiple (Sacramento, Bay Area)">Multiple (Sacramento, Bay Area)</option><option value="Multiple (Sacramento, Oakland, San Jose, Santa Rosa, etc.)">Multiple (Sacramento, Oakland, San Jose, Santa Rosa, etc.)</option><option value="Multiple (Thousand Oaks, San Jose)">Multiple (Thousand Oaks, San Jose)</option><option value="Multiple Locations">Multiple Locations</option><option value="Newport Beach / Irvine">Newport Beach / Irvine</option><option value="Orange">Orange</option><option value="Palo Alto">Palo Alto</option><option value="Pasadena">Pasadena</option><option value="Pomona">Pomona</option><option value="Rancho Mirage">Rancho Mirage</option><option value="Redlands">Redlands</option><option value="Roseville">Roseville</option><option value="Sacramento">Sacramento</option><option value="San Diego">San Diego</option><option value="San Diego / La Jolla">San Diego / La Jolla</option><option value="San Francisco">San Francisco</option><option value="San Jose">San Jose</option><option value="Santa Barbara">Santa Barbara</option><option value="Torrance">Torrance</option><option value="Ventura">Ventura</option><option value="Visalia">Visalia</option><option value="Walnut Creek / Concord">Walnut Creek / Concord</option><option value="West Covina / Covina / Glendora">West Covina / Covina / Glendora</option><option value="Whittier">Whittier</option>
+                </select>
+                <select data-instant="status">
+                    <option value="">All Statuses</option>
+                    <option value="Not Started">Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option>
+                </select>
+                <select data-instant="cohort-status">
+                    <option value="">All Cohorts</option>
+                    <option value="released">Released</option>
+                    <option value="not-released">Not Released</option>
+                    <option value="rolling">Rolling</option>
+                    <option value="paused">Paused</option>
+                </select>
+                <span class="sheet-count">57 rows</span>
+                <span class="filter-spacer"></span>
+                <button type="button" id="compare-btn" disabled onclick="goCompare()">Compare</button>
+                <button type="button" onclick="exportCSV()" title="Export CSV">Export</button>
+            </div>
+        </div>
+
+        <div class="sheet-wrapper">
+            <table class="sheet">
+                <thead>
+                    <tr>
+                        <th class="col-check"><input type="checkbox" id="select-all"></th>
+                        <th class="col-hospital frozen-col">Hospital</th>
+                        <th class="col-program">Program</th>
+                        <th class="col-region">Region</th>
+                        <th class="col-city">City</th>
+                        <th class="col-date">App Open</th>
+                        <th class="col-date">App Close</th>
+                        <th class="col-date">Cohort</th>
+                        <th class="col-rep">Rep</th>
+                        <th class="col-pay">Pay</th>
+                        <th class="col-len">Len</th>
+                        <th class="col-specialties">Specialties</th>
+                        <th class="col-status">Status</th>
+                        <th class="col-notes">Notes</th>
+                        <th class="col-apply">Apply</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr data-id="1" data-region="NorCal" data-city="Multiple (Sacramento, Oakland, San Jose, Santa Rosa, etc.)" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="1"></td>
+<td class="col-hospital frozen-col"><a href="#1">Kaiser Permanente (NorCal)</a></td>
+<td class="col-program">New Graduate RN Residency Program</td>
+<td class="col-region">NorCal</td>
+<td class="col-city" title="Multiple (Sacramento, Oakland, San Jose, Santa Rosa, etc.)">Sac, Oak, etc</td>
+<td class="col-date">2026-03-29</td>
+<td class="col-date">2026-03-31</td>
+<td class="col-date">2026-07-27</td>
+<td class="col-rep stars">★★★★★</td>
+<td class="col-pay">$81.21/hr</td>
+<td class="col-len">12mo</td>
+<td class="col-specialties">Med-Surg, Telemetry, ICU, ED, L&amp;D, Pediatrics, OR</td>
+<td class="col-status"><select class="status-select" data-id="1"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">Cohort 2: app 3/29-3/31/2026 (3 DAYS ONLY), starts 7/27/2026. Must have CA RN license by 7/19/2026. Cohort 3: app 7/5-7/7/2026, starts 11/2/2026. INFO SESSIONS: March 9-13, 2026 (register on kaiserpermanentejobs.org). 21 participating NorCal hospitals. Apply via kaiserpermanentejobs.org.</td>
+<td class="col-apply"><a href="https://www.kaiserpermanentejobs.org/nurse-residency-career" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="2" data-region="SoCal" data-city="Los Angeles" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="2"></td>
+<td class="col-hospital frozen-col"><a href="#2">UCLA Health</a></td>
+<td class="col-program">Vizient/AACN Nurse Residency Program</td>
+<td class="col-region">SoCal</td>
+<td class="col-city" title="Los Angeles">LA</td>
+<td class="col-date">2026-03-02</td>
+<td class="col-date">2026-03-09</td>
+<td class="col-date">2026-07-01</td>
+<td class="col-rep stars">★★★★★</td>
+<td class="col-pay">$52-62/hr</td>
+<td class="col-len">12mo</td>
+<td class="col-specialties">Med-Surg, Oncology, Cardiac, Neuro, ICU, ED</td>
+<td class="col-status"><select class="status-select" data-id="2"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">App window: Mar 2-9, 2026 (5pm PT close). BSN/MSN required, grad Dec 2024-Jun 2026.</td>
+<td class="col-apply"><a href="https://www.uclahealthcareers.org/nursing-new-graduates/" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="3" data-region="SoCal" data-city="Los Angeles" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="3"></td>
+<td class="col-hospital frozen-col"><a href="#3">Cedars-Sinai Medical Center</a></td>
+<td class="col-program">New Graduate Nurse Residency</td>
+<td class="col-region">SoCal</td>
+<td class="col-city" title="Los Angeles">LA</td>
+<td class="col-date">2026-06-15</td>
+<td class="col-date">2026-06-28</td>
+<td class="col-date">2026-08-24</td>
+<td class="col-rep stars">★★★★★</td>
+<td class="col-pay">$48.50-51.50/hr</td>
+<td class="col-len">12mo</td>
+<td class="col-specialties">Med-Surg, Cardiac, Neuro, Oncology, OR, ICU</td>
+<td class="col-status"><select class="status-select" data-id="3"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">App date: Jun 15, 2026 for Aug 24 cohort. ADN accepted. 3.0 GPA req. Contact: NewGradInfo@cshs.org</td>
+<td class="col-apply"><a href="https://careers.cshs.org/nursing-new-grads" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="4" data-region="Bay Area" data-city="Palo Alto" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="4"></td>
+<td class="col-hospital frozen-col"><a href="#4">Stanford Health Care</a></td>
+<td class="col-program">New Graduate RN Residency</td>
+<td class="col-region">Bay Area</td>
+<td class="col-city" title="Palo Alto">Palo Alto</td>
+<td class="col-date"></td>
+<td class="col-date"></td>
+<td class="col-date">Not Released (~Sep 2026)</td>
+<td class="col-rep stars">★★★★★</td>
+<td class="col-pay">$89.20/hr</td>
+<td class="col-len">12mo</td>
+<td class="col-specialties">Med-Surg, ICU, Cardiac, Transplant, Oncology, ED, OR, Psychiatry</td>
+<td class="col-status"><select class="status-select" data-id="4"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">DATES NOT YET RELEASED — Cohort 45 listed as &quot;Coming Soon&quot; on Stanford website (confirmed 2/18). Cohort 44: app was 10/20-10/26/2025 (7 DAYS ONLY), starts 3/16/2026. ESTIMATED Cohort 45: app ~late April/early May 2026 (5-7 day window), start ~September 2026. Bi-annual cohorts (Mar + Sep). INTERVIEW FORMAT: 5-6 person panel, behavioral + evidence-based questions. Stanford reads EVERY application manually (no keyword scanning). Contact: NewGradRN@stanfordhealthcare.org. Monitor careers page closely starting March 2026.</td>
+<td class="col-apply"><a href="https://careers.stanfordhealthcare.org/us/en/nurse-residency-program" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="5" data-region="Bay Area" data-city="San Francisco" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="5"></td>
+<td class="col-hospital frozen-col"><a href="#5">UCSF Medical Center</a></td>
+<td class="col-program">New Nurse Residency Training Program (NNRTP)</td>
+<td class="col-region">Bay Area</td>
+<td class="col-city" title="San Francisco">SF</td>
+<td class="col-date"></td>
+<td class="col-date"></td>
+<td class="col-date">Program Paused</td>
+<td class="col-rep stars">★★★★★</td>
+<td class="col-pay">$72-85/hr</td>
+<td class="col-len">12mo</td>
+<td class="col-specialties">Med-Surg, ICU, Oncology, Transplant, Pediatrics, L&amp;D</td>
+<td class="col-status"><select class="status-select" data-id="5"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">PROGRAM PAUSED — confirmed still paused as of 2/18/2026. No Fall 2025, Spring 2026, or Summer 2026 cohort announced. NNRTP is the exclusive entry pathway for newly graduated RNs joining UCSF Health. 14-week intensive program (40 hrs/wk for first 8 weeks), 2-year employment commitment. Check tiny.ucsf.edu/NurseTrainingPrograms periodically for updates. Email NurseResidency@ucsf.edu.</td>
+<td class="col-apply"><a href="https://hr.ucsf.edu/learning/career-professional-development/registered-nurse-training-programs" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="6" data-region="NorCal" data-city="Sacramento" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="6"></td>
+<td class="col-hospital frozen-col"><a href="#6">UC Davis Medical Center</a></td>
+<td class="col-program">Nurse Residency Program</td>
+<td class="col-region">NorCal</td>
+<td class="col-city" title="Sacramento">Sac</td>
+<td class="col-date"></td>
+<td class="col-date"></td>
+<td class="col-date">Not Released (~Aug 2026)</td>
+<td class="col-rep stars">★★★★☆</td>
+<td class="col-pay">$48-65/hr</td>
+<td class="col-len">12mo</td>
+<td class="col-specialties">Med-Surg, ICU, ED, Pediatrics, Trauma, Burn</td>
+<td class="col-status"><select class="status-select" data-id="6"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">2 cohorts/year. March + May 2026 cohorts: app window 11/5-11/12/2025 (CLOSED). ONE WEEK POSTING ONLY. Next cohort ~Aug 2026, apps expected Mar-Apr 2026 (1-week window). Apply via hr.ucdavis.edu/jobs/nursing/residency. FAQ at hr.ucdavis.edu/jobs/nursing/residency/faq. Contact: NewGradNurseResidency@health.ucdavis.edu.</td>
+<td class="col-apply"><a href="https://hr.ucdavis.edu/jobs/nursing/residency" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="7" data-region="SoCal" data-city="Multiple (Burbank, Mission Hills, Tarzana, Santa Monica, Torrance)" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="7"></td>
+<td class="col-hospital frozen-col"><a href="#7">Providence Health</a></td>
+<td class="col-program">Transition into Practice (TIP) RN Residency Program</td>
+<td class="col-region">SoCal</td>
+<td class="col-city" title="Multiple (Burbank, Mission Hills, Tarzana, Santa Monica, Torrance)">Burbank, Mission Hls, etc</td>
+<td class="col-date"></td>
+<td class="col-date"></td>
+<td class="col-date">2026-08-24</td>
+<td class="col-rep stars">★★★☆☆</td>
+<td class="col-pay">$45-55/hr</td>
+<td class="col-len">12mo</td>
+<td class="col-specialties">Med-Surg, Telemetry, ICU, ED, L&amp;D</td>
+<td class="col-status"><select class="status-select" data-id="7"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">UNIFIED APPLICATION — one app covers ALL 6 SoCal campuses (St. Joseph Burbank, Holy Cross Mission Hills, Cedars-Sinai Tarzana, St. John&#39;s Santa Monica, Little Company of Mary Torrance + San Pedro). Pick 1st/2nd choice location at interview stage. Cohort starts 8/24/2026 — app date TBD. PATTERN: Aug 2025 apps opened 6/6/2025, closed 6/11/2025 (5 DAY WINDOW). Expect Aug 2026 apps ~early-mid June 2026 (5 days). Feb 2026 cohort closed. Also covers NorCal. Email campus@providence.org. Check providence.jobs/academy/ starting May 2026.</td>
+<td class="col-apply"><a href="https://providence.jobs/tip/" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="8" data-region="Statewide" data-city="Multiple (Thousand Oaks, San Jose)" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="8"></td>
+<td class="col-hospital frozen-col"><a href="#8">HCA Healthcare (multiple hospitals)</a></td>
+<td class="col-program">StaRN New Graduate Residency</td>
+<td class="col-region">Statewide</td>
+<td class="col-city" title="Multiple (Thousand Oaks, San Jose)">T Oaks, SJ</td>
+<td class="col-date"></td>
+<td class="col-date"></td>
+<td class="col-date">2026-07-01</td>
+<td class="col-rep stars">★★☆☆☆</td>
+<td class="col-pay">$41-57/hr</td>
+<td class="col-len">4mo</td>
+<td class="col-specialties">Med-Surg, Telemetry, ICU, ED, Behavioral Health, Critical Care</td>
+<td class="col-status"><select class="status-select" data-id="8"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">SEPARATE APPLICATIONS per hospital — each posts its own StaRN position. ACTIVE POSTINGS (as of 2/18): Los Robles July 2026 cohort (Job #12425587) — APPLY NOW. Riverside Community Hospital ED StaRN (Job #12176817). Riverside New Grad cohort (Job #10248621). CA HCA hospitals: Los Robles (Thousand Oaks), Riverside Community, Good Samaritan (San Jose), Regional Medical Center (San Jose). 10-16 weeks StaRN training then 12-month residency. NO repayment agreements in CA (settled $1.53M with CA AG). Must apply within 6 months of graduation or have &lt;6 months experience. Apply via careers.hcahealthcare.com — search &quot;StaRN&quot; + hospital name.</td>
+<td class="col-apply"><a href="https://careers.hcahealthcare.com" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="9" data-region="NorCal" data-city="Multiple (Sacramento, Bay Area)" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="9"></td>
+<td class="col-hospital frozen-col"><a href="#9">Sutter Health</a></td>
+<td class="col-program">New Graduate RN Residency</td>
+<td class="col-region">NorCal</td>
+<td class="col-city" title="Multiple (Sacramento, Bay Area)">Sac, Bay Area</td>
+<td class="col-date"></td>
+<td class="col-date"></td>
+<td class="col-date">Rolling</td>
+<td class="col-rep stars">★★★★☆</td>
+<td class="col-pay">$63-74/hr</td>
+<td class="col-len">12mo</td>
+<td class="col-specialties">Med-Surg, Telemetry, ICU, ED, L&amp;D, OR</td>
+<td class="col-status"><select class="status-select" data-id="9"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">SEPARATE POSTINGS per hospital — no centralized residency app. New grads auto-enrolled upon hire as Staff Nurse I. ACTIVE POSTINGS (as of 2/18): 136+ Staff Nurse I jobs on Indeed, 201 on LinkedIn. Confirmed active: ABSMC-Ashby (Berkeley) L&amp;D posting valid through 3/2/2026 $71.79/hr, CPMC Van Ness (SF), Eden Medical Center (Castro Valley). Pay: ~$71-72/hr Bay Area. 88-hour program over 6 months. Small learning groups of ~8. Rolling postings — check jobs.sutterhealth.org frequently for Staff Nurse I / Clinical Nurse I openings. Keyword: &quot;Staff Nurse I&quot;.</td>
+<td class="col-apply"><a href="https://jobs.sutterhealth.org" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="10" data-region="Statewide" data-city="Multiple Locations" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="10"></td>
+<td class="col-hospital frozen-col"><a href="#10">Dignity Health / CommonSpirit</a></td>
+<td class="col-program">Nurse Residency Program</td>
+<td class="col-region">Statewide</td>
+<td class="col-city" title="Multiple Locations">Multi</td>
+<td class="col-date">2026-02-16</td>
+<td class="col-date"></td>
+<td class="col-date">2026-07-20</td>
+<td class="col-rep stars">★★★☆☆</td>
+<td class="col-pay">$45-58/hr</td>
+<td class="col-len">12mo</td>
+<td class="col-specialties">Med-Surg, Telemetry, ICU, ED</td>
+<td class="col-status"><select class="status-select" data-id="10"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">SEPARATE APPLICATIONS per hospital — must apply to each facility individually. APPS OPEN NOW — Summer 2026: apps opened 2/16/2026, cohort starts 7/20/2026. NO FIXED CLOSE DATE — closes when sufficient applications received (historically hours to days). APPLY ASAP.
+CALIFORNIA LIVE POSTINGS (as of 2/18): Bakersfield Memorial Hospital (Jul 27 start) and Mercy Hospital of Bakersfield (Jul 27 start). Sacramento-area (Mercy General, Mercy San Juan, Methodist, Mercy Folsom, Woodland): AllNurses thread started 2/14 — postings may have briefly appeared and some interviews already scheduled. CHECK DAILY.
+Fall 2026: apps open 6/22/2026, cohort starts 10/26/2026. ADN accepted (BSN preferred). NCLEX not required at app time but valid license needed 2 weeks before start.</td>
+<td class="col-apply"><a href="https://www.commonspirit.careers" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="11" data-region="SoCal" data-city="Los Angeles" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="11"></td>
+<td class="col-hospital frozen-col"><a href="#11">Children&#39;s Hospital Los Angeles (CHLA)</a></td>
+<td class="col-program">RN Residency in Pediatrics</td>
+<td class="col-region">SoCal</td>
+<td class="col-city" title="Los Angeles">LA</td>
+<td class="col-date"></td>
+<td class="col-date"></td>
+<td class="col-date">Not Released (~Oct 2026)</td>
+<td class="col-rep stars">★★★★★</td>
+<td class="col-pay">$48-58/hr</td>
+<td class="col-len">12mo</td>
+<td class="col-specialties">Pediatric Med-Surg, PICU, NICU, Pediatric ED, Hematology/Oncology</td>
+<td class="col-status"><select class="status-select" data-id="11"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">2 cohorts/year: Spring (~Apr) and Fall (~Oct). April 2026 cohort: app 1/26 9am-1/28 12pm PST (2-DAY WINDOW, CLOSED). Start 4/27/2026. NOTE: Small March 2026 cohort exists (15-20 nurses, ICU/ED only, no Med-Surg). Fall 2026 cohort (~Oct): apps likely June/July 2026 (2-3 DAY WINDOW — extremely short). 75% precepted clinical / 25% simulation + classroom. 6-bed Las Madrinas Simulation Center. BSN required. Apply at jobs.chla.org/rn-residency.</td>
+<td class="col-apply"><a href="https://www.chla.org/nursing/rn-residency-pediatrics" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="12" data-region="SoCal" data-city="Orange" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="12"></td>
+<td class="col-hospital frozen-col"><a href="#12">UC Irvine Medical Center</a></td>
+<td class="col-program">Vizient/AACN Nurse Residency Program</td>
+<td class="col-region">SoCal</td>
+<td class="col-city" title="Orange">Orange</td>
+<td class="col-date">2026-06-15</td>
+<td class="col-date"></td>
+<td class="col-date">2026-08-24</td>
+<td class="col-rep stars">★★★★☆</td>
+<td class="col-pay">$52-62/hr</td>
+<td class="col-len">12mo</td>
+<td class="col-specialties">Med-Surg, ICU, ED, Trauma, Neuro, Cardiac</td>
+<td class="col-status"><select class="status-select" data-id="12"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">No separate residency application. Apply to Clinical Nurse I positions — auto-enrolled in residency upon hire. Summer 2026 cohort starts 8/24/2026, app window opens 6/15/2026. ADN and BSN accepted. Follow @ucirnrecruiter on Instagram for alerts. Check careers.ucihealth.org for CN1 postings.</td>
+<td class="col-apply"><a href="https://www.ucihealth.org/healthcare-professionals/nursing" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="13" data-region="SoCal" data-city="Los Angeles (Boyle Heights)" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="13"></td>
+<td class="col-hospital frozen-col"><a href="#13">Adventist Health White Memorial</a></td>
+<td class="col-program">New Grad Nurse Residency</td>
+<td class="col-region">SoCal</td>
+<td class="col-city" title="Los Angeles (Boyle Heights)">LA (Boyle Hts)</td>
+<td class="col-date"></td>
+<td class="col-date"></td>
+<td class="col-date">Not Released (~Aug 2026)</td>
+<td class="col-rep stars">★★★☆☆</td>
+<td class="col-pay">$37-48/hr</td>
+<td class="col-len">12mo</td>
+<td class="col-specialties">Med-Surg, Telemetry, ICU, ED, L&amp;D</td>
+<td class="col-status"><select class="status-select" data-id="13"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">SEPARATE APPLICATION per campus. 2 COHORTS/YEAR: March and August. March 2026 may have already passed/is imminent. TARGET: August 2026 cohort — dates NOT yet posted. APPLICATION PROCESS: online app at adventisthealth.org → email prescreening questionnaire to WMMCRecruitment@ah.org → panel interview → individual manager interviews. REQUIREMENTS: 2 letters of reference (nursing instructor or former healthcare manager), essay on 5-year professional goals, must pass NCLEX before cohort start. CONTACT: WMMCRecruitment@ah.org to ask about August 2026 dates. Join Talent Community at adventisthealth.org/careers for alerts. AllNurses t769803.</td>
+<td class="col-apply"><a href="https://www.adventisthealth.org/careers/internships-and-residencies/nurse-residency-program" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="14" data-region="SoCal" data-city="San Diego" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="14"></td>
+<td class="col-hospital frozen-col"><a href="#14">Sharp HealthCare</a></td>
+<td class="col-program">New Graduate RN Residency</td>
+<td class="col-region">SoCal</td>
+<td class="col-city" title="San Diego">SD</td>
+<td class="col-date">2026-03-10</td>
+<td class="col-date">2026-03-17</td>
+<td class="col-date">2026-07-01</td>
+<td class="col-rep stars">★★★★☆</td>
+<td class="col-pay">$48-58/hr</td>
+<td class="col-len">12mo</td>
+<td class="col-specialties">Med-Surg, Telemetry, ICU, ED, L&amp;D, OR</td>
+<td class="col-status"><select class="status-select" data-id="14"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">App window: Mar 10-17, 2026 (external). Virtual forum Feb 23 @ 2:30pm. ~3 cohorts/year.</td>
+<td class="col-apply"><a href="https://careers.sharp.com/SHC-nurse-residency-program" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="15" data-region="SoCal" data-city="San Diego" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="15"></td>
+<td class="col-hospital frozen-col"><a href="#15">Scripps Health</a></td>
+<td class="col-program">New Graduate Nurse Residency Program</td>
+<td class="col-region">SoCal</td>
+<td class="col-city" title="San Diego">SD</td>
+<td class="col-date">2026-06-21</td>
+<td class="col-date">2026-06-23</td>
+<td class="col-date">2026-10-01</td>
+<td class="col-rep stars">★★★★☆</td>
+<td class="col-pay">$48-58/hr</td>
+<td class="col-len">12mo</td>
+<td class="col-specialties">Med-Surg, Telemetry, ICU, Cardiac, ED</td>
+<td class="col-status"><select class="status-select" data-id="15"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">THREE 2026 COHORTS:
+• March 2026: external app 11/8-11/10/2025 (CLOSED), started 3/2/2026
+• June 2026: external app 2/8-2/10/2026 (CLOSED), starts 6/1/2026. Program runs 6/1/2026-3/6/2027.
+• October 2026: external app 6/21-6/23/2026 (3 DAYS ONLY). TARGET COHORT.
+HireVue video interview required (72-hr expiration, 10 questions, self-paced). All dates subject to change. 2026 calendar PDF: careers.scripps.org/wp-content/uploads/sites/3487/2025/11/Calendar-2026-program-dates-for-Careers-Site-Home-Page-Link_Final_11.2025.pdf. Contact: developingtalent@scrippshealth.org.</td>
+<td class="col-apply"><a href="https://careers.scripps.org/training-programs/new-grads-rn/" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="16" data-region="SoCal" data-city="Loma Linda" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="16"></td>
+<td class="col-hospital frozen-col"><a href="#16">Loma Linda University Health</a></td>
+<td class="col-program">Adult RN Residency Program</td>
+<td class="col-region">SoCal</td>
+<td class="col-city" title="Loma Linda">Loma Linda</td>
+<td class="col-date">2026-02-23</td>
+<td class="col-date">2026-03-06</td>
+<td class="col-date">2026-06-08</td>
+<td class="col-rep stars">★★★★☆</td>
+<td class="col-pay">$50-66/hr</td>
+<td class="col-len">12mo</td>
+<td class="col-specialties">Med-Surg, ICU, Cardiac, Neuro, Oncology, ED, L&amp;D, OR</td>
+<td class="col-status"><select class="status-select" data-id="16"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">URGENT: Apps open Feb 23 - Mar 6, 2026 for Jun 8 cohort. Also Sep 15 cohort (apps Jun 1-12).</td>
+<td class="col-apply"><a href="https://lluh.org/health-professionals/adult-rn-residency-program/how-apply" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="17" data-region="SoCal" data-city="Los Angeles" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="17"></td>
+<td class="col-hospital frozen-col"><a href="#17">Keck Medicine of USC</a></td>
+<td class="col-program">Versant RN Residency Program</td>
+<td class="col-region">SoCal</td>
+<td class="col-city" title="Los Angeles">LA</td>
+<td class="col-date">2026-06-02</td>
+<td class="col-date">2026-06-16</td>
+<td class="col-date">2026-09-01</td>
+<td class="col-rep stars">★★★★☆</td>
+<td class="col-pay">$48-55/hr</td>
+<td class="col-len">5mo</td>
+<td class="col-specialties">Telemetry, ICU, Stepdown</td>
+<td class="col-status"><select class="status-select" data-id="17"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">Spring 2026 starts 4/7 (app closed 1/12). Fall 2026 cohort ~Sep 2026. App window: 6/2-6/16/2026 (corrected from earlier estimate). Submit all docs as single PDF via USC Workday.</td>
+<td class="col-apply"><a href="https://www.keckmedicine.org/nurses/residency-training-program/" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="18" data-region="Bay Area" data-city="Walnut Creek / Concord" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="18"></td>
+<td class="col-hospital frozen-col"><a href="#18">John Muir Health</a></td>
+<td class="col-program">Vizient/AACN Nurse Residency Program</td>
+<td class="col-region">Bay Area</td>
+<td class="col-city" title="Walnut Creek / Concord">W Creek / Concord</td>
+<td class="col-date"></td>
+<td class="col-date"></td>
+<td class="col-date">Not Released</td>
+<td class="col-rep stars">★★★★☆</td>
+<td class="col-pay">$67.98/hr</td>
+<td class="col-len">12mo</td>
+<td class="col-specialties">Med-Surg, Telemetry, ICU, ED</td>
+<td class="col-status"><select class="status-select" data-id="18"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">DATES NOT YET RELEASED — website only shows 2023 dates as of 2/18/2026. No 2026 dates posted. No allnurses 2026 thread yet. Both ADN and BSN eligible. Must graduate within 18 months of start, &lt;6 months acute care RN experience, CA RN license by start. Need cover letter, resume, 2 letters of rec (clinical instructor + preceptor preferred). Historical pattern: May posting, Aug start. Set up job alerts on career site. Contact: human.resources@johnmuirhealth.com or 925-947-5215.</td>
+<td class="col-apply"><a href="https://www.johnmuirhealth.com/for-physicians/nursing/nursing-residency-program.html" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="19" data-region="SoCal" data-city="Newport Beach / Irvine" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="19"></td>
+<td class="col-hospital frozen-col"><a href="#19">Hoag Memorial Hospital Presbyterian</a></td>
+<td class="col-program">New Graduate Nurse Residency Program</td>
+<td class="col-region">SoCal</td>
+<td class="col-city" title="Newport Beach / Irvine">Newport / Irvine</td>
+<td class="col-date"></td>
+<td class="col-date"></td>
+<td class="col-date">Rolling</td>
+<td class="col-rep stars">★★★★☆</td>
+<td class="col-pay">$44-62/hr</td>
+<td class="col-len">12mo</td>
+<td class="col-specialties">Med-Surg, Telemetry, ICU, ED, Cardiac, OR, L&amp;D, Oncology</td>
+<td class="col-status"><select class="status-select" data-id="19"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">Rolling cohorts starting end of each month. No set application window. ACTIVE POSTINGS (as of 2/18): Clinical Nurse I - Medical 8th Floor Oncology (Newport Beach, posted ~2/12), Clinical Nurse I - Birthing Suites LDRP (Irvine). IMPORTANT: Not all &quot;Clinical Nurse I&quot; postings are new-grad eligible — some require 1 year experience. Read each posting carefully. BSN required (ADN must enroll in BSN within 1 year). Salary: $43.41-$70.63/hr. Search &quot;Clinical Nurse I&quot; at jobs.hoag.org/search weekly. 12-month Vizient/AACN program.</td>
+<td class="col-apply"><a href="https://careers.hoag.org/hoag-life/new-grad-nurses/" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="20" data-region="SoCal" data-city="San Diego" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="20"></td>
+<td class="col-hospital frozen-col"><a href="#20">Rady Children&#39;s Hospital San Diego</a></td>
+<td class="col-program">New Grad RN Transition to Practice Program</td>
+<td class="col-region">SoCal</td>
+<td class="col-city" title="San Diego">SD</td>
+<td class="col-date"></td>
+<td class="col-date"></td>
+<td class="col-date">2026-08-03</td>
+<td class="col-rep stars">★★★★★</td>
+<td class="col-pay">$62.12/hr</td>
+<td class="col-len">12mo</td>
+<td class="col-specialties">CTICU, NICU, PICU, Hematology/Oncology, Medical Unit, Medical Behavioral Unit, Surgical Unit, CAPS (Psych), Emergency Care</td>
+<td class="col-status"><select class="status-select" data-id="20"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">App window 2/9-2/13 CLOSED. Next cohort likely Spring 2027.</td>
+<td class="col-apply"><a href="https://jobs.rchsd.org/residency-programs" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="21" data-region="Central Valley" data-city="Fresno / Clovis" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="21"></td>
+<td class="col-hospital frozen-col"><a href="#21">Community Medical Centers</a></td>
+<td class="col-program">RN Residency Program</td>
+<td class="col-region">Central Valley</td>
+<td class="col-city" title="Fresno / Clovis">Fresno / Clovis</td>
+<td class="col-date"></td>
+<td class="col-date"></td>
+<td class="col-date">Rolling</td>
+<td class="col-rep stars">★★★☆☆</td>
+<td class="col-pay">$46-59/hr</td>
+<td class="col-len">12mo</td>
+<td class="col-specialties">Med-Surg, Telemetry, ICU, ED</td>
+<td class="col-status"><select class="status-select" data-id="21"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">~3 cohorts/year. No separate residency application — new grads auto-enter residency upon hire. ACTIVE: 65+ new grad RN jobs on Glassdoor for Fresno area. Up to $25K signing bonus advertised for some RN positions. Part-time &quot;New Nurse&quot; preparation roles available (includes RN Residency courses + free ACLS/PALS/NRP). 13 didactic workshops over 1 year + 8 weeks (24 shifts) precepted orientation. Apply at jobs.communityhealthsystem.org/nursing/new-nurses/. Rolling postings — no fixed app windows.</td>
+<td class="col-apply"><a href="https://jobs.communityhealthsystem.org/nursing/new-nurses/" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="22" data-region="SoCal" data-city="Los Angeles" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="22"></td>
+<td class="col-hospital frozen-col"><a href="#22">LA County + USC Medical Center (LAC+USC)</a></td>
+<td class="col-program">New Graduate RN Residency Program</td>
+<td class="col-region">SoCal</td>
+<td class="col-city" title="Los Angeles">LA</td>
+<td class="col-date"></td>
+<td class="col-date"></td>
+<td class="col-date">Rolling</td>
+<td class="col-rep stars">★★★☆☆</td>
+<td class="col-pay">$48/hr</td>
+<td class="col-len">2mo</td>
+<td class="col-specialties">Med-Surg, ICU, ED, Trauma, L&amp;D, OR</td>
+<td class="col-status"><select class="status-select" data-id="22"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">NOT A FORMAL RESIDENCY -- rolling hire process. ACTIVE POSTING: RN I position opened 2/17/2026 on governmentjobs.com/careers/lacounty (search &quot;Registered Nurse I&quot;). APPLY NOW. Email LAC_USC_NursingRecruitment@dhs.lacounty.gov with copy of RN license (or DCA license lookup screenshot), then call (323) 409-4663. Recruiters respond within 2-3 business days. Recruiters: Zeena George (zgeorge@dhs.lacounty.gov), Rachel Blankenship (rblankenship@dhs.lacounty.gov). Rolling classes every 2-4 months. ~9-week program (6 wks: 3 days class + 2 days clinical, then preceptorship). All new hires start nights ($38/hr base, no differential). 3-year waitlist for dayshift. County process: Personality exam (no math/nursing questions), LiveScan + health clearance (~2-3 months processing). Separate from Keck USC (private system).</td>
+<td class="col-apply"><a href="https://employee.hr.lacounty.gov" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="23" data-region="Bay Area" data-city="San Francisco" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="23"></td>
+<td class="col-hospital frozen-col"><a href="#23">Zuckerberg San Francisco General Hospital</a></td>
+<td class="col-program">Registered Nurse Training Program (2320)</td>
+<td class="col-region">Bay Area</td>
+<td class="col-city" title="San Francisco">SF</td>
+<td class="col-date"></td>
+<td class="col-date"></td>
+<td class="col-date">Rolling</td>
+<td class="col-rep stars">★★★★☆</td>
+<td class="col-pay">$71.96-95.86/hr</td>
+<td class="col-len">4mo</td>
+<td class="col-specialties">Med-Surg, ICU/Critical Care, ED/Trauma, Perinatal, Neonatal, Perioperative, Psychiatric Care</td>
+<td class="col-status"><select class="status-select" data-id="23"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">CONTINUOUS RECRUITMENT via careers.sf.gov (SmartRecruiters). Current posting: 2320 Training Program (role id 3743990005889491) opened 6/12/2025. ELIGIBLE LIST MAY BE EXPIRING — prior eligible lists last max 6 months. New 2026 posting expected but not yet confirmed. Also new experienced nurse posting opened 2/2/2026. Applying to one 2320 posting auto-considers you for ALL 7 specialty training areas (ED, Critical Care, Perinatal, Neonatal, Med-Surg/Periop/Psych). Salary: $164,840-$230,698/yr ($71.96-$95.86/hr). Interim RN permit OK. No BSN required. Contact: Katrina Navarro katrina.navarro@sfdph.org (628) 271-6717.</td>
+<td class="col-apply"><a href="https://careers.sf.gov" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="24" data-region="Bay Area" data-city="Mountain View / Los Gatos" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="24"></td>
+<td class="col-hospital frozen-col"><a href="#24">El Camino Health</a></td>
+<td class="col-program">New Graduate RN Residency Program</td>
+<td class="col-region">Bay Area</td>
+<td class="col-city" title="Mountain View / Los Gatos">Mtn View / Los Gatos</td>
+<td class="col-date">2026-06-01</td>
+<td class="col-date">2026-06-15</td>
+<td class="col-date">2026-09-28</td>
+<td class="col-rep stars">★★★★☆</td>
+<td class="col-pay">$83.20/hr</td>
+<td class="col-len">12mo</td>
+<td class="col-specialties">Med-Surg, Oncology, Telemetry, Tele-Stroke, Float Pool, L&amp;D, ED</td>
+<td class="col-status"><select class="status-select" data-id="24"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">Spring 2026 cohort starts 3/30/2026 (CA RN license needed by 2/5 — NOT viable for May NCLEX taker). TARGET: Sep 2026 cohort starts 9/28/2026. Apps expected May-June 2026 (pattern: early summer for Sep cohort). $83.20/hr confirmed. ADN accepted. 400-hour intensive clinical (320 hrs with dedicated preceptors) + quarterly professional development days. ANCC accredited with distinction. Specialties: Med-Surg, Onc, Tele, Tele-Stroke, Float, L&amp;D, ED. Apply via careers.elcaminohealth.org.</td>
+<td class="col-apply"><a href="https://www.elcaminohealth.org/about-us/nursing/nurse-residency-program" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="25" data-region="Central Valley" data-city="Madera" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="25"></td>
+<td class="col-hospital frozen-col"><a href="#25">Valley Children&#39;s Healthcare</a></td>
+<td class="col-program">Transition to Practice (TTP) Program</td>
+<td class="col-region">Central Valley</td>
+<td class="col-city" title="Madera">Madera</td>
+<td class="col-date"></td>
+<td class="col-date"></td>
+<td class="col-date">2026-07-01</td>
+<td class="col-rep stars">★★★★☆</td>
+<td class="col-pay">$42-58/hr</td>
+<td class="col-len">12mo</td>
+<td class="col-specialties">Pediatric Med-Surg, PICU, NICU, Pediatric ED, Perioperative, Rehab</td>
+<td class="col-status"><select class="status-select" data-id="25"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">Cohorts quarterly: January, April, July, October. July 2026 cohort confirmed. Apply for RN I positions on jobs.valleychildrens.org — postings expected May-Jun 2026 (apply no more than 2 months before graduation). Monthly classes for 12 months. Only freestanding children&#39;s hospital between LA and SF. Relocation assistance $1,500-4,500 if 100+ miles away.</td>
+<td class="col-apply"><a href="https://www.valleychildrens.org/medical-education/nursing/nursing-grad-opportunities" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="26" data-region="SoCal" data-city="Santa Barbara" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="26"></td>
+<td class="col-hospital frozen-col"><a href="#26">Cottage Health</a></td>
+<td class="col-program">RN Residency Program</td>
+<td class="col-region">SoCal</td>
+<td class="col-city" title="Santa Barbara">Santa Barbara</td>
+<td class="col-date">2026-02-12</td>
+<td class="col-date">2026-02-22</td>
+<td class="col-date">2026-05-18</td>
+<td class="col-rep stars">★★★☆☆</td>
+<td class="col-pay">$48-58/hr</td>
+<td class="col-len">8mo</td>
+<td class="col-specialties">Med-Surg, ICU, ED, L&amp;D, OR, Cardiac</td>
+<td class="col-status"><select class="status-select" data-id="26"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">4 COHORTS IN 2026: Feb 23 (started), May 18 (TARGET — app 2/12-2/22 MIDNIGHT, 4 DAYS LEFT), ~Aug 2026, ~Nov 2026. ALSO: Cohort 41 starts 6/29/2026 (separate posting found). May 2026 app window: 2/12-2/22 (10 DAYS). Info session was 2/3/2026 at 3pm PST. 8-month program: classroom + simulation + clinical preceptorship. Locations: Santa Barbara Cottage Hospital, Goleta Valley Cottage Hospital, Cottage Rehabilitation Hospital. CA RN license must be active 1 week before start (no interim permits). For Aug/Nov 2026 cohorts, expect app windows ~2-3 months before start. Check cottagehealth.org/nursing/residency/.</td>
+<td class="col-apply"><a href="https://www.cottagehealth.org/nursing/residency/" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="27" data-region="SoCal" data-city="Rancho Mirage" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="27"></td>
+<td class="col-hospital frozen-col"><a href="#27">Eisenhower Health</a></td>
+<td class="col-program">Coeta &amp; Donald Barker Foundation Nurse Residency</td>
+<td class="col-region">SoCal</td>
+<td class="col-city" title="Rancho Mirage">Rancho Mirage</td>
+<td class="col-date"></td>
+<td class="col-date"></td>
+<td class="col-date">Rolling</td>
+<td class="col-rep stars">★★★☆☆</td>
+<td class="col-pay">$45-55/hr</td>
+<td class="col-len">12mo</td>
+<td class="col-specialties">Telemetry, Orthopedic, Neuro, Hospitalist, ICU</td>
+<td class="col-status"><select class="status-select" data-id="27"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">Rolling/unit-based model — units open and close independently. 4 North (Tele/Ortho) oversubscribed, no longer accepting. Additional unit cohort deadlines &#39;will be posted as they become available.&#39; Historical pattern: ~quarterly starts (Feb, May, Jul, Sep). 11 units available. Contact: erose@eisenhowerhealth.org / 760-285-2996. Bookmark careers.eisenhowerhealth.org/careers/new-grad-positions/ and check regularly.</td>
+<td class="col-apply"><a href="https://careers.eisenhowerhealth.org/nurse-residency-program/" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="28" data-region="SoCal" data-city="Colton" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="28"></td>
+<td class="col-hospital frozen-col"><a href="#28">Arrowhead Regional Medical Center</a></td>
+<td class="col-program">New Graduate Nurse Residency Program</td>
+<td class="col-region">SoCal</td>
+<td class="col-city" title="Colton">Colton</td>
+<td class="col-date"></td>
+<td class="col-date"></td>
+<td class="col-date">Not Released (~Jul 2026)</td>
+<td class="col-rep stars">★★★☆☆</td>
+<td class="col-pay">$42-52/hr</td>
+<td class="col-len">7mo</td>
+<td class="col-specialties">Critical Care, Med-Surg/Telemetry, ED, NICU, L&amp;D, Postpartum, OR</td>
+<td class="col-status"><select class="status-select" data-id="28"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">Spring 2026 cohort starts April 2026 (app 1/10-1/23/2026, CLOSED). NCLEX must be completed by 2/1 for current cycle. Apps only accepted online during window or until capacity reached (may close early). Summer 2026 cohort expected ~July 2026 (apps likely April/May 2026). 3 cohorts/year: Winter, Spring, Summer. Hybrid curriculum: classroom + clinical. Contact Jennifer Walker, Program Coordinator: 909-580-1200, WalkerJen@armc.sbcounty.gov. Monitor governmentjobs.com/careers/sanbernardino for postings.</td>
+<td class="col-apply"><a href="https://www.arrowheadregional.org/services/nursing/nursing-residency-program/" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="29" data-region="SoCal" data-city="Long Beach" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="29"></td>
+<td class="col-hospital frozen-col"><a href="#29">MemorialCare Long Beach Medical Center / Miller Children&#39;s</a></td>
+<td class="col-program">New Grad RN Residency Program</td>
+<td class="col-region">SoCal</td>
+<td class="col-city" title="Long Beach">Long Beach</td>
+<td class="col-date"></td>
+<td class="col-date"></td>
+<td class="col-date">2026-08-01</td>
+<td class="col-rep stars">★★★★☆</td>
+<td class="col-pay">$48-60/hr</td>
+<td class="col-len">12mo</td>
+<td class="col-specialties">Med-Surg, Telemetry, ICU, ED, L&amp;D, Pediatrics, OR</td>
+<td class="col-status"><select class="status-select" data-id="29"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">Aug cohort apps post in JUNE for only 5 DAYS. BSN req at LB. Act fast. Contact: mhsrnnewgraduates@memorialcare.org</td>
+<td class="col-apply"><a href="https://careers.memorialcare.org/recent-grads" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="30" data-region="SoCal" data-city="Escondido / Poway" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="30"></td>
+<td class="col-hospital frozen-col"><a href="#30">Palomar Health</a></td>
+<td class="col-program">Nurse Residency Program</td>
+<td class="col-region">SoCal</td>
+<td class="col-city" title="Escondido / Poway">Escondido / Poway</td>
+<td class="col-date">2026-06-01</td>
+<td class="col-date"></td>
+<td class="col-date">2026-08-01</td>
+<td class="col-rep stars">★★★☆☆</td>
+<td class="col-pay">$45-56/hr</td>
+<td class="col-len">12mo</td>
+<td class="col-specialties">Med-Surg, Telemetry, ICU, ED</td>
+<td class="col-status"><select class="status-select" data-id="30"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">3 cohorts/year: Spring (Feb), Summer (Aug), Fall (Oct). Summer 2026 cohort starts ~Aug 2026, apps expected June 2026 (confirmed on official site). Interview period July 2026. 12-month program: Phase 1 (12-16 wks supervised bedside + classroom), Phase 2 (independent + mentorship). Escondido units: CV, ED, ICU, L&amp;D, Med-Surg Tele, Neuro, Surg/Trauma ICU, Ortho. Poway units: ED, Med-Surg Tele, Critical Care. Apply via PalomarHealth.org/Careers (Jobvite).</td>
+<td class="col-apply"><a href="https://www.palomarhealth.org/careers/nurse-residency/" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="31" data-region="SoCal" data-city="Pasadena" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="31"></td>
+<td class="col-hospital frozen-col"><a href="#31">Huntington Health</a></td>
+<td class="col-program">Nurse Residency Training Program</td>
+<td class="col-region">SoCal</td>
+<td class="col-city" title="Pasadena">Pasadena</td>
+<td class="col-date"></td>
+<td class="col-date"></td>
+<td class="col-date">2026-08-18</td>
+<td class="col-rep stars">★★★☆☆</td>
+<td class="col-pay">$48-58/hr</td>
+<td class="col-len">12mo</td>
+<td class="col-specialties">Med-Surg, Telemetry, ICU, ED, L&amp;D, OR</td>
+<td class="col-status"><select class="status-select" data-id="31"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">3 cohorts in 2026: Winter ~Jan 20 (passed), Spring ~May 12, Fall ~Aug 18. Fall 2026 cohort app window expected ~June 2026. BSN or MSN required. Personal statement (max 2 pages) + 2-year FT commitment. Monitor hhcareers.com starting May/June for Fall cohort posting.</td>
+<td class="col-apply"><a href="https://www.huntingtonhealth.org/education/residency-programs/nursing-residency/" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="32" data-region="SoCal" data-city="Multiple (Los Angeles, Orange County, San Diego, Inland Empire)" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="32"></td>
+<td class="col-hospital frozen-col"><a href="#32">Kaiser Permanente (SoCal)</a></td>
+<td class="col-program">New Graduate RN Residency Program</td>
+<td class="col-region">SoCal</td>
+<td class="col-city" title="Multiple (Los Angeles, Orange County, San Diego, Inland Empire)">LA, OC, etc</td>
+<td class="col-date">2026-04-24</td>
+<td class="col-date">2026-04-26</td>
+<td class="col-date">2026-08-17</td>
+<td class="col-rep stars">★★★★★</td>
+<td class="col-pay">$58-72/hr</td>
+<td class="col-len">12mo</td>
+<td class="col-specialties">Med-Surg, Telemetry, ICU, ED, L&amp;D, Pediatrics, OR</td>
+<td class="col-status"><select class="status-select" data-id="32"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">THREE 2026 COHORTS:
+• Cohort 1 (Mar 30): CLOSED. External apps 11/14-11/16/2025.
+• Cohort 2 (Aug 17 — TARGET): External apps 4/24-4/26/2026 (3 DAYS ONLY). CA RN license by 7/17. INFO SESSIONS: 4/1 (4pm PT), 4/9 (12pm PT), 4/14 (2pm PT).
+• Cohort 3 (Nov 8): External apps 8/9-8/11/2026. CA RN license by 9/29. INFO SESSIONS: 7/16 (3pm PT), 7/21 (2pm PT), 7/29 (12pm PT).
+Both Cohort 2 and 3 viable for May 2026 NCLEX taker. Cohort 2 app window (4/24-4/26) is BEFORE NCLEX but license deadline is 7/17 — apply first, pass NCLEX after. Apply via kaiserpermanentejobs.org.</td>
+<td class="col-apply"><a href="https://www.kaiserpermanentejobs.org/nurse-residency-career" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="33" data-region="SoCal" data-city="San Diego / La Jolla" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="33"></td>
+<td class="col-hospital frozen-col"><a href="#33">UC San Diego Health</a></td>
+<td class="col-program">New Graduate RN Residency Program</td>
+<td class="col-region">SoCal</td>
+<td class="col-city" title="San Diego / La Jolla">SD / La Jolla</td>
+<td class="col-date"></td>
+<td class="col-date"></td>
+<td class="col-date">2026-09-01</td>
+<td class="col-rep stars">★★★★★</td>
+<td class="col-pay">$52-65/hr</td>
+<td class="col-len">12mo</td>
+<td class="col-specialties">Med-Surg, ICU, ED, Cardiac, Neuro, Trauma, Oncology, Transplant</td>
+<td class="col-status"><select class="status-select" data-id="33"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">2 cohorts/year: March and September. March 2026 cohort apps opened 10/22/2025 (5 months before start). Sep 2026 cohort apps expected ~April 2026 (based on 5-month-ahead pattern). Apply for Clinical Nurse I positions at employment.ucsd.edu/nursing. Vizient/AACN residency auto-enrolled upon hire. Watch employment.ucsd.edu/new-grad for postings.</td>
+<td class="col-apply"><a href="https://employment.ucsd.edu/nursing" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="34" data-region="Bay Area" data-city="Palo Alto" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="34"></td>
+<td class="col-hospital frozen-col"><a href="#34">Lucile Packard Children&#39;s Hospital Stanford</a></td>
+<td class="col-program">New Graduate RN Residency Program</td>
+<td class="col-region">Bay Area</td>
+<td class="col-city" title="Palo Alto">Palo Alto</td>
+<td class="col-date">2026-03-06</td>
+<td class="col-date">2026-03-13</td>
+<td class="col-date">2026-08-17</td>
+<td class="col-rep stars">★★★★★</td>
+<td class="col-pay">$89.20/hr</td>
+<td class="col-len">12mo</td>
+<td class="col-specialties">NICU, PICU, Pediatric Med-Surg, Pediatric Cardiac, Pediatric ED, Pediatric Oncology, Pediatric Transplant</td>
+<td class="col-status"><select class="status-select" data-id="34"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">Info webinar: Feb 25, 2026 @ 5pm PST. Apps Mar 6-13. BSN req, 3.5 GPA. 2 rec letters + 250-word essay.</td>
+<td class="col-apply"><a href="https://careers.stanfordchildrens.org/rn-residency-program" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="35" data-region="SoCal" data-city="Orange" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="35"></td>
+<td class="col-hospital frozen-col"><a href="#35">Children&#39;s Hospital of Orange County (CHOC)</a></td>
+<td class="col-program">New Graduate Nurse Residency Program</td>
+<td class="col-region">SoCal</td>
+<td class="col-city" title="Orange">Orange</td>
+<td class="col-date">2026-05-16</td>
+<td class="col-date">2026-05-19</td>
+<td class="col-date">2026-08-01</td>
+<td class="col-rep stars">★★★★★</td>
+<td class="col-pay">$39-63/hr</td>
+<td class="col-len">16mo</td>
+<td class="col-specialties">NICU, PICU, Pediatric Med-Surg, Pediatric ED, Pediatric Cardiac, Pediatric Hematology/Oncology</td>
+<td class="col-status"><select class="status-select" data-id="35"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">16-MONTH PROGRAM (not 12). Aug 2026 cohort apps expected mid-May 2026 (3-DAY WINDOW). CONFIRMED PATTERN: 2025 Aug cohort apps were 5/16-5/19 (3 days). Feb 2026 cohort apps were 10/17-10/20/2025. Must have CA RN license 2 weeks before start. BSN required within 2 years of residency completion. Apply at choc.org/careers (positions listed among job openings). ANCC PTAP accredited.</td>
+<td class="col-apply"><a href="https://choc.org/careers/residency-training-programs/rn-residency/" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="36" data-region="SoCal" data-city="Whittier" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="36"></td>
+<td class="col-hospital frozen-col"><a href="#36">PIH Health Whittier Hospital</a></td>
+<td class="col-program">New Graduate Nurse Residency Program</td>
+<td class="col-region">SoCal</td>
+<td class="col-city" title="Whittier">Whittier</td>
+<td class="col-date">2026-03-09</td>
+<td class="col-date">2026-03-27</td>
+<td class="col-date">2026-05-18</td>
+<td class="col-rep stars">★★★☆☆</td>
+<td class="col-pay">$50.50/hr</td>
+<td class="col-len">12mo</td>
+<td class="col-specialties">Med-Surg, Telemetry, ICU, ED, L&amp;D, OR</td>
+<td class="col-status"><select class="status-select" data-id="36"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">3 UPCOMING COHORTS WITH CONFIRMED DATES:
+• May 18, 2026: app opens 3/9, closes 3/27 (19 DAYS AWAY)
+• Aug 10, 2026: app opens 6/1, closes 6/19
+• Oct 19, 2026: app opens 8/10, closes 8/28
+Current cohort started 2/23/2026. ~25-30 nurses per cohort. Apply via jobs.pihhealth.org (search &quot;New Grad Whittier&quot;). RN license needed 2 weeks before start but can apply without it. ANCC PTAP accredited. ADN accepted.</td>
+<td class="col-apply"><a href="https://www.pihhealth.org/healthcare-professionals/nurses/nursing-whittier/new-graduate-nurse-residency-program/" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="37" data-region="SoCal" data-city="Torrance" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="37"></td>
+<td class="col-hospital frozen-col"><a href="#37">Torrance Memorial Medical Center</a></td>
+<td class="col-program">New Graduate RN Residency Program</td>
+<td class="col-region">SoCal</td>
+<td class="col-city" title="Torrance">Torrance</td>
+<td class="col-date"></td>
+<td class="col-date"></td>
+<td class="col-date">2026-09-01</td>
+<td class="col-rep stars">★★★☆☆</td>
+<td class="col-pay">$48-58/hr</td>
+<td class="col-len">12mo</td>
+<td class="col-specialties">Med-Surg, Telemetry, ICU, ED, Cardiac</td>
+<td class="col-status"><select class="status-select" data-id="37"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">2 cohorts/year: Spring (early Mar) and Fall (early Sep). Fall 2026 cohort: apps typically open June/July 2026 for 1-2 WEEKS ONLY (closes based on volume). APPLICATION REQUIRES: Resume, degree, official transcripts, certifications/RN license info, 1-2 letters of recommendation, cover letter. Can apply WITHOUT RN license — must have it by start date. 12-month program: 18 weeks 1:1 precepted (transition to nights ~weeks 9-10). QSEN competencies framework. Cedars-Sinai affiliate. Allnurses thread t770310. Watch torrancememorial.org/about-us/nursing/new-graduate-nursing-residency/.</td>
+<td class="col-apply"><a href="https://www.torrancememorial.org/about-us/nursing/new-graduate-nursing-residency/" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="38" data-region="SoCal" data-city="Pomona" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="38"></td>
+<td class="col-hospital frozen-col"><a href="#38">Pomona Valley Hospital Medical Center</a></td>
+<td class="col-program">Versant RN Residency Program</td>
+<td class="col-region">SoCal</td>
+<td class="col-city" title="Pomona">Pomona</td>
+<td class="col-date"></td>
+<td class="col-date"></td>
+<td class="col-date">2026-09-01</td>
+<td class="col-rep stars">★★★☆☆</td>
+<td class="col-pay">$45-55/hr</td>
+<td class="col-len">12mo</td>
+<td class="col-specialties">Med-Surg, Telemetry, ICU, ED, L&amp;D, NICU</td>
+<td class="col-status"><select class="status-select" data-id="38"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">PROGRAM CONFIRMED — ANCC PTAP accredited, Versant model. Spring 2026 starts 3/23 (app was 1/5-1/12/2026, CLOSED). Fall 2026 cohort expected ~Sep 2026, apps likely Jun/Jul 2026. Apply for &#39;Clin 1&#39; positions (Requirement #18844). Contact: Shane Alday (909) 469-9490 x7107. Check pvhmc.org/careers-residency/residency-programs/rn-residency-program/how-to-apply/.</td>
+<td class="col-apply"><a href="https://www.pvhmc.org/careers-residency/residency-programs/rn-residency-program/how-to-apply/" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="39" data-region="SoCal" data-city="Duarte" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="39"></td>
+<td class="col-hospital frozen-col"><a href="#39">City of Hope National Medical Center</a></td>
+<td class="col-program">New Graduate RN Residency Program</td>
+<td class="col-region">SoCal</td>
+<td class="col-city" title="Duarte">Duarte</td>
+<td class="col-date">2026-06-01</td>
+<td class="col-date">2026-06-28</td>
+<td class="col-date">2026-09-01</td>
+<td class="col-rep stars">★★★★☆</td>
+<td class="col-pay">$50-62/hr</td>
+<td class="col-len">12mo</td>
+<td class="col-specialties">Oncology, BMT/Stem Cell Transplant, Surgical Oncology, ICU, Infusion</td>
+<td class="col-status"><select class="status-select" data-id="39"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">Alan &amp; Marlene Norton Nurse Residency Program. 2 cohorts/year: March and September (~35 new grads per cohort). CORRECTED PATTERN: Sep 2024 AllNurses thread started 6/4/2024 — apps open early-to-mid JUNE (not August). Apps open ~June 1, close ~June 28 (estimated from Sep 2024 pattern). March cohort apps open ~January. REQUIREMENTS: BSN required, BLS + ACLS, cover letter, resume, 2 letters of recommendation (5-doc upload limit on portal). Choose 2 unit preferences. Includes ONS supplemental coursework (cancer patient care). Apply via cityofhopejobs.org (search &#39;Clinical Nurse I&#39; or &#39;New Grad&#39;). AllNurses threads: t760115 (Sep 2024), t763753 (Mar 2025).</td>
+<td class="col-apply"><a href="https://www.cityofhope.org/locations/los-angeles/departments-and-services/nursing/alan-marlene-norton" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="40" data-region="SoCal" data-city="Los Angeles (West LA)" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="40"></td>
+<td class="col-hospital frozen-col"><a href="#40">VA Greater Los Angeles Healthcare System</a></td>
+<td class="col-program">Transition to Practice (TTP) Nurse Residency</td>
+<td class="col-region">SoCal</td>
+<td class="col-city" title="Los Angeles (West LA)">LA (West LA)</td>
+<td class="col-date">2026-04-01</td>
+<td class="col-date">2026-04-07</td>
+<td class="col-date">2026-09-01</td>
+<td class="col-rep stars">★★★★☆</td>
+<td class="col-pay">~$62K/yr stipend (PB-RNR) or regular GS nurse pay ~$55-70/hr (TTP)</td>
+<td class="col-len">12mo</td>
+<td class="col-specialties">Med-Surg, ICU, ED, Mental Health, Spinal Cord Injury, Geriatrics</td>
+<td class="col-status"><select class="status-select" data-id="40"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">Apps Apr 1-7 ONLY (7 days, 200 applicant cap). BSN req. CCNE-accredited. US citizen req.</td>
+<td class="col-apply"><a href="https://www.va.gov/greater-los-angeles-health-care/work-with-us/internships-and-fellowships/nurse-residency-programs/registered-nurse-residency-program/" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="41" data-region="Bay Area" data-city="San Jose" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="41"></td>
+<td class="col-hospital frozen-col"><a href="#41">Santa Clara Valley Medical Center</a></td>
+<td class="col-program">New Graduate RN Residency Program</td>
+<td class="col-region">Bay Area</td>
+<td class="col-city" title="San Jose">SJ</td>
+<td class="col-date"></td>
+<td class="col-date"></td>
+<td class="col-date">2026-08-01</td>
+<td class="col-rep stars">★★★★☆</td>
+<td class="col-pay">$65-80/hr</td>
+<td class="col-len">12mo</td>
+<td class="col-specialties">Med-Surg, ICU, ED, Trauma, Burn, Rehab, Psychiatric</td>
+<td class="col-status"><select class="status-select" data-id="41"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">ROLLING POSTINGS — no centralized residency app. Apply for Clinical Nurse I positions via governmentjobs.com/careers/santaclara. CURRENTLY OPEN (as of 2/18): CN1 Critical Care (multiple ICUs at VMC, O&#39;Connor, Saint Louise Regional), CN1 L&amp;D, CN1 ED, CN1 Unclassified (Specialty Training Programs). Feb Transfer recruitment: 2/1-2/13/2026. Need supplemental questionnaire + 2 Nursing Reference Request forms. ADN accepted (interim permit OK). County pension + excellent benefits. Level 1 trauma + only burn center in South Bay. Set up Job Interest Notifications on governmentjobs.com. AllNurses thread: allnurses.com/scvmc-new-grad-clinical-nurse-t763114.</td>
+<td class="col-apply"><a href="https://scvmc.scvh.org/careers/nursing" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="42" data-region="SoCal" data-city="West Covina / Covina / Glendora" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="42"></td>
+<td class="col-hospital frozen-col"><a href="#42">Emanate Health</a></td>
+<td class="col-program">New Graduate Nurse Residency Program</td>
+<td class="col-region">SoCal</td>
+<td class="col-city" title="West Covina / Covina / Glendora">W Covina+</td>
+<td class="col-date"></td>
+<td class="col-date"></td>
+<td class="col-date">Rolling</td>
+<td class="col-rep stars">★★★☆☆</td>
+<td class="col-pay">$45-55/hr</td>
+<td class="col-len">12mo</td>
+<td class="col-specialties">Med-Surg, Telemetry, ICU, ED, L&amp;D</td>
+<td class="col-status"><select class="status-select" data-id="42"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">YEAR-ROUND ACCEPTANCE — 5 cohorts/year. ACTIVE POSTINGS (as of 2/18, all posted 2/12/2026): R.N. II DOU Days &amp; Nights (QVH), R.N. II Mother Baby Days &amp; Nights (QVH), R.N. II NICU Days (QVH), R.N. II Emergency Nights (QVH), R.N. II DOU Days (FPH), R.N. II DOU Nights (ICH). PAY: $48.97-$74.88/hr. IMPORTANT: Apply to R.N. II postings (not R.N. I — naming is counterintuitive). 8-week MAP RN Residency. 3 hospitals: Queen of the Valley/QVH (West Covina), Inter-Community/ICH (Covina), Foothill Presbyterian/FPH (Glendora). Apply at jobs.emanatehealth.org. FRAUD WARNING: Verify postings through HR 626.858.8515.</td>
+<td class="col-apply"><a href="https://www.emanatehealth.org/careers/why-choose-us/rn-residency-program/" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="43" data-region="SoCal" data-city="Moreno Valley" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="43"></td>
+<td class="col-hospital frozen-col"><a href="#43">Riverside University Health System</a></td>
+<td class="col-program">New Graduate RN Residency Program</td>
+<td class="col-region">SoCal</td>
+<td class="col-city" title="Moreno Valley">Moreno Valley</td>
+<td class="col-date"></td>
+<td class="col-date"></td>
+<td class="col-date">Not Released (~Summer 2026)</td>
+<td class="col-rep stars">★★★☆☆</td>
+<td class="col-pay">$48-62/hr</td>
+<td class="col-len">12mo</td>
+<td class="col-specialties">Med-Surg, ICU, ED, L&amp;D, Behavioral Health</td>
+<td class="col-status"><select class="status-select" data-id="43"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">2025 postings closed May 18, 2025 (ED: 18-wk residency, ACCU: 16-wk, Peds: 8-wk). VERY NARROW 4-5 DAY APP WINDOWS on governmentjobs.com. 2026 new grad windows expected May-Jun 2026 for summer cohort starts. Check governmentjobs.com/careers/riverside/ruhsjobs frequently starting April 2026. CA RN license not required to interview but needed for onboarding. County benefits/pension.</td>
+<td class="col-apply"><a href="https://www.governmentjobs.com/careers/riverside/ruhsjobs" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="44" data-region="Central Valley" data-city="Visalia" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="44"></td>
+<td class="col-hospital frozen-col"><a href="#44">Kaweah Health</a></td>
+<td class="col-program">New Graduate Nurse Residency Program</td>
+<td class="col-region">Central Valley</td>
+<td class="col-city" title="Visalia">Visalia</td>
+<td class="col-date"></td>
+<td class="col-date"></td>
+<td class="col-date">Rolling</td>
+<td class="col-rep stars">★★★☆☆</td>
+<td class="col-pay">$42-52/hr</td>
+<td class="col-len">6mo</td>
+<td class="col-specialties">Med-Surg, Telemetry, ICU, ED, L&amp;D</td>
+<td class="col-status"><select class="status-select" data-id="44"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">6-month program. Rolling year-round hiring — apply, interview, get hired into home department first, then start residency. Spring 2026 residency app deadline was 11/21/2025 (PASSED). 156 open positions on Workday portal (as of 2/18). Apply at KaweahHealth.org/Careers (Workday). Contact: NurseRecruitment@KaweahHealth.org or (559) 624-2274 — EMAIL TO ASK about next residency start date for Summer/Fall 2026. Central Valley — lower cost of living, less competition.</td>
+<td class="col-apply"><a href="https://www.kaweahhealth.org/careers/nursing/new-graduate-residency-program" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="45" data-region="Bay Area" data-city="Fremont" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="45"></td>
+<td class="col-hospital frozen-col"><a href="#45">Washington Hospital Healthcare System</a></td>
+<td class="col-program">New Graduate RN Residency Program</td>
+<td class="col-region">Bay Area</td>
+<td class="col-city" title="Fremont">Fremont</td>
+<td class="col-date"></td>
+<td class="col-date"></td>
+<td class="col-date">Not Released (~Aug 2026)</td>
+<td class="col-rep stars">★★★☆☆</td>
+<td class="col-pay">$84.54/hr</td>
+<td class="col-len">12mo</td>
+<td class="col-specialties">Med-Surg, Telemetry, ICU, ED</td>
+<td class="col-status"><select class="status-select" data-id="45"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">BSN REQUIRED (ADN accepted if currently enrolled in BSN program). Feb 2026 cohort started (7-9 RNs selected). Very small cohorts. 6-month program: up to 40 hrs/wk, 8hr and 12hr shifts (days/eves/nights). After completion: transferred to Med-Surg unit at 0.9 FTE, 12-hour shifts. $84.54/hr confirmed. Next cohort likely ~Aug-Sep 2026 (estimated, based on ~6 month cycle). Watch whhs.com/careers and jobs.jobvite.com/washingtonhospital for postings.</td>
+<td class="col-apply"><a href="https://www.washingtonhealth.com/careers/" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="46" data-region="NorCal" data-city="Fairfield / Vacaville" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="46"></td>
+<td class="col-hospital frozen-col"><a href="#46">NorthBay Healthcare</a></td>
+<td class="col-program">New Graduate RN Residency Program</td>
+<td class="col-region">NorCal</td>
+<td class="col-city" title="Fairfield / Vacaville">Fairfield / Vacaville</td>
+<td class="col-date"></td>
+<td class="col-date"></td>
+<td class="col-date">Not Released (~Fall 2026)</td>
+<td class="col-rep stars">★★★☆☆</td>
+<td class="col-pay">$55-68/hr</td>
+<td class="col-len">12mo</td>
+<td class="col-specialties">Med-Surg, Telemetry, ICU, ED</td>
+<td class="col-status"><select class="status-select" data-id="46"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">2 cohorts/year: Spring and Fall. No 2026 dates published yet — program only accepts applications when position is actively posted. INTERNAL APPLICANTS PRIORITIZED. ADN/BSN/MSN all accepted. Watch NorthBay Oracle careers portal: erou.fa.us2.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1. Fall 2026 posting likely ~June-July 2026. AllNurses: allnurses.com/northbay-medical-center-new-grad-t766332.</td>
+<td class="col-apply"><a href="https://www.northbay.org/careers/nursing/nursing-residency-program.html" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="47" data-region="Central Valley" data-city="Bakersfield" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="47"></td>
+<td class="col-hospital frozen-col"><a href="#47">Kern Medical</a></td>
+<td class="col-program">New Graduate RN Residency Program</td>
+<td class="col-region">Central Valley</td>
+<td class="col-city" title="Bakersfield">Bakersfield</td>
+<td class="col-date"></td>
+<td class="col-date"></td>
+<td class="col-date">Rolling</td>
+<td class="col-rep stars">★★★☆☆</td>
+<td class="col-pay">$42-52/hr</td>
+<td class="col-len">12mo</td>
+<td class="col-specialties">Med-Surg, ICU, ED, L&amp;D, Behavioral Health</td>
+<td class="col-status"><select class="status-select" data-id="47"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">Vizient/AACN accredited nurse residency. Year-long program. APPEARS CONTINUOUS/ROLLING recruitment (no strict cohort windows). Must graduate within 90 days of hire. New hire premium: +6% above base pay. Apply via kernmedical.com/careers (search &quot;Registered Nurse&quot;). DIRECT CONTACTS: Elizabeth Oseguera elizabeth.oseguera@kernmedical.com, Staff Development staffdevelopment@kernmedical.com or (661) 326-2646. EMAIL TO ASK about current openings and 2026 start dates. County benefits/pension. Level II trauma. Bakersfield — lowest cost of living.</td>
+<td class="col-apply"><a href="https://www.kernmedical.com/academics/nurse-residency-program/" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="48" data-region="SoCal" data-city="Redlands" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="48"></td>
+<td class="col-hospital frozen-col"><a href="#48">Redlands Community Hospital</a></td>
+<td class="col-program">New Grad Registered Nurse Program</td>
+<td class="col-region">SoCal</td>
+<td class="col-city" title="Redlands">Redlands</td>
+<td class="col-date"></td>
+<td class="col-date"></td>
+<td class="col-date">2026-08-01</td>
+<td class="col-rep stars">★★★☆☆</td>
+<td class="col-pay">$42-52/hr</td>
+<td class="col-len">6mo</td>
+<td class="col-specialties">Med-Surg, Telemetry, ICU, ED</td>
+<td class="col-status"><select class="status-select" data-id="48"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">2 cohorts/year: February and August. Spring 2026 app opened 1/12/2026 (NCLEX must be scheduled by 1/31 — CLOSED). Aug 2026 cohort apps expected ~May-Jun 2026 — closes when max apps received. 48+ hrs didactic + 300-1,000 hrs preceptorship. Apply via redlandshospital.hcshiring.com. Contact: CTorre@redlandshospital.org or 909.335.5678.</td>
+<td class="col-apply"><a href="https://www.redlandshospital.org/nursing-excellence/new-grad-program/" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="49" data-region="SoCal" data-city="Arcadia" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="49"></td>
+<td class="col-hospital frozen-col"><a href="#49">USC Arcadia Hospital</a></td>
+<td class="col-program">RN New Grad Training Program</td>
+<td class="col-region">SoCal</td>
+<td class="col-city" title="Arcadia">Arcadia</td>
+<td class="col-date"></td>
+<td class="col-date"></td>
+<td class="col-date">2026-09-01</td>
+<td class="col-rep stars">★★★☆☆</td>
+<td class="col-pay">$48-58/hr</td>
+<td class="col-len">12mo</td>
+<td class="col-specialties">Med-Surg, Telemetry, ICU, ED</td>
+<td class="col-status"><select class="status-select" data-id="49"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">Program now under Keck Medicine of USC umbrella. 2 cohorts/year: April and September. Spring 2026 starts 4/7 (app closed 1/12). Sep 2026 cohort apps expected June/July 2026. Apply via usccareers.usc.edu — search &#39;Staff RN - New Graduate&#39;. Arcadia is one of four Keck facilities. BSN required, 3.0 GPA minimum.</td>
+<td class="col-apply"><a href="https://www.uscarcadiahospital.org/careers2/rn-new-grad-program/" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="50" data-region="SoCal" data-city="Ventura" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="50"></td>
+<td class="col-hospital frozen-col"><a href="#50">Ventura County Medical Center</a></td>
+<td class="col-program">RN Residency Program</td>
+<td class="col-region">SoCal</td>
+<td class="col-city" title="Ventura">Ventura</td>
+<td class="col-date"></td>
+<td class="col-date"></td>
+<td class="col-date">2026-07-01</td>
+<td class="col-rep stars">★★★☆☆</td>
+<td class="col-pay">$45-58/hr</td>
+<td class="col-len">12mo</td>
+<td class="col-specialties">Med-Surg, ICU, ED, L&amp;D</td>
+<td class="col-status"><select class="status-select" data-id="50"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">Summer 2026 cohort confirmed — app period closed (apps were 10/13-10/27/2025). JOIN WAITLIST NOW at nursingeducation.venturacounty.gov/rn-residency-program-waitlist/. Includes VCMC, Santa Paula Hospital, and Inpatient Psychiatric Unit. RN I: $44.58-46.85/hr, RN II: $52.07-69.62/hr. County benefits/pension. Contact: vcmc.nursinged@ventura.org / 805-652-6045. Next application cycle TBD.</td>
+<td class="col-apply"><a href="https://nursingeducation.venturacounty.gov/nursing-residency-program/" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="51" data-region="SoCal" data-city="Fountain Valley" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="51"></td>
+<td class="col-hospital frozen-col"><a href="#51">MemorialCare Orange Coast Medical Center</a></td>
+<td class="col-program">New Grad RN Residency Program</td>
+<td class="col-region">SoCal</td>
+<td class="col-city" title="Fountain Valley">Fountain Valley</td>
+<td class="col-date">2026-06-01</td>
+<td class="col-date">2026-06-05</td>
+<td class="col-date">2026-08-01</td>
+<td class="col-rep stars">★★★★☆</td>
+<td class="col-pay">$48-60/hr</td>
+<td class="col-len">12mo</td>
+<td class="col-specialties">Med-Surg, Telemetry, ICU, ED, L&amp;D, OR</td>
+<td class="col-status"><select class="status-select" data-id="51"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">CONFIRMED COHORT SCHEDULE: 3 cohorts/year — March (apps in Feb), August (apps in June), November (apps in Sep). March 2026 cohort: CLOSED. AUGUST 2026 cohort (TARGET): positions posted in JUNE 2026 for 5 DAYS ONLY. Nov 2026 cohort: positions posted in SEPTEMBER 2026. BSN preferred but must be enrolled in BSN program (Magnet). Positions posted per unit (search &quot;New Grad&quot; in title). Watch careers.memorialcare.org/recent-grads daily starting June 1. Contact Ashley: mhsrnnewgraduates@memorialcare.org.</td>
+<td class="col-apply"><a href="https://careers.memorialcare.org/recent-grads" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="52" data-region="SoCal" data-city="Laguna Hills" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="52"></td>
+<td class="col-hospital frozen-col"><a href="#52">MemorialCare Saddleback Medical Center</a></td>
+<td class="col-program">New Grad RN Residency Program</td>
+<td class="col-region">SoCal</td>
+<td class="col-city" title="Laguna Hills">Laguna Hills</td>
+<td class="col-date">2026-06-01</td>
+<td class="col-date">2026-06-05</td>
+<td class="col-date">2026-08-01</td>
+<td class="col-rep stars">★★★★☆</td>
+<td class="col-pay">$48-60/hr</td>
+<td class="col-len">12mo</td>
+<td class="col-specialties">Med-Surg, Telemetry, ICU, ED, L&amp;D, OR</td>
+<td class="col-status"><select class="status-select" data-id="52"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">CONFIRMED COHORT SCHEDULE: 3 cohorts/year — March (apps in Feb), August (apps in June), November (apps in Sep). March 2026 cohort: CLOSED. AUGUST 2026 cohort (TARGET): positions posted in JUNE 2026 for 5 DAYS ONLY. Nov 2026 cohort: positions posted in SEPTEMBER 2026. BSN preferred but must be enrolled in BSN program (Magnet). Positions posted per unit (search &quot;New Grad&quot; in title). Watch careers.memorialcare.org/recent-grads daily starting June 1. Contact Ashley: mhsrnnewgraduates@memorialcare.org.</td>
+<td class="col-apply"><a href="https://careers.memorialcare.org/recent-grads" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="53" data-region="SoCal" data-city="Downey" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="53"></td>
+<td class="col-hospital frozen-col"><a href="#53">PIH Health Downey Hospital</a></td>
+<td class="col-program">New Graduate Nurse Residency Program</td>
+<td class="col-region">SoCal</td>
+<td class="col-city" title="Downey">Downey</td>
+<td class="col-date"></td>
+<td class="col-date"></td>
+<td class="col-date">Not Released (~May 2026)</td>
+<td class="col-rep stars">★★★☆☆</td>
+<td class="col-pay">$45-55/hr</td>
+<td class="col-len">12mo</td>
+<td class="col-specialties">Med-Surg, Telemetry, ICU, ED, DOU, Float Pool</td>
+<td class="col-status"><select class="status-select" data-id="53"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">May 18 date is WHITTIER only. Downey had Feb 9, 2026 cohort. Next Downey cohort TBD (~quarterly).</td>
+<td class="col-apply"><a href="https://jobs.pihhealth.org" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="54" data-region="SoCal" data-city="Los Angeles" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="54"></td>
+<td class="col-hospital frozen-col"><a href="#54">PIH Health Good Samaritan Hospital</a></td>
+<td class="col-program">New Graduate Nurse Residency Program</td>
+<td class="col-region">SoCal</td>
+<td class="col-city" title="Los Angeles">LA</td>
+<td class="col-date"></td>
+<td class="col-date"></td>
+<td class="col-date">Not Released (~May 2026)</td>
+<td class="col-rep stars">★★★☆☆</td>
+<td class="col-pay">$45-55/hr</td>
+<td class="col-len">12mo</td>
+<td class="col-specialties">Med-Surg, Telemetry, ICU, ED, L&amp;D, Acute Rehab, CVDOU, DOU</td>
+<td class="col-status"><select class="status-select" data-id="54"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">May 18 date is WHITTIER only. Good Sam had Feb 9, 2026 cohort. Next Good Sam cohort TBD (~quarterly).</td>
+<td class="col-apply"><a href="https://jobs.pihhealth.org" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="55" data-region="SoCal" data-city="Glendale" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="55"></td>
+<td class="col-hospital frozen-col"><a href="#55">Adventist Health Glendale</a></td>
+<td class="col-program">New Grad Nurse Residency</td>
+<td class="col-region">SoCal</td>
+<td class="col-city" title="Glendale">Glendale</td>
+<td class="col-date"></td>
+<td class="col-date"></td>
+<td class="col-date">Not Released</td>
+<td class="col-rep stars">★★★☆☆</td>
+<td class="col-pay">$45-55/hr</td>
+<td class="col-len">12mo</td>
+<td class="col-specialties">Med-Surg, Telemetry, ICU, ED, L&amp;D</td>
+<td class="col-status"><select class="status-select" data-id="55"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">SEPARATE APPLICATION per campus. DATES NOT YET RELEASED for 2026. 10-week rotation with preceptor. Part of system-wide 1-year structured program. Apply via adventisthealth.org/glendale/residency-programs/ or Oracle career portal. Join Talent Community at adventisthealth.org/careers for alerts. Contact Glendale HR directly for 2026 dates. AllNurses t769803.</td>
+<td class="col-apply"><a href="https://www.adventisthealth.org/careers/internships-and-residencies/nurse-residency-program" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="56" data-region="NorCal" data-city="Roseville" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="56"></td>
+<td class="col-hospital frozen-col"><a href="#56">Adventist Health Roseville</a></td>
+<td class="col-program">New Grad Nurse Residency</td>
+<td class="col-region">NorCal</td>
+<td class="col-city" title="Roseville">Roseville</td>
+<td class="col-date"></td>
+<td class="col-date"></td>
+<td class="col-date">Not Released</td>
+<td class="col-rep stars">★★★☆☆</td>
+<td class="col-pay">$42-52/hr</td>
+<td class="col-len">12mo</td>
+<td class="col-specialties">Med-Surg, Telemetry, ICU, ED</td>
+<td class="col-status"><select class="status-select" data-id="56"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">SEPARATE APPLICATION per campus. DATES NOT YET RELEASED for 2026. NorCal location — lower cost of living than Bay Area. Recent grad (&lt;1 year), RN license required by designated deadline. Apply via Oracle career portal. Join Talent Community at adventisthealth.org/careers for alerts. Contact Roseville facility directly for 2026 dates. AllNurses t769803.</td>
+<td class="col-apply"><a href="https://www.adventisthealth.org/careers/internships-and-residencies/nurse-residency-program" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr><tr data-id="57" data-region="Central Valley" data-city="Hanford / Bakersfield" data-status="Not Started">
+<td class="col-check"><input type="checkbox" class="compare-check" value="57"></td>
+<td class="col-hospital frozen-col"><a href="#57">Adventist Health Central CA (Hanford / Bakersfield)</a></td>
+<td class="col-program">New Grad Nurse Residency</td>
+<td class="col-region">Central Valley</td>
+<td class="col-city" title="Hanford / Bakersfield">Hanford / Bakersfield</td>
+<td class="col-date"></td>
+<td class="col-date"></td>
+<td class="col-date">Not Released</td>
+<td class="col-rep stars">★★★☆☆</td>
+<td class="col-pay">$37-48/hr</td>
+<td class="col-len">12mo</td>
+<td class="col-specialties">Med-Surg, Telemetry, ICU, ED, L&amp;D</td>
+<td class="col-status"><select class="status-select" data-id="57"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
+<td class="col-notes">SEPARATE APPLICATION per campus — Central CA Network runs its own residency classes separate from SoCal. DATES NOT YET RELEASED for 2026. Bakersfield campus confirmed to have active RN Residency Program. Covers Adventist Health Hanford and Bakersfield locations. Lowest cost of living among Adventist locations. Apply via Oracle career portal. Join Talent Community at adventisthealth.org/careers for alerts. Contact Hanford/Bakersfield facilities directly for 2026 dates.</td>
+<td class="col-apply"><a href="https://www.adventisthealth.org/careers/internships-and-residencies/nurse-residency-program" target="_blank" class="apply-link">Apply &rarr;</a></td>
+</tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <footer class="container">
+        <small>CA New Grad RN Program Tracker &bull; NCLEX Target: May 2026</small>
+    </footer>
+
+    <script>
+// ===== Static site JS (no backend) =====
+
+const statusClasses = {
+    'Not Started': '',
+    'In Progress': 'row-in-progress',
+    'Submitted': 'row-submitted',
+    'Interview': 'row-interview',
+    'Offer': 'row-offer',
+    'Rejected': 'row-rejected'
+};
+
+function applyRowStatus(row, status) {
+    Object.values(statusClasses).forEach(function(cls) {
+        if (cls) row.classList.remove(cls);
+    });
+    if (statusClasses[status]) row.classList.add(statusClasses[status]);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Apply initial row colors
+    document.querySelectorAll('.status-select').forEach(function(sel) {
+        var row = sel.closest('tr');
+        if (row) applyRowStatus(row, sel.value);
+    });
+
+    // Status dropdowns (local only, no backend)
+    document.querySelectorAll('.status-select').forEach(function(sel) {
+        sel.addEventListener('change', function() {
+            var row = this.closest('tr');
+            if (row) {
+                applyRowStatus(row, this.value);
+                row.dataset.status = this.value;
+                showToast('Status updated (local only)');
+            }
+        });
+    });
+
+    // Select all checkbox
+    var selectAll = document.getElementById('select-all');
+    if (selectAll) {
+        selectAll.addEventListener('change', function() {
+            var checked = this.checked;
+            document.querySelectorAll('.sheet tbody tr:not([style*="display: none"]) .compare-check').forEach(function(cb) {
+                cb.checked = checked;
+            });
+            updateCompareBtn();
+        });
+    }
+
+    document.querySelectorAll('.compare-check').forEach(function(cb) {
+        cb.addEventListener('change', updateCompareBtn);
+    });
+
+    // Search
+    var searchInput = document.querySelector('.sheet-filters input[type="search"]');
+    if (searchInput) {
+        searchInput.addEventListener('input', debounce(filterTable, 150));
+    }
+
+    // Filter dropdowns
+    document.querySelectorAll('.sheet-filters select[data-instant]').forEach(function(sel) {
+        sel.addEventListener('change', filterTable);
+    });
+
+    // Keyboard: / to search, Esc to blur
+    document.addEventListener('keydown', function(e) {
+        if (e.key === '/' && !isEditing(e.target)) {
+            var si = document.querySelector('.sheet-filters input[type="search"]');
+            if (si) { e.preventDefault(); si.focus(); si.select(); }
+        }
+        if (e.key === 'Escape') document.activeElement.blur();
+    });
+
+    highlightDeadlines();
+});
+
+function debounce(fn, ms) {
+    var timer;
+    return function() { clearTimeout(timer); timer = setTimeout(fn, ms); };
+}
+
+function isEditing(el) {
+    var tag = el.tagName.toLowerCase();
+    return tag === 'input' || tag === 'textarea' || tag === 'select' || el.isContentEditable;
+}
+
+function filterTable() {
+    var searchInput = document.querySelector('.sheet-filters input[type="search"]');
+    var regionSelect = document.querySelector('.sheet-filters select[data-instant="region"]');
+    var citySelect = document.querySelector('.sheet-filters select[data-instant="city"]');
+    var statusSelect = document.querySelector('.sheet-filters select[data-instant="status"]');
+    var cohortStatusSelect = document.querySelector('.sheet-filters select[data-instant="cohort-status"]');
+
+    var query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+    var region = regionSelect ? regionSelect.value : '';
+    var city = citySelect ? citySelect.value : '';
+    var status = statusSelect ? statusSelect.value : '';
+    var cohortStatus = cohortStatusSelect ? cohortStatusSelect.value : '';
+
+    var rows = document.querySelectorAll('.sheet tbody tr');
+    var visibleCount = 0;
+
+    rows.forEach(function(row) {
+        var show = true;
+        if (query) {
+            var text = row.textContent.toLowerCase();
+            if (text.indexOf(query) === -1) show = false;
+        }
+        if (show && region) {
+            var regionCell = row.querySelector('.col-region');
+            if (regionCell && regionCell.textContent.trim() !== region) show = false;
+        }
+        if (show && city) {
+            if (row.dataset.city !== city) show = false;
+        }
+        if (show && status) {
+            var statusSel = row.querySelector('.status-select');
+            if (statusSel && statusSel.value !== status) show = false;
+        }
+        if (show && cohortStatus) {
+            var dateCells = row.querySelectorAll('.col-date');
+            var cohortCell = dateCells.length >= 3 ? dateCells[2] : null;
+            var cohortText = cohortCell ? cohortCell.textContent.trim().toLowerCase() : '';
+            var isDate = /^\d{4}-\d{2}-\d{2}/.test(cohortText);
+            if (cohortStatus === 'released' && !isDate) show = false;
+            if (cohortStatus === 'not-released' && (isDate || cohortText.indexOf('rolling') !== -1 || cohortText.indexOf('paused') !== -1)) show = false;
+            if (cohortStatus === 'rolling' && cohortText.indexOf('rolling') === -1) show = false;
+            if (cohortStatus === 'paused' && cohortText.indexOf('paused') === -1) show = false;
+        }
+        row.style.display = show ? '' : 'none';
+        if (show) visibleCount++;
+    });
+
+    var countEl = document.querySelector('.sheet-count');
+    if (countEl) countEl.textContent = visibleCount + ' of ' + rows.length + ' rows';
+}
+
+function highlightDeadlines() {
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    document.querySelectorAll('.sheet tbody tr').forEach(function(row) {
+        var dateCells = row.querySelectorAll('.col-date');
+        if (dateCells.length >= 2) {
+            var closeCell = dateCells[1];
+            var dateStr = closeCell.textContent.trim();
+            if (dateStr) {
+                var closeDate = parseDate(dateStr);
+                if (closeDate) {
+                    var daysLeft = Math.ceil((closeDate - today) / (1000 * 60 * 60 * 24));
+                    if (daysLeft < 0) {
+                        closeCell.innerHTML = dateStr + ' <span class="deadline-past">closed</span>';
+                    } else if (daysLeft <= 7) {
+                        closeCell.innerHTML = dateStr + ' <span class="deadline-urgent">' + daysLeft + 'd</span>';
+                        row.classList.add('urgent-row');
+                    } else if (daysLeft <= 14) {
+                        closeCell.innerHTML = dateStr + ' <span class="deadline-warning">' + daysLeft + 'd</span>';
+                        row.classList.add('warning-row');
+                    } else if (daysLeft <= 30) {
+                        closeCell.innerHTML = dateStr + ' <span class="deadline-soon">' + daysLeft + 'd</span>';
+                    }
+                }
+            }
+
+            var openCell = dateCells[0];
+            var openStr = openCell.textContent.trim();
+            if (openStr && dateStr) {
+                var openDate = parseDate(openStr);
+                var closeDate2 = parseDate(dateStr);
+                if (openDate && closeDate2 && openDate <= today && closeDate2 >= today) {
+                    openCell.innerHTML = openStr + ' <span class="badge-open">OPEN</span>';
+                }
+            }
+        }
+    });
+}
+
+function parseDate(str) {
+    if (!str) return null;
+    var parts = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (parts) return new Date(parseInt(parts[1]), parseInt(parts[2]) - 1, parseInt(parts[3]));
+    parts = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+    if (parts) return new Date(parseInt(parts[3]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+    return null;
+}
+
+function updateCompareBtn() {
+    var btn = document.getElementById('compare-btn');
+    if (!btn) return;
+    var checked = document.querySelectorAll('.compare-check:checked');
+    btn.disabled = checked.length < 2;
+    btn.textContent = checked.length >= 2 ? 'Compare ' + checked.length : 'Compare';
+}
+
+function goCompare() {
+    showToast('Compare view not available in static version');
+}
+
+function exportCSV() {
+    // Build CSV from table data
+    var rows = document.querySelectorAll('.sheet tbody tr');
+    var csv = 'Hospital,Program,Region,City,App Open,App Close,Cohort,Rep,Pay,Length,Specialties,Status,Notes\n';
+    rows.forEach(function(row) {
+        var cells = row.querySelectorAll('td');
+        if (cells.length >= 14) {
+            var vals = [
+                cells[1].textContent.trim(),
+                cells[2].textContent.trim(),
+                cells[3].textContent.trim(),
+                row.dataset.city || cells[4].textContent.trim(),
+                cells[5].textContent.trim(),
+                cells[6].textContent.trim(),
+                cells[7].textContent.trim(),
+                cells[8].textContent.trim(),
+                cells[9].textContent.trim(),
+                cells[10].textContent.trim(),
+                cells[11].textContent.trim(),
+                cells[12].querySelector('select') ? cells[12].querySelector('select').value : '',
+                cells[13].textContent.trim()
+            ];
+            csv += vals.map(function(v) { return '"' + v.replace(/"/g, '""') + '"'; }).join(',') + '\n';
+        }
+    });
+    var blob = new Blob([csv], {type: 'text/csv'});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'ca_rn_programs.csv';
+    a.click();
+}
+
+function showToast(message) {
+    var toast = document.querySelector('.toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.className = 'toast';
+        document.body.appendChild(toast);
+    }
+    toast.textContent = message;
+    toast.classList.add('show');
+    setTimeout(function() { toast.classList.remove('show'); }, 2500);
+}
+    </script>
+</body>
+</html>
