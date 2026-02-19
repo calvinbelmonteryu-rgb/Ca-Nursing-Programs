@@ -843,6 +843,18 @@ a.bar-link:hover { background: #f3f4f6; }
     transform: translateY(0);
 }
 
+/* ===== SELECTED ROW ===== */
+.sheet tbody tr.selected-row {
+    outline: 2px solid #3b82f6;
+    outline-offset: -2px;
+    background: #eff6ff !important;
+}
+
+.sheet tbody tr.selected-row .frozen-col,
+.sheet tbody tr.selected-row .col-check {
+    background: #eff6ff !important;
+}
+
 /* ===== OVERFLOW ===== */
 .overflow-auto { overflow-x: auto; }
 
@@ -1388,4 +1400,20 @@ footer {
 
 .clear-filter:hover {
     background: #fef2f2 !important;
+}
+
+/* ===== PRINT STYLES ===== */
+@media print {
+    nav, .sheet-toolbar, .col-check, .col-apply, footer, .modal-overlay, .toast {
+        display: none !important;
+    }
+
+    .sheet-page { padding: 0 !important; }
+    .sheet-wrapper { overflow: visible; max-height: none; border: none; }
+    .sheet { font-size: 0.65rem; }
+    .sheet th, .sheet td { padding: 2px 4px; border: 1px solid #999; }
+    .frozen-col { position: static; box-shadow: none; }
+    .col-check { display: none; }
+
+    body { font-size: 10pt; }
 }

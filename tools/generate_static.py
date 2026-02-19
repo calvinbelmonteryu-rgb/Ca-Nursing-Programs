@@ -447,13 +447,35 @@ document.addEventListener('DOMContentLoaded', function() {{
         sel.addEventListener('change', filterTable);
     }});
 
-    // Keyboard: / to search, Esc to blur
+    // Keyboard: / to search, j/k to navigate rows, Enter to open detail
+    var selectedRowIdx = -1;
     document.addEventListener('keydown', function(e) {{
         if (e.key === '/' && !isEditing(e.target)) {{
             var si = document.querySelector('.sheet-filters input[type="search"]');
             if (si) {{ e.preventDefault(); si.focus(); si.select(); }}
         }}
         if (e.key === 'Escape') document.activeElement.blur();
+
+        if (!isEditing(e.target)) {{
+            var visibleRows = Array.from(document.querySelectorAll('.sheet tbody tr')).filter(function(r) {{
+                return r.style.display !== 'none';
+            }});
+
+            if (e.key === 'j' || e.key === 'ArrowDown') {{
+                e.preventDefault();
+                selectedRowIdx = Math.min(selectedRowIdx + 1, visibleRows.length - 1);
+                highlightSelectedRow(visibleRows, selectedRowIdx);
+            }}
+            if (e.key === 'k' || e.key === 'ArrowUp') {{
+                e.preventDefault();
+                selectedRowIdx = Math.max(selectedRowIdx - 1, 0);
+                highlightSelectedRow(visibleRows, selectedRowIdx);
+            }}
+            if (e.key === 'Enter' && selectedRowIdx >= 0 && selectedRowIdx < visibleRows.length) {{
+                var id = parseInt(visibleRows[selectedRowIdx].dataset.id);
+                if (id) showDetail(id);
+            }}
+        }}
     }});
 
     highlightDeadlines();
@@ -905,6 +927,16 @@ function exportCSV() {{
     a.download = 'ca_rn_programs.csv';
     a.click();
     showToast('CSV exported');
+}}
+
+function highlightSelectedRow(rows, idx) {{
+    document.querySelectorAll('.sheet tbody tr.selected-row').forEach(function(r) {{
+        r.classList.remove('selected-row');
+    }});
+    if (idx >= 0 && idx < rows.length) {{
+        rows[idx].classList.add('selected-row');
+        rows[idx].scrollIntoView({{ block: 'nearest' }});
+    }}
 }}
 
 function toggleColMenu() {{
