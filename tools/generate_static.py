@@ -460,6 +460,7 @@ def generate():
         <div class="weekly-digest" id="weekly-digest" style="display:none"></div>
         <div class="status-summary" id="status-summary"></div>
         <div class="streak-badge" id="streak-badge" style="display:none"></div>
+        <div class="cohort-countdowns" id="cohort-countdowns" style="display:none"></div>
         <div class="fav-dashboard" id="fav-dashboard" style="display:none"></div>
 
         <div class="quick-chips">
@@ -1105,6 +1106,46 @@ function renderStreak() {{
     badge.className = 'streak-badge' + (streak >= 7 ? ' streak-hot' : streak >= 3 ? ' streak-warm' : '');
 }}
 
+function renderCohortCountdowns() {{
+    var container = document.getElementById('cohort-countdowns');
+    if (!container) return;
+    var savedStatuses = loadSavedStatuses();
+    var today = new Date(); today.setHours(0,0,0,0);
+
+    var active = PROGRAMS.filter(function(p) {{
+        var st = savedStatuses[p.id] || p.application_status || 'Not Started';
+        return (st === 'Submitted' || st === 'Interview' || st === 'Offer') && p.cohort_start;
+    }}).map(function(p) {{
+        var cohort = parseDate(p.cohort_start);
+        var st = savedStatuses[p.id] || p.application_status || 'Not Started';
+        if (!cohort || cohort < today) return null;
+        var days = Math.ceil((cohort - today) / 86400000);
+        return {{ prog: p, days: days, status: st, date: cohort }};
+    }}).filter(Boolean).sort(function(a, b) {{ return a.days - b.days; }});
+
+    if (active.length === 0) {{
+        container.style.display = 'none';
+        return;
+    }}
+
+    var stColors = {{ 'Submitted': '#3b82f6', 'Interview': '#a78bfa', 'Offer': '#22c55e' }};
+    var html = '<div class="cohort-header"><span>&#127891; Your Upcoming Cohorts</span></div>';
+    html += '<div class="cohort-cards">';
+    active.slice(0, 4).forEach(function(item) {{
+        var color = stColors[item.status] || '#6b7280';
+        html += '<div class="cohort-card" onclick="showDetail(' + item.prog.id + ')" style="border-left-color:' + color + '">';
+        html += '<div class="cohort-days">' + item.days + '<small>days</small></div>';
+        html += '<div class="cohort-info">';
+        html += '<div class="cohort-name">' + escHtml(item.prog.hospital) + '</div>';
+        html += '<div class="cohort-meta"><span class="cohort-status" style="color:' + color + '">' + item.status + '</span>';
+        html += '<span>' + item.date.toLocaleDateString('en-US', {{month:'short', day:'numeric', year:'numeric'}}) + '</span></div>';
+        html += '</div></div>';
+    }});
+    html += '</div>';
+    container.innerHTML = html;
+    container.style.display = '';
+}}
+
 function renderWeeklyDigest() {{
     var container = document.getElementById('weekly-digest');
     if (!container) return;
@@ -1677,6 +1718,7 @@ document.addEventListener('DOMContentLoaded', function() {{
     renderStatusSummary();
     renderWeeklyDigest();
     renderStreak();
+    renderCohortCountdowns();
     renderFavDashboard();
     renderRecentViewed();
     renderUrgencyBanner();
