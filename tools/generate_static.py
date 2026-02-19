@@ -276,6 +276,19 @@ def generate():
         "last_updated": p.get("last_updated", ""),
     } for p in programs])
 
+    # PWA manifest
+    import urllib.parse
+    manifest_data = {
+        "name": "CA New Grad RN Tracker",
+        "short_name": "RN Tracker",
+        "start_url": ".",
+        "display": "standalone",
+        "background_color": "#ffffff",
+        "theme_color": "#1e293b",
+        "description": f"Track {total} California new graduate RN residency programs"
+    }
+    manifest_json = urllib.parse.quote(json.dumps(manifest_data), safe='')
+
     nclex_stat = f"<strong>{nclex_days}d</strong>" if nclex_days is not None else nclex_date
     urgent_class = ' stat-highlight-red' if urgent > 0 else ''
     urgent_text = f" ({urgent} urgent)" if urgent > 0 else ""
@@ -288,6 +301,12 @@ def generate():
     <meta name="description" content="Track {total} California new graduate RN residency programs — application dates, deadlines, pay rates, and requirements.">
     <title>CA New Grad RN Tracker</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏥</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏥</text></svg>">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="RN Tracker">
+    <meta name="theme-color" content="#1e293b">
+    <link rel="manifest" href="data:application/json,{manifest_json}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
     <style>
 {css}
@@ -540,6 +559,7 @@ def generate():
                     <div class="shortcut-row"><kbd>/</kbd> <span>Focus search</span></div>
                     <div class="shortcut-row"><kbd>f</kbd> <span>Toggle favorite (selected row)</span></div>
                     <div class="shortcut-row"><kbd>d</kbd> <span>Toggle dark mode</span></div>
+                    <div class="shortcut-row"><kbd>1</kbd>-<kbd>4</kbd> <span>Switch views</span></div>
                     <div class="shortcut-row"><kbd>?</kbd> <span>Show this help</span></div>
                 </div>
                 <div class="shortcut-group">
@@ -561,8 +581,8 @@ def generate():
     </div>
 
     <footer class="container">
-        <small>{total} programs across {len(regions)} regions &bull; Updated {today.strftime("%b %d, %Y")}</small>
-        <small class="shortcuts-hint"><kbd>/</kbd> Search &bull; <kbd>j</kbd><kbd>k</kbd> Navigate &bull; <kbd>Enter</kbd> Details &bull; <kbd>&larr;</kbd><kbd>&rarr;</kbd> Prev/Next &bull; <kbd>d</kbd> Dark mode &bull; <kbd>Esc</kbd> Close</small>
+        <small>{total} programs across {len(regions)} regions &bull; Data updated {metadata.get('last_updated', today.strftime('%Y-%m-%d'))} &bull; Generated {today.strftime("%b %d, %Y")}</small>
+        <small class="shortcuts-hint"><kbd>/</kbd> Search &bull; <kbd>j</kbd><kbd>k</kbd> Navigate &bull; <kbd>Enter</kbd> Details &bull; <kbd>f</kbd> Favorite &bull; <kbd>1</kbd>-<kbd>4</kbd> Views &bull; <kbd>d</kbd> Dark &bull; <kbd>?</kbd> Help</small>
     </footer>
 
     <button class="back-to-top" id="back-to-top" onclick="window.scrollTo({{top:0,behavior:'smooth'}})" title="Back to top">&uarr;</button>
@@ -871,6 +891,10 @@ document.addEventListener('DOMContentLoaded', function() {{
                 }}
             }}
             if (e.key === '?') {{ toggleShortcutHelp(); return; }}
+            if (e.key === '1') {{ showView('table'); return; }}
+            if (e.key === '2') {{ showView('pipeline'); return; }}
+            if (e.key === '3') {{ showView('calendar'); return; }}
+            if (e.key === '4') {{ showView('stats'); return; }}
 
             // Modal prev/next with arrow keys
             var detailModal = document.getElementById('detail-modal');
@@ -2029,9 +2053,19 @@ function showDetail(id) {{
     }});
     var statusSelCls = selectStatusClasses[currentStatus] || '';
 
+    // Readiness score
+    var readinessScore = 0;
+    var statusPoints2 = {{ 'Not Started': 0, 'In Progress': 10, 'Submitted': 30, 'Interview': 35, 'Offer': 40, 'Rejected': 0 }};
+    readinessScore += (statusPoints2[currentStatus] || 0);
+    readinessScore += Math.round(savedChecklist.length / 6 * 40);
+    if (currentNotes && currentNotes.trim()) readinessScore += 10;
+    if (loadFavorites().indexOf(p.id) !== -1) readinessScore += 10;
+    var readinessColor = readinessScore >= 70 ? '#22c55e' : readinessScore >= 40 ? '#f59e0b' : '#ef4444';
+
     html += '<div class="detail-meta"><span class="stars">' + stars + '</span>';
     html += ' <span class="' + bsnCls + '">' + escHtml(p.bsn_required || 'N/A') + ' BSN</span>';
     html += ' <select class="modal-status-select ' + statusSelCls + '" id="modal-status" data-id="' + p.id + '">' + statusOpts + '</select>';
+    html += ' <span class="readiness-badge" style="background:' + readinessColor + '">' + readinessScore + '% ready</span>';
     if (p.last_updated) {{
         html += ' <span class="detail-updated">Updated: ' + escHtml(p.last_updated) + '</span>';
     }}

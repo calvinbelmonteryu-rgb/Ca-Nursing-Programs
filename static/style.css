@@ -1845,6 +1845,16 @@ footer small {
     background: var(--border);
 }
 
+/* Readiness badge */
+.readiness-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: white;
+}
+
 /* Tags */
 .tag-container {
     display: flex;
