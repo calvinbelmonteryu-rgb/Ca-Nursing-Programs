@@ -299,7 +299,7 @@ def generate():
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Track {total} California new graduate RN residency programs — application dates, deadlines, pay rates, and requirements.">
-    <title>CA New Grad RN Tracker</title>
+    <title>({nclex_days if nclex_days is not None else '?'}d to NCLEX) CA New Grad RN Tracker</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏥</text></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏥</text></svg>">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -585,6 +585,7 @@ def generate():
                     <div class="shortcut-row"><kbd>/</kbd> <span>Focus search</span></div>
                     <div class="shortcut-row"><kbd>f</kbd> <span>Toggle favorite (selected row)</span></div>
                     <div class="shortcut-row"><kbd>d</kbd> <span>Toggle dark mode</span></div>
+                    <div class="shortcut-row"><kbd>n</kbd> <span>Toggle notifications</span></div>
                     <div class="shortcut-row"><kbd>1</kbd>-<kbd>4</kbd> <span>Switch views</span></div>
                     <div class="shortcut-row"><kbd>?</kbd> <span>Show this help</span></div>
                 </div>
@@ -616,7 +617,7 @@ def generate():
 
     <footer class="container">
         <small>{total} programs across {len(regions)} regions &bull; Data updated {metadata.get('last_updated', today.strftime('%Y-%m-%d'))} &bull; Generated {today.strftime("%b %d, %Y")}</small>
-        <small class="shortcuts-hint"><kbd>/</kbd> Search &bull; <kbd>j</kbd><kbd>k</kbd> Navigate &bull; <kbd>Enter</kbd> Details &bull; <kbd>f</kbd> Favorite &bull; <kbd>1</kbd>-<kbd>4</kbd> Views &bull; <kbd>d</kbd> Dark &bull; <kbd>?</kbd> Help</small>
+        <small class="shortcuts-hint"><kbd>/</kbd> Search &bull; <kbd>j</kbd><kbd>k</kbd> Navigate &bull; <kbd>Enter</kbd> Details &bull; <kbd>f</kbd> Favorite &bull; <kbd>n</kbd> Notify &bull; <kbd>1</kbd>-<kbd>4</kbd> Views &bull; <kbd>d</kbd> Dark &bull; <kbd>?</kbd> Help</small>
     </footer>
 
     <button class="back-to-top" id="back-to-top" onclick="window.scrollTo({{top:0,behavior:'smooth'}})" title="Back to top">&uarr;</button>
@@ -653,6 +654,10 @@ function applyRowStatus(row, status) {{
         Object.values(selectStatusClasses).forEach(function(c) {{ sel.classList.remove(c); }});
         if (selectStatusClasses[status]) sel.classList.add(selectStatusClasses[status]);
     }}
+    // Flash animation
+    row.classList.remove('row-flash');
+    void row.offsetHeight; // force reflow
+    row.classList.add('row-flash');
 }}
 
 // localStorage helpers
@@ -958,6 +963,7 @@ document.addEventListener('DOMContentLoaded', function() {{
 
         if (!isEditing(e.target)) {{
             // Keyboard shortcuts
+            if (e.key === 'n') {{ toggleNotifications(); return; }}
             if (e.key === 'd') {{ toggleTheme(); return; }}
             if (e.key === 'f') {{
                 // Toggle favorite on selected row
@@ -1010,6 +1016,7 @@ document.addEventListener('DOMContentLoaded', function() {{
     }});
 
     highlightDeadlines();
+    markNotesIndicators();
     renderFavButtons();
     updateFavCount();
     renderStatusSummary();
@@ -1627,6 +1634,22 @@ function highlightDeadlines() {{
                 if (openDate && closeDate2 && openDate <= today && closeDate2 >= today) {{
                     openCell.innerHTML = openDisplay + ' <span class="badge-open">OPEN</span>';
                 }}
+            }}
+        }}
+    }});
+}}
+
+function markNotesIndicators() {{
+    var notes = loadSavedNotes();
+    document.querySelectorAll('.sheet tbody tr').forEach(function(row) {{
+        var id = row.dataset.id;
+        if (id && notes[id] && notes[id].trim()) {{
+            var hospCell = row.querySelector('.hospital-link');
+            if (hospCell && !hospCell.querySelector('.has-notes-dot')) {{
+                var dot = document.createElement('span');
+                dot.className = 'has-notes-dot';
+                dot.title = 'Has notes';
+                hospCell.appendChild(dot);
             }}
         }}
     }});

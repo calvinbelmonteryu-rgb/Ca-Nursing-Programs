@@ -1081,6 +1081,26 @@ a.bar-link:hover { background: #f3f4f6; }
     background: #eff6ff !important;
 }
 
+/* Row flash on status change */
+@keyframes rowFlash {
+    0% { background: rgba(59, 130, 246, 0.2); }
+    100% { background: transparent; }
+}
+.row-flash {
+    animation: rowFlash 0.8s ease-out;
+}
+
+/* Notes indicator */
+.has-notes-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #3b82f6;
+    margin-left: 4px;
+    vertical-align: middle;
+}
+
 /* ===== ROW PREVIEW ===== */
 .row-preview {
     position: absolute;
