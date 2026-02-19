@@ -5042,6 +5042,80 @@ mark.search-highlight {
     border-color: var(--accent, #3b82f6);
 }
 
+/* ===== STATUS HISTORY ===== */
+.status-history {
+    margin: 8px 0;
+    font-size: 0.78rem;
+}
+
+.status-history summary {
+    cursor: pointer;
+    color: #6b7280;
+    font-weight: 600;
+}
+
+.status-history summary:hover {
+    color: var(--accent, #2563eb);
+}
+
+.sh-entries {
+    padding: 6px 0;
+}
+
+.sh-entry {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 0;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.sh-status {
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.sh-time {
+    color: #9ca3af;
+    font-size: 0.72rem;
+}
+
+[data-theme="dark"] .sh-entry {
+    border-bottom-color: #374151;
+}
+
+[data-theme="dark"] .sh-status {
+    color: #e2e8f0;
+}
+
+/* ===== WINDOW PROGRESS ===== */
+.window-progress {
+    margin-top: 8px;
+}
+
+.window-progress-label {
+    font-size: 0.72rem;
+    color: #6b7280;
+    margin-bottom: 4px;
+}
+
+.window-progress-bar {
+    height: 6px;
+    background: #e5e7eb;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.window-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #22c55e, #f59e0b, #ef4444);
+    border-radius: 3px;
+    transition: width 0.3s;
+}
+
+[data-theme="dark"] .window-progress-bar {
+    background: #374151;
+}
+
 /* ===== MINI TIMELINE IN DETAIL MODAL ===== */
 .mini-timeline {
     margin: 12px 0 16px;

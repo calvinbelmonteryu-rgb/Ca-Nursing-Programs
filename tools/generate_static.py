@@ -803,7 +803,19 @@ function saveStatus(id, status) {{
         all[id] = status;
         localStorage.setItem('rn_tracker_statuses', JSON.stringify(all));
         logActivity(id, 'Status changed to ' + status);
+        // Track status history
+        var history = JSON.parse(localStorage.getItem('rn_tracker_status_history') || '{{}}');
+        if (!history[id]) history[id] = [];
+        history[id].push({{ status: status, time: new Date().toISOString() }});
+        localStorage.setItem('rn_tracker_status_history', JSON.stringify(history));
     }} catch(e) {{}}
+}}
+
+function getStatusHistory(id) {{
+    try {{
+        var history = JSON.parse(localStorage.getItem('rn_tracker_status_history') || '{{}}');
+        return history[id] || [];
+    }} catch(e) {{ return []; }}
 }}
 
 function loadSavedNotes() {{
@@ -3192,6 +3204,7 @@ function backupData() {{
         accent: localStorage.getItem('rn_tracker_accent') || null,
         recentSearches: JSON.parse(localStorage.getItem('rn_tracker_recent_searches') || '[]'),
         pins: JSON.parse(localStorage.getItem('rn_tracker_pins') || '[]'),
+        statusHistory: JSON.parse(localStorage.getItem('rn_tracker_status_history') || '{{}}'),
         exported: new Date().toISOString()
     }};
     var blob = new Blob([JSON.stringify(data, null, 2)], {{type: 'application/json'}});
@@ -3222,6 +3235,7 @@ function restoreData(input) {{
             if (data.accent) localStorage.setItem('rn_tracker_accent', data.accent);
             if (data.recentSearches) localStorage.setItem('rn_tracker_recent_searches', JSON.stringify(data.recentSearches));
             if (data.pins) localStorage.setItem('rn_tracker_pins', JSON.stringify(data.pins));
+            if (data.statusHistory) localStorage.setItem('rn_tracker_status_history', JSON.stringify(data.statusHistory));
             showToast('Data restored! Reloading...');
             setTimeout(function() {{ window.location.reload(); }}, 1000);
         }} catch(ex) {{
@@ -3502,6 +3516,19 @@ function showDetail(id) {{
     }}
     html += '</div>';
 
+    // Status history
+    var sHistory = getStatusHistory(p.id);
+    if (sHistory.length > 0) {{
+        html += '<details class="status-history"><summary>Status History (' + sHistory.length + ')</summary>';
+        html += '<div class="sh-entries">';
+        sHistory.slice().reverse().slice(0, 10).forEach(function(entry) {{
+            var t = new Date(entry.time);
+            var dateStr = t.toLocaleDateString() + ' ' + t.toLocaleTimeString([], {{hour:'2-digit',minute:'2-digit'}});
+            html += '<div class="sh-entry"><span class="sh-status">' + entry.status + '</span><span class="sh-time">' + dateStr + '</span></div>';
+        }});
+        html += '</div></details>';
+    }}
+
     // Compute deadline status for modal
     var today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -3527,7 +3554,19 @@ function showDetail(id) {{
     html += '<dt>App Close</dt><dd>' + escHtml(p.app_close_date || 'TBD') + '</dd>';
     html += '<dt>Cohort Start</dt><dd>' + escHtml(p.cohort_start || 'TBD') + '</dd>';
     html += '<dt>Info Sessions</dt><dd>' + escHtml(infoSessions) + '</dd>';
-    html += '</dl></div>';
+    html += '</dl>';
+    // App window progress bar
+    if (modalOpenDate && modalCloseDate && modalOpenDate <= today && modalCloseDate >= today) {{
+        var totalWindow = (modalCloseDate - modalOpenDate) / 86400000;
+        var elapsed = (today - modalOpenDate) / 86400000;
+        var remaining = totalWindow - elapsed;
+        var elapsedPct = Math.min(Math.round(elapsed / totalWindow * 100), 100);
+        html += '<div class="window-progress">';
+        html += '<div class="window-progress-label">' + Math.round(remaining) + ' of ' + Math.round(totalWindow) + ' days remaining</div>';
+        html += '<div class="window-progress-bar"><div class="window-progress-fill" style="width:' + elapsedPct + '%"></div></div>';
+        html += '</div>';
+    }}
+    html += '</div>';
 
     html += '<div class="detail-section"><h3>Details</h3><dl>';
     html += '<dt>Region</dt><dd>' + escHtml(p.region) + '</dd>';
