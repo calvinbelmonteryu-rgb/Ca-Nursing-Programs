@@ -303,6 +303,7 @@ def generate():
                     </div>
                 </div>
                 <button type="button" id="compare-btn" disabled onclick="goCompare()">Compare</button>
+                <button type="button" onclick="toggleDensity()" title="Toggle compact/comfortable view" id="density-btn">Compact</button>
                 <button type="button" onclick="exportCSV()" title="Export CSV">Export</button>
             </div>
         </div>
@@ -341,6 +342,7 @@ def generate():
                 </tbody>
             </table>
         </div>
+        <div class="no-results" id="no-results">No programs match your filters. <a href="#" onclick="clearAllFilters(); return false;">Clear filters</a></div>
     </main>
 
     <!-- Detail Modal -->
@@ -678,6 +680,10 @@ function updateCount(visible, total) {{
         countEl.classList.add('count-changed');
     }} else {{
         countEl.classList.remove('count-changed');
+    }}
+    var noResults = document.getElementById('no-results');
+    if (noResults) {{
+        noResults.classList.toggle('visible', visible === 0);
     }}
 }}
 
@@ -1110,6 +1116,31 @@ document.addEventListener('change', function(e) {{
                 if (cb) cb.checked = false;
             }}
         }});
+    }} catch(ex) {{}}
+}})();
+
+function toggleDensity() {{
+    var table = document.querySelector('.sheet');
+    var btn = document.getElementById('density-btn');
+    if (table.classList.contains('density-compact')) {{
+        table.classList.remove('density-compact');
+        btn.textContent = 'Compact';
+        localStorage.setItem('rn_tracker_density', 'normal');
+    }} else {{
+        table.classList.add('density-compact');
+        btn.textContent = 'Comfortable';
+        localStorage.setItem('rn_tracker_density', 'compact');
+    }}
+}}
+
+// Restore density preference
+(function() {{
+    try {{
+        if (localStorage.getItem('rn_tracker_density') === 'compact') {{
+            document.querySelector('.sheet').classList.add('density-compact');
+            var btn = document.getElementById('density-btn');
+            if (btn) btn.textContent = 'Comfortable';
+        }}
     }} catch(ex) {{}}
 }})();
 

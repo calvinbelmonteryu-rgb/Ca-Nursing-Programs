@@ -186,6 +186,7 @@ nav a.active {
 
 .sheet tbody tr {
     cursor: pointer;
+    transition: opacity 0.15s ease;
 }
 
 .sheet tbody tr:hover {
@@ -1075,6 +1076,26 @@ footer small {
     border-color: #3b82f6;
 }
 
+/* ===== TABLE DENSITY ===== */
+.sheet.density-compact th {
+    padding: 3px 6px;
+    font-size: 0.68rem;
+}
+
+.sheet.density-compact td {
+    padding: 2px 6px;
+    font-size: 0.72rem;
+}
+
+.sheet.density-compact .status-select {
+    height: 20px;
+    font-size: 0.68rem;
+}
+
+.sheet.density-compact .col-hospital {
+    min-width: 150px;
+}
+
 /* ===== SORTABLE COLUMNS ===== */
 .sortable {
     cursor: pointer;
@@ -1537,6 +1558,19 @@ footer small {
 
 .clear-filter:hover {
     background: #fef2f2 !important;
+}
+
+/* ===== NO RESULTS ===== */
+.no-results {
+    text-align: center;
+    padding: 40px 20px;
+    color: #9ca3af;
+    font-size: 0.9rem;
+    display: none;
+}
+
+.no-results.visible {
+    display: block;
 }
 
 /* ===== BACK TO TOP ===== */

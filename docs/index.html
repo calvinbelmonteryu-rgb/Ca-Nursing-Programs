@@ -196,6 +196,7 @@ nav a.active {
 
 .sheet tbody tr {
     cursor: pointer;
+    transition: opacity 0.15s ease;
 }
 
 .sheet tbody tr:hover {
@@ -1085,6 +1086,26 @@ footer small {
     border-color: #3b82f6;
 }
 
+/* ===== TABLE DENSITY ===== */
+.sheet.density-compact th {
+    padding: 3px 6px;
+    font-size: 0.68rem;
+}
+
+.sheet.density-compact td {
+    padding: 2px 6px;
+    font-size: 0.72rem;
+}
+
+.sheet.density-compact .status-select {
+    height: 20px;
+    font-size: 0.68rem;
+}
+
+.sheet.density-compact .col-hospital {
+    min-width: 150px;
+}
+
 /* ===== SORTABLE COLUMNS ===== */
 .sortable {
     cursor: pointer;
@@ -1549,6 +1570,19 @@ footer small {
     background: #fef2f2 !important;
 }
 
+/* ===== NO RESULTS ===== */
+.no-results {
+    text-align: center;
+    padding: 40px 20px;
+    color: #9ca3af;
+    font-size: 0.9rem;
+    display: none;
+}
+
+.no-results.visible {
+    display: block;
+}
+
 /* ===== BACK TO TOP ===== */
 .back-to-top {
     position: fixed;
@@ -1657,6 +1691,7 @@ footer small {
                     </div>
                 </div>
                 <button type="button" id="compare-btn" disabled onclick="goCompare()">Compare</button>
+                <button type="button" onclick="toggleDensity()" title="Toggle compact/comfortable view" id="density-btn">Compact</button>
                 <button type="button" onclick="exportCSV()" title="Export CSV">Export</button>
             </div>
         </div>
@@ -2756,6 +2791,7 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
                 </tbody>
             </table>
         </div>
+        <div class="no-results" id="no-results">No programs match your filters. <a href="#" onclick="clearAllFilters(); return false;">Clear filters</a></div>
     </main>
 
     <!-- Detail Modal -->
@@ -3093,6 +3129,10 @@ function updateCount(visible, total) {
         countEl.classList.add('count-changed');
     } else {
         countEl.classList.remove('count-changed');
+    }
+    var noResults = document.getElementById('no-results');
+    if (noResults) {
+        noResults.classList.toggle('visible', visible === 0);
     }
 }
 
@@ -3525,6 +3565,31 @@ document.addEventListener('change', function(e) {
                 if (cb) cb.checked = false;
             }
         });
+    } catch(ex) {}
+})();
+
+function toggleDensity() {
+    var table = document.querySelector('.sheet');
+    var btn = document.getElementById('density-btn');
+    if (table.classList.contains('density-compact')) {
+        table.classList.remove('density-compact');
+        btn.textContent = 'Compact';
+        localStorage.setItem('rn_tracker_density', 'normal');
+    } else {
+        table.classList.add('density-compact');
+        btn.textContent = 'Comfortable';
+        localStorage.setItem('rn_tracker_density', 'compact');
+    }
+}
+
+// Restore density preference
+(function() {
+    try {
+        if (localStorage.getItem('rn_tracker_density') === 'compact') {
+            document.querySelector('.sheet').classList.add('density-compact');
+            var btn = document.getElementById('density-btn');
+            if (btn) btn.textContent = 'Comfortable';
+        }
     } catch(ex) {}
 })();
 
