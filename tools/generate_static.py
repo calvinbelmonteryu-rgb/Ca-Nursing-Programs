@@ -4002,7 +4002,11 @@ function showDetail(id) {{
     }}
 
     if (p.application_url) {{
-        html += '<div class="detail-actions"><a href="' + escHtml(p.application_url) + '" target="_blank" class="apply-btn-modal">Apply Now &rarr;</a></div>';
+        html += '<div class="detail-actions"><a href="' + escHtml(p.application_url) + '" target="_blank" class="apply-btn-modal">Apply Now &rarr;</a>';
+        html += '<button class="copy-link-btn" onclick="copyProgramLink(' + p.id + ')">&#128279; Copy Link</button>';
+        html += '</div>';
+    }} else {{
+        html += '<div class="detail-actions"><button class="copy-link-btn" onclick="copyProgramLink(' + p.id + ')">&#128279; Copy Link</button></div>';
     }}
 
     // Prev/Next navigation
@@ -5246,12 +5250,14 @@ function renderCalendar() {{
 
     // Collect events for this month
     var calRegion = (document.getElementById('cal-region-filter') || {{}}).value || '';
+    var savedStatuses = loadSavedStatuses();
     var events = {{}};
     PROGRAMS.forEach(function(p) {{
         if (calRegion && p.region !== calRegion) return;
         var openD = parseDate(p.app_open_date);
         var closeD = parseDate(p.app_close_date);
         var cohortD = parseDate(p.cohort_start);
+        var pStatus = savedStatuses[p.id] || p.application_status || 'Not Started';
 
         // Mark each day in the open window
         if (openD && closeD) {{
@@ -5260,10 +5266,9 @@ function renderCalendar() {{
                 if (d.getMonth() === calMonth && d.getFullYear() === calYear) {{
                     var day = d.getDate();
                     if (!events[day]) events[day] = [];
-                    // Only add the hospital once per day
                     var existing = events[day].find(function(e) {{ return e.id === p.id && e.type === 'open'; }});
                     if (!existing) {{
-                        events[day].push({{id: p.id, hospital: p.hospital, type: 'open'}});
+                        events[day].push({{id: p.id, hospital: p.hospital, type: 'open', status: pStatus}});
                     }}
                 }}
                 d.setDate(d.getDate() + 1);
@@ -5274,14 +5279,14 @@ function renderCalendar() {{
         if (closeD && closeD.getMonth() === calMonth && closeD.getFullYear() === calYear) {{
             var cDay = closeD.getDate();
             if (!events[cDay]) events[cDay] = [];
-            events[cDay].push({{id: p.id, hospital: p.hospital, type: 'close'}});
+            events[cDay].push({{id: p.id, hospital: p.hospital, type: 'close', status: pStatus}});
         }}
 
         // Cohort start marker
         if (cohortD && cohortD.getMonth() === calMonth && cohortD.getFullYear() === calYear) {{
             var coDay = cohortD.getDate();
             if (!events[coDay]) events[coDay] = [];
-            events[coDay].push({{id: p.id, hospital: p.hospital, type: 'cohort'}});
+            events[coDay].push({{id: p.id, hospital: p.hospital, type: 'cohort', status: pStatus}});
         }}
     }});
 
@@ -5316,7 +5321,12 @@ function renderCalendar() {{
                         shown[ev.id + ev.type] = true;
                         count++;
                         var dotCls = ev.type === 'close' ? 'cal-evt-close' : ev.type === 'cohort' ? 'cal-evt-cohort' : 'cal-evt-open';
-                        html += '<a href="#" class="cal-event ' + dotCls + '" onclick="showDetail(' + ev.id + '); return false;" title="' + escHtml(ev.hospital) + '">' + escHtml(ev.hospital.substring(0, 12)) + '</a>';
+                        var stDot = '';
+                        if (ev.status === 'Submitted') stDot = '<span class="cal-st-dot" style="background:#22c55e" title="Submitted"></span>';
+                        else if (ev.status === 'In Progress') stDot = '<span class="cal-st-dot" style="background:#f59e0b" title="In Progress"></span>';
+                        else if (ev.status === 'Interview') stDot = '<span class="cal-st-dot" style="background:#8b5cf6" title="Interview"></span>';
+                        else if (ev.status === 'Offer') stDot = '<span class="cal-st-dot" style="background:#eab308" title="Offer"></span>';
+                        html += '<a href="#" class="cal-event ' + dotCls + '" onclick="showDetail(' + ev.id + '); return false;" title="' + escHtml(ev.hospital) + ' (' + (ev.status || '') + ')">' + stDot + escHtml(ev.hospital.substring(0, 12)) + '</a>';
                     }});
                     if (dayEvents.length > 3) {{
                         html += '<span class="cal-more">+' + (dayEvents.length - 3) + ' more</span>';
@@ -5758,6 +5768,15 @@ function copyProgressCard() {{
             showToast('Clipboard API not supported — try downloading');
         }}
     }}, 'image/png');
+}}
+
+function copyProgramLink(id) {{
+    var url = window.location.origin + window.location.pathname + '#program-' + id;
+    navigator.clipboard.writeText(url).then(function() {{
+        showToast('Link copied!');
+    }}).catch(function() {{
+        showToast('Could not copy link');
+    }});
 }}
 
 function editGoal() {{

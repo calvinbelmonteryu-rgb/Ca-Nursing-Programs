@@ -6574,3 +6574,50 @@ mark.search-highlight {
 @media (max-width: 640px) {
     .fav-dash-card { min-width: 140px; }
 }
+
+/* ===== CALENDAR STATUS DOTS ===== */
+.cal-st-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    margin-right: 3px;
+    vertical-align: middle;
+}
+
+/* ===== COPY LINK BUTTON ===== */
+.copy-link-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    background: #f9fafb;
+    color: #374151;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.copy-link-btn:hover {
+    background: #f3f4f6;
+    border-color: #9ca3af;
+}
+
+[data-theme="dark"] .copy-link-btn {
+    background: #374151;
+    color: #e5e7eb;
+    border-color: #4b5563;
+}
+
+[data-theme="dark"] .copy-link-btn:hover {
+    background: #4b5563;
+}
+
+.detail-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
