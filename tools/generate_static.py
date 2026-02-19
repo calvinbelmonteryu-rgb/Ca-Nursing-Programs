@@ -5040,9 +5040,11 @@ function showDetail(id) {{
     if (p.application_url) {{
         html += '<div class="detail-actions"><a href="' + escHtml(p.application_url) + '" target="_blank" class="apply-btn-modal">Apply Now &rarr;</a>';
         html += '<button class="copy-link-btn" onclick="copyProgramLink(' + p.id + ')">&#128279; Copy Link</button>';
+        html += '<button class="copy-link-btn" onclick="shareProgramSummary(' + p.id + ')">&#128228; Share</button>';
         html += '</div>';
     }} else {{
-        html += '<div class="detail-actions"><button class="copy-link-btn" onclick="copyProgramLink(' + p.id + ')">&#128279; Copy Link</button></div>';
+        html += '<div class="detail-actions"><button class="copy-link-btn" onclick="copyProgramLink(' + p.id + ')">&#128279; Copy Link</button>';
+        html += '<button class="copy-link-btn" onclick="shareProgramSummary(' + p.id + ')">&#128228; Share</button></div>';
     }}
 
     // Prev/Next navigation
@@ -7153,6 +7155,43 @@ function copyProgramLink(id) {{
     }}).catch(function() {{
         showToast('Could not copy link');
     }});
+}}
+
+function shareProgramSummary(id) {{
+    var p = PROGRAMS.find(function(pr) {{ return pr.id === id; }});
+    if (!p) return;
+    var savedStatuses = loadSavedStatuses();
+    var st = savedStatuses[p.id] || p.application_status || 'Not Started';
+    var stars = '\u2605'.repeat(p.reputation) + '\u2606'.repeat(5 - p.reputation);
+    var lines = [
+        p.hospital + ' (' + p.region + ')',
+        p.program_name,
+        'Rating: ' + stars,
+        'Status: ' + st,
+        ''
+    ];
+    if (p.app_open_date) lines.push('App Opens: ' + p.app_open_date);
+    if (p.app_close_date) lines.push('App Closes: ' + p.app_close_date);
+    if (p.cohort_start) lines.push('Cohort Start: ' + p.cohort_start);
+    if (p.pay_range) lines.push('Pay: ' + p.pay_range);
+    if (p.program_length_months) lines.push('Length: ' + p.program_length_months + ' months');
+    if (p.bsn_required) lines.push('BSN: ' + p.bsn_required);
+    if (p.city) lines.push('City: ' + p.city);
+    if (p.application_url) {{ lines.push(''); lines.push('Apply: ' + p.application_url); }}
+    var text = lines.join('\\n');
+    // Try native share first, then clipboard
+    if (navigator.share) {{
+        navigator.share({{
+            title: p.hospital + ' - New Grad RN Residency',
+            text: text
+        }}).catch(function() {{}});
+    }} else {{
+        navigator.clipboard.writeText(text).then(function() {{
+            showToast('Program summary copied!');
+        }}).catch(function() {{
+            showToast('Could not copy');
+        }});
+    }}
 }}
 
 function editGoal() {{
