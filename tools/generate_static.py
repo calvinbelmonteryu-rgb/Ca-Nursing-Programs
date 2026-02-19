@@ -5406,6 +5406,27 @@ function renderStats() {{
     html += '</div>';
     html += '</div>';
 
+    // Decision matrix
+    var savedWeights = JSON.parse(localStorage.getItem('rn_tracker_weights') || '{{}}');
+    var wPay = savedWeights.pay || 50;
+    var wRep = savedWeights.rep || 50;
+    var wDeadline = savedWeights.deadline || 50;
+    var wBsn = savedWeights.bsn || 50;
+    var wLength = savedWeights.length || 50;
+
+    html += '<div class="decision-matrix">';
+    html += '<h3>&#9878; Decision Matrix</h3>';
+    html += '<p class="dm-subtitle">Adjust weights to see your personalized program ranking</p>';
+    html += '<div class="dm-sliders">';
+    html += '<label class="dm-slider-row"><span>Pay</span><input type="range" min="0" max="100" value="' + wPay + '" class="dm-slider" data-weight="pay" oninput="updateDecisionMatrix()"><span class="dm-val" id="dm-val-pay">' + wPay + '</span></label>';
+    html += '<label class="dm-slider-row"><span>Reputation</span><input type="range" min="0" max="100" value="' + wRep + '" class="dm-slider" data-weight="rep" oninput="updateDecisionMatrix()"><span class="dm-val" id="dm-val-rep">' + wRep + '</span></label>';
+    html += '<label class="dm-slider-row"><span>Deadline</span><input type="range" min="0" max="100" value="' + wDeadline + '" class="dm-slider" data-weight="deadline" oninput="updateDecisionMatrix()"><span class="dm-val" id="dm-val-deadline">' + wDeadline + '</span></label>';
+    html += '<label class="dm-slider-row"><span>ADN OK</span><input type="range" min="0" max="100" value="' + wBsn + '" class="dm-slider" data-weight="bsn" oninput="updateDecisionMatrix()"><span class="dm-val" id="dm-val-bsn">' + wBsn + '</span></label>';
+    html += '<label class="dm-slider-row"><span>Length</span><input type="range" min="0" max="100" value="' + wLength + '" class="dm-slider" data-weight="length" oninput="updateDecisionMatrix()"><span class="dm-val" id="dm-val-length">' + wLength + '</span></label>';
+    html += '</div>';
+    html += '<div class="dm-results" id="dm-results"></div>';
+    html += '</div>';
+
     html += '<div class="stats-grid">';
     html += barChart('Application Status', statusCounts, statusColors);
     html += barChart('By Region', regionCounts, regionColors);
@@ -5628,6 +5649,9 @@ function renderStats() {{
             }}
         }}
     }}
+
+    // Initialize decision matrix
+    updateDecisionMatrix();
 }}
 
 function animateCountUp(el, target, duration) {{
@@ -5643,6 +5667,84 @@ function animateCountUp(el, target, duration) {{
         if (progress < 1) requestAnimationFrame(step);
     }}
     requestAnimationFrame(step);
+}}
+
+function updateDecisionMatrix() {{
+    var sliders = document.querySelectorAll('.dm-slider');
+    var weights = {{}};
+    sliders.forEach(function(s) {{
+        var key = s.dataset.weight;
+        weights[key] = parseInt(s.value);
+        var valEl = document.getElementById('dm-val-' + key);
+        if (valEl) valEl.textContent = s.value;
+    }});
+    // Save weights
+    localStorage.setItem('rn_tracker_weights', JSON.stringify(weights));
+
+    var savedStatuses = loadSavedStatuses();
+    var today = new Date(); today.setHours(0,0,0,0);
+    var maxPay = 0;
+    PROGRAMS.forEach(function(p) {{
+        var m = (p.pay_range || '').match(/(\\d[\\d.,]+)/);
+        if (m) {{ var v = parseFloat(m[1].replace(',','')); if (v > maxPay) maxPay = v; }}
+    }});
+
+    var scored = PROGRAMS.map(function(p) {{
+        var st = savedStatuses[p.id] || p.application_status || 'Not Started';
+        if (st === 'Offer' || st === 'Rejected') return null;
+
+        var score = 0;
+        // Pay score (0-100)
+        var pm = (p.pay_range || '').match(/(\\d[\\d.,]+)/);
+        var payScore = pm && maxPay > 0 ? (parseFloat(pm[1].replace(',','')) / maxPay) * 100 : 0;
+        score += payScore * (weights.pay / 100);
+        // Reputation score (0-100)
+        score += ((p.reputation || 0) / 5 * 100) * (weights.rep / 100);
+        // Deadline score (urgency — closer deadline = higher)
+        var closeD = parseDate(p.app_close_date);
+        var openD = parseDate(p.app_open_date);
+        var dlScore = 0;
+        if (openD && closeD && openD <= today && closeD >= today) {{
+            var daysLeft = Math.ceil((closeD - today) / 86400000);
+            dlScore = Math.max(100 - daysLeft * 2, 20);
+        }} else if (openD && openD > today) {{
+            var du = Math.ceil((openD - today) / 86400000);
+            if (du <= 30) dlScore = 60 - du;
+        }}
+        score += dlScore * (weights.deadline / 100);
+        // BSN accessibility (No = 100, Preferred = 50, Yes = 0)
+        var bsnScore = p.bsn_required === 'No' ? 100 : p.bsn_required === 'Preferred' ? 50 : 0;
+        score += bsnScore * (weights.bsn / 100);
+        // Program length (longer = higher for learning)
+        var lenScore = Math.min((p.program_length_months || 0) / 24 * 100, 100);
+        score += lenScore * (weights.length / 100);
+
+        // Normalize by total weight
+        var totalWeight = (weights.pay + weights.rep + weights.deadline + weights.bsn + weights.length) / 100;
+        if (totalWeight > 0) score = score / totalWeight;
+
+        return {{ prog: p, score: Math.round(score), status: st }};
+    }}).filter(Boolean);
+
+    scored.sort(function(a, b) {{ return b.score - a.score; }});
+
+    var container = document.getElementById('dm-results');
+    if (!container) return;
+    var html = '';
+    scored.slice(0, 10).forEach(function(item, i) {{
+        var p = item.prog;
+        var stars = '\\u2605'.repeat(p.reputation) + '\\u2606'.repeat(5 - p.reputation);
+        var barWidth = Math.min(item.score, 100);
+        html += '<div class="dm-row" onclick="showDetail(' + p.id + ')">';
+        html += '<span class="dm-rank">' + (i + 1) + '</span>';
+        html += '<div class="dm-info">';
+        html += '<div class="dm-name">' + escHtml(p.hospital) + '</div>';
+        html += '<div class="dm-bar-wrap"><div class="dm-bar" style="width:' + barWidth + '%"></div></div>';
+        html += '</div>';
+        html += '<span class="dm-score">' + item.score + '</span>';
+        html += '</div>';
+    }});
+    container.innerHTML = html;
 }}
 
 // Calendar view
