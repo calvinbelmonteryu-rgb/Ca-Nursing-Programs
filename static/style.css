@@ -6897,3 +6897,76 @@ mark.search-highlight {
 [data-theme="dark"] .checklist-skip-btn:hover {
     background: #1f2937;
 }
+
+/* Activity streak badge */
+.streak-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    margin: 8px 0;
+}
+.streak-badge.streak-warm {
+    background: #fff7ed;
+    border-color: #fed7aa;
+}
+.streak-badge.streak-hot {
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    border-color: #f59e0b;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
+}
+.streak-fire {
+    font-size: 1.2rem;
+    line-height: 1;
+}
+.streak-count {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #d97706;
+    line-height: 1;
+}
+.streak-label {
+    color: #92400e;
+    font-weight: 600;
+}
+.streak-best {
+    color: #9ca3af;
+    font-size: 0.75rem;
+    margin-left: 4px;
+}
+.streak-warn {
+    color: #f59e0b;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-left: auto;
+    animation: streak-blink 2s ease-in-out infinite;
+}
+@keyframes streak-blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+[data-theme="dark"] .streak-badge {
+    background: #1c1917;
+    border-color: #78350f;
+}
+[data-theme="dark"] .streak-badge.streak-warm {
+    background: #1c1917;
+    border-color: #92400e;
+}
+[data-theme="dark"] .streak-badge.streak-hot {
+    background: linear-gradient(135deg, #1c1917, #292524);
+    border-color: #d97706;
+}
+[data-theme="dark"] .streak-label {
+    color: #fbbf24;
+}
+[data-theme="dark"] .streak-count {
+    color: #fbbf24;
+}
+@media print {
+    .streak-badge { display: none !important; }
+}

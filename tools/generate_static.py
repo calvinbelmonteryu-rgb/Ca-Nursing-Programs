@@ -457,6 +457,7 @@ def generate():
 
         <div class="recent-viewed" id="recent-viewed" style="display:none"></div>
         <div class="status-summary" id="status-summary"></div>
+        <div class="streak-badge" id="streak-badge" style="display:none"></div>
         <div class="fav-dashboard" id="fav-dashboard" style="display:none"></div>
 
         <div class="quick-chips">
@@ -1023,6 +1024,85 @@ function renderStatusSummary() {{
     if (text) text.textContent = progressed + '/' + total;
 }}
 
+function renderStreak() {{
+    var badge = document.getElementById('streak-badge');
+    if (!badge) return;
+    var log = JSON.parse(localStorage.getItem('rn_tracker_log') || '[]');
+    if (log.length === 0) {{ badge.style.display = 'none'; return; }}
+
+    // Get unique activity dates
+    var dates = {{}};
+    log.forEach(function(entry) {{
+        var d = (entry.time || entry.timestamp || '').substring(0, 10);
+        if (d) dates[d] = true;
+    }});
+    var sortedDates = Object.keys(dates).sort().reverse();
+    if (sortedDates.length === 0) {{ badge.style.display = 'none'; return; }}
+
+    // Calculate current streak
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+    var todayStr = today.toISOString().substring(0, 10);
+    var yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
+    var yesterdayStr = yesterday.toISOString().substring(0, 10);
+
+    var streak = 0;
+    var checkDate = new Date(today);
+    // Start from today or yesterday
+    if (!dates[todayStr] && !dates[yesterdayStr]) {{
+        badge.style.display = 'none';
+        return;
+    }}
+    if (!dates[todayStr]) {{
+        checkDate = new Date(yesterday);
+    }}
+    while (true) {{
+        var ds = checkDate.toISOString().substring(0, 10);
+        if (dates[ds]) {{
+            streak++;
+            checkDate.setDate(checkDate.getDate() - 1);
+        }} else {{
+            break;
+        }}
+    }}
+
+    // Calculate longest streak
+    var longest = 0;
+    var current = 0;
+    for (var i = sortedDates.length - 1; i >= 0; i--) {{
+        if (i === sortedDates.length - 1) {{
+            current = 1;
+        }} else {{
+            var prev = new Date(sortedDates[i + 1] + 'T00:00:00');
+            var curr = new Date(sortedDates[i] + 'T00:00:00');
+            var diff = Math.round((curr - prev) / 86400000);
+            if (diff === 1) {{
+                current++;
+            }} else {{
+                current = 1;
+            }}
+        }}
+        if (current > longest) longest = current;
+    }}
+
+    if (streak === 0) {{ badge.style.display = 'none'; return; }}
+
+    var fire = streak >= 7 ? '&#128293;&#128293;' : streak >= 3 ? '&#128293;' : '&#9889;';
+    var label = streak === 1 ? 'day' : 'days';
+    var html = '<span class="streak-fire">' + fire + '</span>';
+    html += '<span class="streak-count">' + streak + '</span>';
+    html += '<span class="streak-label">' + label + ' streak</span>';
+    if (longest > streak) {{
+        html += '<span class="streak-best">Best: ' + longest + 'd</span>';
+    }}
+    if (!dates[todayStr]) {{
+        html += '<span class="streak-warn">Do something today to keep it!</span>';
+    }}
+    badge.innerHTML = html;
+    badge.style.display = '';
+    badge.className = 'streak-badge' + (streak >= 7 ? ' streak-hot' : streak >= 3 ? ' streak-warm' : '');
+}}
+
 function renderFavDashboard() {{
     var container = document.getElementById('fav-dashboard');
     if (!container) return;
@@ -1510,6 +1590,7 @@ document.addEventListener('DOMContentLoaded', function() {{
     renderFavButtons();
     updateFavCount();
     renderStatusSummary();
+    renderStreak();
     renderFavDashboard();
     renderRecentViewed();
     renderUrgencyBanner();
