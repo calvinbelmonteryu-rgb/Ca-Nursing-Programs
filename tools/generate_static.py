@@ -548,6 +548,7 @@ def generate():
             </select>
             <button type="button" onclick="bulkSetStatus()">Apply</button>
             <button type="button" onclick="bulkToggleFavorite()">&#9733; Fav</button>
+            <button type="button" onclick="bulkCopySummary()">&#128203; Copy</button>
             <button type="button" class="bulk-clear" onclick="clearSelection()">Clear</button>
         </div>
     </main>
@@ -3534,6 +3535,42 @@ function bulkToggleFavorite() {{
     renderFavButtons();
     updateFavCount();
     showToast(checked.length + ' programs added to favorites');
+}}
+
+function bulkCopySummary() {{
+    var checked = document.querySelectorAll('.compare-check:checked');
+    if (checked.length === 0) return;
+    var savedStatuses = loadSavedStatuses();
+    var lines = ['CA New Grad RN Programs Summary', '========================================', ''];
+    checked.forEach(function(cb) {{
+        var id = parseInt(cb.value);
+        var p = PROGRAMS.find(function(pr) {{ return pr.id === id; }});
+        if (!p) return;
+        var st = savedStatuses[id] || p.application_status || 'Not Started';
+        var line = p.hospital + ' (' + p.region + ')';
+        line += '\\n  Status: ' + st;
+        if (p.app_open_date) line += '\\n  App Open: ' + p.app_open_date;
+        if (p.app_close_date) line += '\\n  App Close: ' + p.app_close_date;
+        if (p.cohort_start) line += '\\n  Cohort: ' + p.cohort_start;
+        if (p.pay_range) line += '\\n  Pay: ' + p.pay_range;
+        if (p.application_url) line += '\\n  URL: ' + p.application_url;
+        lines.push(line);
+        lines.push('');
+    }});
+    lines.push('Generated ' + new Date().toLocaleDateString());
+    var text = lines.join('\\n');
+    navigator.clipboard.writeText(text).then(function() {{
+        showToast(checked.length + ' program summaries copied');
+    }}).catch(function() {{
+        // Fallback
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        ta.remove();
+        showToast(checked.length + ' program summaries copied');
+    }});
 }}
 
 function clearSelection() {{
