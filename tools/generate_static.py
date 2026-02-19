@@ -430,6 +430,7 @@ def generate():
                         <button type="button" onclick="printView(); toggleMoreMenu();">Print / PDF</button>
                         <button type="button" onclick="exportSummary(); toggleMoreMenu();">Copy Summary</button>
                         <button type="button" onclick="showActivityFeed(); toggleMoreMenu();">Activity Feed</button>
+                        <button type="button" onclick="batchApplyOpen(); toggleMoreMenu();">Batch Apply Open</button>
                         <hr style="margin:4px 0;border-color:#e5e7eb">
                         <button type="button" onclick="saveFilterPreset(); toggleMoreMenu();">Save Current Filter</button>
                         <div id="saved-filters-menu"></div>
@@ -1269,6 +1270,43 @@ document.addEventListener('DOMContentLoaded', function() {{
         var deepId = parseInt(hash.replace('#program-', ''));
         if (deepId) setTimeout(function() {{ showDetail(deepId); }}, 100);
     }}
+
+    // Session change detection — show "since last visit" banner
+    (function() {{
+        var lastVisit = localStorage.getItem('rn_tracker_last_visit');
+        var now = new Date().toISOString();
+        localStorage.setItem('rn_tracker_last_visit', now);
+        if (!lastVisit) return;
+        var lastDate = new Date(lastVisit);
+        var today = new Date(); today.setHours(0,0,0,0);
+        var savedStatuses = loadSavedStatuses();
+        var changes = [];
+        PROGRAMS.forEach(function(p) {{
+            var st = savedStatuses[p.id] || p.application_status || 'Not Started';
+            if (st === 'Submitted' || st === 'Interview' || st === 'Offer' || st === 'Rejected') return;
+            var openD = parseDate(p.app_open_date);
+            var closeD = parseDate(p.app_close_date);
+            // Newly opened since last visit
+            if (openD && openD > lastDate && openD <= today && closeD && closeD >= today) {{
+                changes.push(p.hospital + ' just opened!');
+            }}
+            // Closing soon (within 3 days) that wasn't closing before
+            if (closeD) {{
+                var daysLeft = Math.ceil((closeD - today) / 86400000);
+                if (daysLeft >= 0 && daysLeft <= 3 && closeD > lastDate) {{
+                    changes.push(p.hospital + ' closes in ' + daysLeft + 'd');
+                }}
+            }}
+        }});
+        if (changes.length > 0) {{
+            var banner = document.createElement('div');
+            banner.className = 'session-banner';
+            banner.innerHTML = '<strong>Since your last visit:</strong> ' + changes.join(' \\u2022 ') +
+                ' <button onclick="this.parentElement.remove()">\\u2715</button>';
+            var main = document.getElementById('main-table');
+            if (main) main.insertBefore(banner, main.firstChild);
+        }}
+    }})();
 
     // Back to top button visibility + sticky header shadow
     var topBtn = document.getElementById('back-to-top');
@@ -2148,6 +2186,27 @@ function jumpToOpen() {{
     showToast('No open programs visible');
 }}
 
+function batchApplyOpen() {{
+    var today = new Date(); today.setHours(0,0,0,0);
+    var savedStatuses = loadSavedStatuses();
+    var openProgs = PROGRAMS.filter(function(p) {{
+        var st = savedStatuses[p.id] || p.application_status || 'Not Started';
+        if (st === 'Submitted' || st === 'Interview' || st === 'Offer' || st === 'Rejected') return false;
+        var openD = parseDate(p.app_open_date);
+        var closeD = parseDate(p.app_close_date);
+        return openD && closeD && openD <= today && closeD >= today && p.application_url;
+    }});
+    if (openProgs.length === 0) {{
+        showToast('No open programs with application URLs');
+        return;
+    }}
+    if (!confirm('Open ' + openProgs.length + ' application URLs in new tabs?')) return;
+    openProgs.forEach(function(p, i) {{
+        setTimeout(function() {{ window.open(p.application_url, '_blank'); }}, i * 300);
+    }});
+    showToast(openProgs.length + ' application tabs opened');
+}}
+
 function markNotesIndicators() {{
     var notes = loadSavedNotes();
     document.querySelectorAll('.sheet tbody tr').forEach(function(row) {{
@@ -2581,7 +2640,8 @@ function renderCmdResults(query) {{
         {{ label: 'Activity Feed', action: function() {{ showActivityFeed(); }}, icon: '\\u2630' }},
         {{ label: 'Backup Data', action: function() {{ backupData(); }}, icon: '\\u2B07' }},
         {{ label: 'Smart Sort', action: function() {{ smartSort(); }}, icon: '\\u2B50' }},
-        {{ label: 'Jump to Open Programs', action: function() {{ jumpToOpen(); }}, icon: '\\u2193' }}
+        {{ label: 'Jump to Open Programs', action: function() {{ jumpToOpen(); }}, icon: '\\u2193' }},
+        {{ label: 'Batch Apply All Open', action: function() {{ batchApplyOpen(); }}, icon: '\\u2197' }}
     ];
 
     // Programs
