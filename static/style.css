@@ -8088,6 +8088,69 @@ mark.search-highlight {
 [data-theme="dark"] .stale-dismiss { color: #fcd34d; }
 [data-theme="dark"] .stale-dismiss:hover { background: #78350f; }
 
+/* Daily Intention */
+.daily-intention {
+    max-width: 900px;
+    margin: 0 auto 10px;
+    padding: 10px 14px;
+    background: linear-gradient(135deg, #eff6ff, #f0f9ff);
+    border: 1px solid #93c5fd;
+    border-radius: 8px;
+    font-size: 0.8rem;
+}
+.di-label { font-weight: 600; color: #1e40af; }
+.di-prompt .di-label { font-size: 0.85rem; }
+.di-input-row {
+    display: flex;
+    gap: 6px;
+    margin-top: 6px;
+}
+.di-input {
+    flex: 1;
+    padding: 5px 10px;
+    border: 1px solid #93c5fd;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    outline: none;
+}
+.di-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,0.2); }
+.di-input-row button {
+    padding: 5px 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    font-weight: 600;
+    background: #3b82f6;
+    color: white;
+}
+.di-input-row button:hover { background: #2563eb; }
+.di-skip { background: transparent !important; color: #6b7280 !important; }
+.di-skip:hover { background: #f3f4f6 !important; }
+.di-display { display: flex; align-items: center; gap: 8px; }
+.di-text { color: #374151; flex: 1; }
+.di-edit, .di-done {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.8rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #6b7280;
+}
+.di-edit:hover { background: #e5e7eb; }
+.di-done { color: #22c55e; }
+.di-done:hover { background: #dcfce7; }
+[data-theme="dark"] .daily-intention { background: linear-gradient(135deg, #0c1929, #0f172a); border-color: #1e3a5f; }
+[data-theme="dark"] .di-label { color: #60a5fa; }
+[data-theme="dark"] .di-text { color: #d1d5db; }
+[data-theme="dark"] .di-input { background: #1f2937; border-color: #374151; color: #e5e7eb; }
+[data-theme="dark"] .di-input:focus { border-color: #3b82f6; }
+[data-theme="dark"] .di-skip { color: #6b7280 !important; }
+[data-theme="dark"] .di-skip:hover { background: #1f2937 !important; }
+[data-theme="dark"] .di-edit:hover { background: #374151; }
+[data-theme="dark"] .di-done:hover { background: #064e3b; }
+
 /* Status suggestion bar */
 .status-suggest-bar {
     display: flex;

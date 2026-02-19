@@ -382,6 +382,7 @@ def generate():
     <div class="deadline-ticker" id="deadline-ticker" style="display:none"></div>
     <div class="next-action-card" id="next-action" style="display:none"></div>
     <div class="stale-data-alerts" id="stale-alerts" style="display:none"></div>
+    <div class="daily-intention" id="daily-intention" style="display:none"></div>
 
     <main class="container-fluid sheet-page" role="main" id="main-table">
         <div class="sheet-toolbar">
@@ -1969,6 +1970,7 @@ document.addEventListener('DOMContentLoaded', function() {{
     setInterval(updatePageTitle, 60000);
     renderStaleDataAlerts();
     checkBrowserNotifications();
+    renderDailyIntention();
 
     // Close popups on outside click
     document.addEventListener('click', function(e) {{
@@ -3302,6 +3304,66 @@ function restripe() {{
             i++;
         }}
     }});
+}}
+
+function renderDailyIntention() {{
+    var container = document.getElementById('daily-intention');
+    if (!container) return;
+    var todayKey = new Date().toISOString().slice(0, 10);
+    var saved = JSON.parse(localStorage.getItem('rn_tracker_intention') || '{{}}');
+    if (saved.date === todayKey && saved.text) {{
+        // Show today's intention
+        container.innerHTML = '<div class="di-display">' +
+            '<span class="di-label">Today\\'s focus:</span> ' +
+            '<span class="di-text">' + escHtml(saved.text) + '</span>' +
+            '<button class="di-edit" onclick="editDailyIntention()" title="Edit">\\u270F</button>' +
+            '<button class="di-done" onclick="completeDailyIntention()" title="Done for today">\\u2714</button>' +
+            '</div>';
+        container.style.display = 'block';
+    }} else if (saved.date !== todayKey) {{
+        // New day — show prompt
+        container.innerHTML = '<div class="di-prompt">' +
+            '<span class="di-label">\\uD83C\\uDF1F What\\'s your focus today?</span>' +
+            '<div class="di-input-row">' +
+            '<input type="text" class="di-input" id="di-input" placeholder="e.g., Apply to Kaiser, research Stanford dates..." maxlength="100">' +
+            '<button onclick="saveDailyIntention()">Set</button>' +
+            '<button class="di-skip" onclick="this.closest(\\\'.daily-intention\\\').style.display=\\\'none\\\'">Skip</button>' +
+            '</div></div>';
+        container.style.display = 'block';
+        setTimeout(function() {{
+            var inp = document.getElementById('di-input');
+            if (inp) inp.addEventListener('keydown', function(e) {{
+                if (e.key === 'Enter') saveDailyIntention();
+            }});
+        }}, 50);
+    }}
+}}
+
+function saveDailyIntention() {{
+    var inp = document.getElementById('di-input');
+    if (!inp || !inp.value.trim()) return;
+    var todayKey = new Date().toISOString().slice(0, 10);
+    localStorage.setItem('rn_tracker_intention', JSON.stringify({{ date: todayKey, text: inp.value.trim() }}));
+    renderDailyIntention();
+    showToast('Focus set for today!');
+}}
+
+function editDailyIntention() {{
+    var saved = JSON.parse(localStorage.getItem('rn_tracker_intention') || '{{}}');
+    var newText = prompt('Update today\\'s focus:', saved.text || '');
+    if (newText !== null && newText.trim()) {{
+        saved.text = newText.trim();
+        localStorage.setItem('rn_tracker_intention', JSON.stringify(saved));
+        renderDailyIntention();
+    }}
+}}
+
+function completeDailyIntention() {{
+    var todayKey = new Date().toISOString().slice(0, 10);
+    localStorage.setItem('rn_tracker_intention', JSON.stringify({{ date: todayKey, text: '', completed: true }}));
+    document.getElementById('daily-intention').style.display = 'none';
+    showToast('Nice work today!');
+    launchConfetti();
 }}
 
 function checkBrowserNotifications() {{
