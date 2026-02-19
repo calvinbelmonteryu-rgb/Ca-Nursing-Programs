@@ -841,6 +841,27 @@ a.bar-link:hover { background: #f3f4f6; }
     .shortcuts-hint {
         display: none;
     }
+
+    .sheet-filters button,
+    .sheet-filters a {
+        height: 32px;
+        font-size: 0.7rem;
+    }
+
+    .sheet-filters input[type="search"],
+    .sheet-filters select {
+        height: 32px;
+    }
+
+    .modal-nav button {
+        padding: 8px 16px;
+        font-size: 0.85rem;
+    }
+
+    .back-to-top {
+        width: 40px;
+        height: 40px;
+    }
 }
 
 /* ===== TOAST ===== */

@@ -711,6 +711,31 @@ document.addEventListener('DOMContentLoaded', function() {{
         }}
     }});
 
+    // Swipe gesture for modal navigation on mobile
+    var touchStartX = 0;
+    var touchEndX = 0;
+    document.addEventListener('touchstart', function(e) {{
+        touchStartX = e.changedTouches[0].screenX;
+    }}, {{ passive: true }});
+    document.addEventListener('touchend', function(e) {{
+        touchEndX = e.changedTouches[0].screenX;
+        var detailModal = document.getElementById('detail-modal');
+        if (detailModal && detailModal.classList.contains('modal-visible')) {{
+            var diff = touchStartX - touchEndX;
+            if (Math.abs(diff) > 80) {{
+                if (diff > 0) {{
+                    // Swipe left → next
+                    var nextBtn = detailModal.querySelector('.modal-nav button:last-child');
+                    if (nextBtn && !nextBtn.disabled) nextBtn.click();
+                }} else {{
+                    // Swipe right → prev
+                    var prevBtn = detailModal.querySelector('.modal-nav button:first-child');
+                    if (prevBtn && !prevBtn.disabled) prevBtn.click();
+                }}
+            }}
+        }}
+    }}, {{ passive: true }});
+
     // Close modals on overlay click or Escape
     document.querySelectorAll('.modal-overlay').forEach(function(overlay) {{
         overlay.addEventListener('click', function(e) {{
