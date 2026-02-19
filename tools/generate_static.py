@@ -406,6 +406,7 @@ def generate():
             <button class="chip chip-red" onclick="filterFavorites(this)" id="fav-chip">&#9733; Favorites <span class="chip-count" id="fav-count">0</span></button>
             <span class="chip-sep"></span>
             <button class="chip chip-green" onclick="filterOpen(this)">Open Now <span class="chip-count">{open_now}</span></button>
+            <button class="chip chip-green" onclick="filterApplyNow(this)" style="background:#dcfce7;border-color:#22c55e;color:#065f46;font-weight:700">Apply Now!</button>
             <button class="chip chip-amber" onclick="filterUpcoming(this)">Upcoming <span class="chip-count">{upcoming}</span></button>
             <button class="chip" onclick="filterBsn('No', this)">ADN OK</button>
             <button class="chip" onclick="filterBsn('Preferred', this)">BSN Preferred</button>
@@ -791,7 +792,12 @@ document.addEventListener('DOMContentLoaded', function() {{
                 row.dataset.status = this.value;
                 saveStatus(this.dataset.id, this.value);
                 renderStatusSummary();
-                showToast('Status saved');
+                if (this.value === 'Offer') {{
+                    showToast('Congratulations! 🎉');
+                    launchConfetti();
+                }} else {{
+                    showToast('Status saved');
+                }}
             }}
         }});
     }});
@@ -1251,6 +1257,18 @@ function filterCohort(range, btn) {{
     showToast('Showing ' + range.replace('-', '\u2013').toUpperCase() + ' 2026 cohorts');
 }}
 
+function filterApplyNow(btn) {{
+    if (btn.classList.contains('chip-active')) {{
+        clearAllFilters();
+        return;
+    }}
+    resetFilters();
+    window._specialFilter = 'apply-now';
+    filterTableSpecial();
+    btn.classList.add('chip-active');
+    showToast('Showing programs you can apply to right now');
+}}
+
 function filterBsn(val, btn) {{
     if (btn.classList.contains('chip-active')) {{
         clearAllFilters();
@@ -1275,7 +1293,18 @@ function filterTableSpecial() {{
         var dateCells = row.querySelectorAll('.col-date');
         var show = false;
 
-        if (window._specialFilter === 'favorites') {{
+        if (window._specialFilter === 'apply-now') {{
+            if (dateCells.length >= 2) {{
+                var openRawA = dateCells[0].dataset.raw || '';
+                var closeRawA = dateCells[1].dataset.raw || '';
+                var openDateA = parseDate(openRawA);
+                var closeDateA = parseDate(closeRawA);
+                var hasApplyLink = row.querySelector('.apply-link') !== null;
+                if (openDateA && openDateA <= today && closeDateA && closeDateA >= today && hasApplyLink) {{
+                    show = true;
+                }}
+            }}
+        }} else if (window._specialFilter === 'favorites') {{
             var favs = loadFavorites();
             var rowId = parseInt(row.dataset.id);
             if (favs.indexOf(rowId) !== -1) show = true;
@@ -2228,7 +2257,12 @@ function showDetail(id) {{
             Object.values(selectStatusClasses).forEach(function(c) {{ modalStatusSel.classList.remove(c); }});
             if (selectStatusClasses[newStatus]) modalStatusSel.classList.add(selectStatusClasses[newStatus]);
             renderStatusSummary();
-            showToast('Status updated');
+            if (newStatus === 'Offer') {{
+                showToast('Congratulations! 🎉');
+                launchConfetti();
+            }} else {{
+                showToast('Status updated');
+            }}
         }});
     }}
 
@@ -2466,7 +2500,11 @@ function renderPipeline() {{
             html += '</div>';
         }});
         if (items.length === 0) {{
-            html += '<div class="pipeline-empty">No programs</div>';
+            html += '<div class="pipeline-empty">';
+            if (col === 'Offer') html += '<div style="font-size:1.5rem;margin-bottom:4px">🎯</div>';
+            else if (col === 'Submitted') html += '<div style="font-size:1.5rem;margin-bottom:4px">📮</div>';
+            else if (col === 'Interview') html += '<div style="font-size:1.5rem;margin-bottom:4px">🎤</div>';
+            html += 'No programs</div>';
         }}
         html += '</div></div>';
     }});
@@ -2719,6 +2757,54 @@ function closeModal() {{
     if (window.location.hash.startsWith('#program-')) {{
         history.replaceState(null, '', window.location.pathname + window.location.search);
     }}
+}}
+
+function launchConfetti() {{
+    var colors = ['#ff6b6b', '#ffd93d', '#6bcb77', '#4d96ff', '#ff922b', '#cc5de8'];
+    var canvas = document.createElement('canvas');
+    canvas.className = 'confetti-canvas';
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    document.body.appendChild(canvas);
+    var ctx = canvas.getContext('2d');
+    var particles = [];
+    for (var i = 0; i < 80; i++) {{
+        particles.push({{
+            x: Math.random() * canvas.width,
+            y: -20 - Math.random() * 200,
+            w: 4 + Math.random() * 6,
+            h: 6 + Math.random() * 8,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            vx: (Math.random() - 0.5) * 4,
+            vy: 2 + Math.random() * 4,
+            rot: Math.random() * 360,
+            vr: (Math.random() - 0.5) * 10
+        }});
+    }}
+    var startTime = Date.now();
+    function animate() {{
+        var elapsed = Date.now() - startTime;
+        if (elapsed > 3000) {{
+            canvas.remove();
+            return;
+        }}
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(function(p) {{
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vy += 0.1;
+            p.rot += p.vr;
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate(p.rot * Math.PI / 180);
+            ctx.fillStyle = p.color;
+            ctx.globalAlpha = Math.max(0, 1 - elapsed / 3000);
+            ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+            ctx.restore();
+        }});
+        requestAnimationFrame(animate);
+    }}
+    animate();
 }}
 
 function showToast(message) {{
