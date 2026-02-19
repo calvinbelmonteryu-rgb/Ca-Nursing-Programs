@@ -10772,6 +10772,7 @@ document.addEventListener('DOMContentLoaded', function() {
     updatePageTitle();
     setInterval(updatePageTitle, 60000);
     renderStaleDataAlerts();
+    checkBrowserNotifications();
 
     // Close popups on outside click
     document.addEventListener('click', function(e) {
@@ -12105,6 +12106,49 @@ function restripe() {
             i++;
         }
     });
+}
+
+function checkBrowserNotifications() {
+    if (!('Notification' in window)) return;
+    // Only show once per session
+    if (window._browserNotifSent) return;
+    var savedStatuses = loadSavedStatuses();
+    var today = new Date(); today.setHours(0,0,0,0);
+    var urgent = [];
+    PROGRAMS.forEach(function(p) {
+        var st = savedStatuses[p.id] || p.application_status || 'Not Started';
+        if (st === 'Rejected' || st === 'Offer') return;
+        var closeD = parseDate(p.app_close_date);
+        var openD = parseDate(p.app_open_date);
+        if (closeD && openD && openD <= today && closeD >= today) {
+            var daysLeft = Math.ceil((closeD - today) / 86400000);
+            if (daysLeft <= 2) {
+                urgent.push({ name: p.hospital, days: daysLeft });
+            }
+        }
+    });
+    if (urgent.length === 0) return;
+    window._browserNotifSent = true;
+    if (Notification.permission === 'granted') {
+        sendBrowserNotif(urgent);
+    } else if (Notification.permission !== 'denied') {
+        Notification.requestPermission().then(function(perm) {
+            if (perm === 'granted') sendBrowserNotif(urgent);
+        });
+    }
+}
+
+function sendBrowserNotif(urgent) {
+    var body = urgent.map(function(u) {
+        return u.name + (u.days === 0 ? ' — LAST DAY!' : ' — ' + u.days + 'd left');
+    }).join('\n');
+    try {
+        new Notification('Urgent: Application Deadlines', {
+            body: body,
+            icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">\uD83C\uDFE5</text></svg>',
+            tag: 'rn-tracker-urgent'
+        });
+    } catch(e) {}
 }
 
 function updatePageTitle() {
