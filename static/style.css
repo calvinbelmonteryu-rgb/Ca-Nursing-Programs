@@ -1402,12 +1402,24 @@ a.bar-link:hover { background: #f3f4f6; }
     outline: 2px solid var(--accent-light);
     outline-offset: -2px;
     background: #eff6ff !important;
+    box-shadow: inset 4px 0 0 var(--accent, #2563eb);
 }
 
 .sheet tbody tr.selected-row .frozen-col,
 .sheet tbody tr.selected-row .col-check,
 .sheet tbody tr.selected-row .col-fav {
     background: #eff6ff !important;
+}
+
+[data-theme="dark"] .sheet tbody tr.selected-row {
+    background: #1e293b !important;
+    outline-color: var(--accent, #3b82f6);
+}
+
+[data-theme="dark"] .sheet tbody tr.selected-row .frozen-col,
+[data-theme="dark"] .sheet tbody tr.selected-row .col-check,
+[data-theme="dark"] .sheet tbody tr.selected-row .col-fav {
+    background: #1e293b !important;
 }
 
 /* Quick note button and popover */

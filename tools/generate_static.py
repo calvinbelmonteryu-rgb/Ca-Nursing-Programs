@@ -683,9 +683,15 @@ def generate():
                     <h3>Actions</h3>
                     <div class="shortcut-row"><kbd>/</kbd> <span>Focus search</span></div>
                     <div class="shortcut-row"><kbd>f</kbd> <span>Toggle favorite (selected row)</span></div>
+                    <div class="shortcut-row"><kbd>a</kbd> <span>Open apply URL (selected row)</span></div>
+                    <div class="shortcut-row"><kbd>e</kbd> <span>Cycle status (selected row)</span></div>
+                    <div class="shortcut-row"><kbd>x</kbd> <span>Toggle favorite (selected row)</span></div>
+                    <div class="shortcut-row"><kbd>g</kbd><kbd>g</kbd> <span>Go to first row</span></div>
+                    <div class="shortcut-row"><kbd>G</kbd> <span>Go to last row</span></div>
                     <div class="shortcut-row"><kbd>d</kbd> <span>Toggle dark mode</span></div>
                     <div class="shortcut-row"><kbd>n</kbd> <span>Toggle notifications</span></div>
-                    <div class="shortcut-row"><kbd>1</kbd>-<kbd>6</kbd> <span>Switch views (Table/Cards/Pipeline/Cal/Stats/Timeline)</span></div>
+                    <div class="shortcut-row"><kbd>1</kbd>-<kbd>6</kbd> <span>Switch views</span></div>
+                    <div class="shortcut-row"><kbd>Cmd+K</kbd> <span>Command palette</span></div>
                     <div class="shortcut-row"><kbd>?</kbd> <span>Show this help</span></div>
                 </div>
                 <div class="shortcut-group">
@@ -729,7 +735,7 @@ def generate():
 
     <footer class="container">
         <small>{total} programs across {len(regions)} regions &bull; Data updated {metadata.get('last_updated', today.strftime('%Y-%m-%d'))} &bull; Generated {today.strftime("%b %d, %Y")}</small>
-        <small class="shortcuts-hint"><kbd>/</kbd> Search &bull; <kbd>j</kbd><kbd>k</kbd> Navigate &bull; <kbd>Enter</kbd> Details &bull; <kbd>f</kbd> Favorite &bull; <kbd>n</kbd> Notify &bull; <kbd>1</kbd>-<kbd>6</kbd> Views &bull; <kbd>d</kbd> Dark &bull; <kbd>?</kbd> Help</small>
+        <small class="shortcuts-hint"><kbd>/</kbd> Search &bull; <kbd>j</kbd><kbd>k</kbd> Navigate &bull; <kbd>Enter</kbd> Detail &bull; <kbd>a</kbd> Apply &bull; <kbd>e</kbd> Status &bull; <kbd>x</kbd> Fav &bull; <kbd>gg</kbd>/<kbd>G</kbd> Top/Bottom &bull; <kbd>1</kbd>-<kbd>6</kbd> Views &bull; <kbd>?</kbd> Help</small>
     </footer>
 
     <button class="back-to-top" id="back-to-top" onclick="window.scrollTo({{top:0,behavior:'smooth'}})" title="Back to top">
@@ -1329,6 +1335,45 @@ document.addEventListener('DOMContentLoaded', function() {{
             if (e.key === 'Enter' && selectedRowIdx >= 0 && selectedRowIdx < visibleRows.length) {{
                 var id = parseInt(visibleRows[selectedRowIdx].dataset.id);
                 if (id) showDetail(id);
+            }}
+            // 'a' — open apply URL for selected row
+            if (e.key === 'a' && selectedRowIdx >= 0 && selectedRowIdx < visibleRows.length) {{
+                var applyBtn = visibleRows[selectedRowIdx].querySelector('.apply-btn');
+                if (applyBtn) {{
+                    var url = applyBtn.dataset.url;
+                    if (url) window.open(url, '_blank');
+                }}
+            }}
+            // 'e' — cycle status for selected row
+            if (e.key === 'e' && selectedRowIdx >= 0 && selectedRowIdx < visibleRows.length) {{
+                var statusSel = visibleRows[selectedRowIdx].querySelector('.status-select');
+                if (statusSel) {{
+                    var opts = Array.from(statusSel.options).map(function(o) {{ return o.value; }});
+                    var curIdx = opts.indexOf(statusSel.value);
+                    statusSel.value = opts[(curIdx + 1) % opts.length];
+                    statusSel.dispatchEvent(new Event('change'));
+                }}
+            }}
+            // 'x' — toggle favorite for selected row
+            if (e.key === 'x' && selectedRowIdx >= 0 && selectedRowIdx < visibleRows.length) {{
+                var favBtn = visibleRows[selectedRowIdx].querySelector('.fav-btn');
+                if (favBtn) favBtn.click();
+            }}
+            // 'g' then 'g' — go to top row
+            if (e.key === 'g') {{
+                if (window._lastKeyG) {{
+                    selectedRowIdx = 0;
+                    highlightSelectedRow(visibleRows, selectedRowIdx);
+                    window._lastKeyG = false;
+                }} else {{
+                    window._lastKeyG = true;
+                    setTimeout(function() {{ window._lastKeyG = false; }}, 500);
+                }}
+            }}
+            // 'G' — go to last row
+            if (e.key === 'G') {{
+                selectedRowIdx = visibleRows.length - 1;
+                highlightSelectedRow(visibleRows, selectedRowIdx);
             }}
         }}
     }});
