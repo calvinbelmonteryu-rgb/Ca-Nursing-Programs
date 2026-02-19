@@ -4475,6 +4475,82 @@ function renderStats() {{
     }}
     html += '</div>';
 
+    // Pay vs Reputation scatter plot
+    html += '<div class="stats-card stats-card-wide"><h3>Pay vs. Reputation</h3>';
+    html += '<div class="scatter-wrap">';
+    var svgW = 500, svgH = 300, pad = 40;
+    html += '<svg class="scatter-svg" viewBox="0 0 ' + svgW + ' ' + svgH + '" preserveAspectRatio="xMidYMid meet">';
+    // Axes
+    html += '<line x1="' + pad + '" y1="' + (svgH - pad) + '" x2="' + (svgW - 10) + '" y2="' + (svgH - pad) + '" stroke="#d1d5db" stroke-width="1"/>';
+    html += '<line x1="' + pad + '" y1="10" x2="' + pad + '" y2="' + (svgH - pad) + '" stroke="#d1d5db" stroke-width="1"/>';
+    // Axis labels
+    html += '<text x="' + (svgW / 2) + '" y="' + (svgH - 5) + '" text-anchor="middle" fill="#6b7280" font-size="11">Pay ($/hr)</text>';
+    html += '<text x="12" y="' + (svgH / 2) + '" text-anchor="middle" fill="#6b7280" font-size="11" transform="rotate(-90,12,' + (svgH / 2) + ')">Reputation</text>';
+    // Grid lines
+    for (var gi = 1; gi <= 5; gi++) {{
+        var gy = svgH - pad - (gi / 5) * (svgH - pad - 10);
+        html += '<line x1="' + pad + '" y1="' + gy + '" x2="' + (svgW - 10) + '" y2="' + gy + '" stroke="#f3f4f6" stroke-width="1"/>';
+        html += '<text x="' + (pad - 4) + '" y="' + (gy + 4) + '" text-anchor="end" fill="#9ca3af" font-size="9">' + gi + '</text>';
+    }}
+    // Pay scale ticks ($30-$90)
+    for (var pi = 30; pi <= 90; pi += 10) {{
+        var px = pad + ((pi - 30) / 60) * (svgW - pad - 10);
+        html += '<text x="' + px + '" y="' + (svgH - pad + 14) + '" text-anchor="middle" fill="#9ca3af" font-size="9">$' + pi + '</text>';
+    }}
+    // Plot programs
+    var regionDotColors = {{'Bay Area':'#3b82f6','SoCal LA':'#f59e0b','SoCal Orange':'#f97316','San Diego':'#ef4444','Central Valley':'#22c55e','Sacramento':'#8b5cf6','NorCal':'#8b5cf6','Inland Empire':'#ec4899'}};
+    PROGRAMS.forEach(function(p) {{
+        var pm = (p.pay_range || '').match(/(\\d[\\d.,]+)\\/hr/);
+        if (!pm) return;
+        var payVal = parseFloat(pm[1].replace(',',''));
+        var rep = p.reputation || 1;
+        var x = pad + ((payVal - 30) / 60) * (svgW - pad - 10);
+        var y = svgH - pad - (rep / 5) * (svgH - pad - 10);
+        x = Math.max(pad, Math.min(svgW - 10, x));
+        y = Math.max(10, Math.min(svgH - pad, y));
+        var st = savedStatuses[p.id] || p.application_status || 'Not Started';
+        var dotColor = '#9ca3af';
+        Object.keys(regionDotColors).forEach(function(rk) {{ if (p.region.indexOf(rk) !== -1) dotColor = regionDotColors[rk]; }});
+        var opacity = st === 'Rejected' ? '0.3' : st === 'Offer' ? '1' : '0.7';
+        html += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="6" fill="' + dotColor + '" opacity="' + opacity + '" stroke="#fff" stroke-width="1.5">';
+        html += '<title>' + escHtml(p.hospital) + '\\n$' + payVal.toFixed(2) + '/hr — ' + rep + ' stars\\n' + p.region + ' — ' + st + '</title>';
+        html += '</circle>';
+    }});
+    html += '</svg>';
+    // Legend
+    html += '<div class="scatter-legend">';
+    Object.keys(regionDotColors).forEach(function(r) {{
+        html += '<span class="scatter-legend-item"><span class="scatter-legend-dot" style="background:' + regionDotColors[r] + '"></span>' + r + '</span>';
+    }});
+    html += '</div>';
+    html += '</div></div>';
+
+    // Region x Status heatmap
+    html += '<div class="stats-card stats-card-wide"><h3>Region x Status Heatmap</h3>';
+    html += '<div class="heatmap-scroll"><table class="heatmap-table"><thead><tr><th></th>';
+    var hStatuses = ['Not Started','In Progress','Submitted','Interview','Offer','Rejected'];
+    hStatuses.forEach(function(s) {{ html += '<th>' + s + '</th>'; }});
+    html += '<th>Total</th></tr></thead><tbody>';
+    var allRegions = Object.keys(regionCounts).sort();
+    allRegions.forEach(function(reg) {{
+        html += '<tr><td class="heatmap-label">' + reg + '</td>';
+        var regTotal = 0;
+        hStatuses.forEach(function(st) {{
+            var count = 0;
+            PROGRAMS.forEach(function(p) {{
+                if (p.region === reg) {{
+                    var ps = savedStatuses[p.id] || p.application_status || 'Not Started';
+                    if (ps === st) count++;
+                }}
+            }});
+            regTotal += count;
+            var intensity = count === 0 ? '' : ' style="background:rgba(37,99,235,' + Math.min(0.15 + count * 0.15, 0.8) + ');color:' + (count > 3 ? '#fff' : '#1f2937') + '"';
+            html += '<td class="heatmap-cell"' + intensity + '>' + (count || '') + '</td>';
+        }});
+        html += '<td class="heatmap-total">' + regTotal + '</td></tr>';
+    }});
+    html += '</tbody></table></div></div>';
+
     html += '</div>';
 
     // My Journey timeline

@@ -4975,6 +4975,123 @@ mark.search-highlight {
     font-size: 1rem !important;
 }
 
+/* ===== SCATTER PLOT ===== */
+.scatter-wrap {
+    width: 100%;
+}
+
+.scatter-svg {
+    width: 100%;
+    max-height: 320px;
+}
+
+.scatter-svg circle {
+    cursor: pointer;
+    transition: r 0.15s;
+}
+
+.scatter-svg circle:hover {
+    r: 9;
+    filter: drop-shadow(0 0 4px rgba(0,0,0,0.3));
+}
+
+.scatter-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 8px;
+    justify-content: center;
+}
+
+.scatter-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.72rem;
+    color: #6b7280;
+}
+
+.scatter-legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+[data-theme="dark"] .scatter-svg line {
+    stroke: #374151;
+}
+
+[data-theme="dark"] .scatter-svg text {
+    fill: #9ca3af;
+}
+
+/* ===== HEATMAP ===== */
+.heatmap-scroll {
+    overflow-x: auto;
+}
+
+.heatmap-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.75rem;
+}
+
+.heatmap-table th {
+    padding: 6px 8px;
+    font-size: 0.68rem;
+    color: #6b7280;
+    text-align: center;
+    border-bottom: 1px solid #e5e7eb;
+    font-weight: 600;
+}
+
+.heatmap-label {
+    font-weight: 600;
+    color: #1f2937;
+    padding: 6px 10px;
+    white-space: nowrap;
+    text-align: left;
+}
+
+.heatmap-cell {
+    text-align: center;
+    padding: 6px 8px;
+    font-weight: 600;
+    border-radius: 3px;
+    min-width: 36px;
+}
+
+.heatmap-total {
+    text-align: center;
+    padding: 6px 8px;
+    font-weight: 700;
+    color: #1f2937;
+    border-left: 2px solid #e5e7eb;
+}
+
+[data-theme="dark"] .heatmap-table th {
+    color: #9ca3af;
+    border-bottom-color: #374151;
+}
+
+[data-theme="dark"] .heatmap-label {
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] .heatmap-total {
+    color: #e2e8f0;
+    border-left-color: #374151;
+}
+
+[data-theme="dark"] .heatmap-cell {
+    color: #e2e8f0;
+}
+
+.stats-card-wide {
+    grid-column: 1 / -1;
+}
+
 /* ===== TABLE GROUPING ===== */
 .group-header-row {
     cursor: pointer;
