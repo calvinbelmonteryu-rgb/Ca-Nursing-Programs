@@ -1431,6 +1431,34 @@ document.addEventListener('DOMContentLoaded', function() {{
             }});
         }}
     }});
+
+    // Multi-tab sync: refresh UI when localStorage changes in another tab
+    window.addEventListener('storage', function(e) {{
+        if (!e.key || !e.key.startsWith('rn_tracker_')) return;
+        if (e.key === 'rn_tracker_statuses') {{
+            var saved = loadSavedStatuses();
+            document.querySelectorAll('.status-select').forEach(function(sel) {{
+                var id = sel.dataset.id;
+                if (saved[id] && sel.value !== saved[id]) {{
+                    sel.value = saved[id];
+                    var row = sel.closest('tr');
+                    if (row) {{ applyRowStatus(row, saved[id]); row.dataset.status = saved[id]; }}
+                }}
+            }});
+            renderStatusSummary();
+            updateTableFooter();
+        }} else if (e.key === 'rn_tracker_notes') {{
+            markNotesIndicators();
+        }} else if (e.key === 'rn_tracker_favorites') {{
+            renderFavButtons();
+            updateFavCount();
+        }} else if (e.key === 'rn_tracker_theme') {{
+            var theme = localStorage.getItem('rn_tracker_theme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+        }} else if (e.key === 'rn_tracker_pins') {{
+            applyPins();
+        }}
+    }});
 }});
 
 function debounce(fn, ms) {{
@@ -3978,7 +4006,12 @@ function renderCards() {{
         }}
 
         html += '<div class="prog-card prog-card-' + stCls + '" onclick="showDetail(' + p.id + ')">';
-        html += '<div class="prog-card-header"><span class="prog-card-status prog-card-st-' + stCls + '">' + st + '</span>';
+        html += '<div class="prog-card-header">';
+        html += '<select class="card-status-select card-st-' + stCls + '" data-id="' + p.id + '" onchange="updateCardStatus(this); event.stopPropagation();" onclick="event.stopPropagation()">';
+        ['Not Started','In Progress','Submitted','Interview','Offer','Rejected'].forEach(function(opt) {{
+            html += '<option value="' + opt + '"' + (opt === st ? ' selected' : '') + '>' + opt + '</option>';
+        }});
+        html += '</select>';
         if (isFav) html += '<span class="prog-card-fav">\\u2605</span>';
         html += '</div>';
         html += '<h3 class="prog-card-name">' + p.hospital + '</h3>';
@@ -4004,6 +4037,25 @@ function renderCards() {{
     }});
 
     grid.innerHTML = html;
+}}
+
+function updateCardStatus(sel) {{
+    var id = sel.dataset.id;
+    var newStatus = sel.value;
+    saveStatus(id, newStatus);
+    logActivity(parseInt(id), 'Status changed to ' + newStatus);
+    renderStatusSummary();
+    updateTableFooter();
+    // Update table row if it exists
+    var tableRow = document.querySelector('.sheet tbody tr[data-id="' + id + '"]');
+    if (tableRow) {{
+        var tableSel = tableRow.querySelector('.status-select');
+        if (tableSel) tableSel.value = newStatus;
+        applyRowStatus(tableRow, newStatus);
+        tableRow.dataset.status = newStatus;
+    }}
+    showToast('Status: ' + newStatus);
+    if (newStatus === 'Offer') launchConfetti();
 }}
 
 // Cards view filter listeners

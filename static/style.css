@@ -4156,6 +4156,27 @@ mark.search-highlight {
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
+.card-status-select {
+    font-size: 0.62rem;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-weight: 700;
+    border: 1px solid transparent;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg width='8' height='5' viewBox='0 0 8 5' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%236b7280'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 4px center;
+    padding-right: 16px;
+}
+.card-status-select:focus { outline: none; }
+.card-st-not-started { background-color: #f3f4f6; color: #6b7280; }
+.card-st-in-progress { background-color: #fef3c7; color: #92400e; }
+.card-st-submitted { background-color: #dbeafe; color: #1e40af; }
+.card-st-interview { background-color: #ede9fe; color: #5b21b6; }
+.card-st-offer { background-color: #d1fae5; color: #065f46; }
+.card-st-rejected { background-color: #fee2e2; color: #991b1b; }
 .prog-card-st-not-started { background: #f3f4f6; color: #6b7280; }
 .prog-card-st-in-progress { background: #fef3c7; color: #92400e; }
 .prog-card-st-submitted { background: #dbeafe; color: #1e40af; }
