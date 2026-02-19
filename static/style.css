@@ -78,6 +78,35 @@ nav a.active {
     font-size: 0.75rem;
 }
 
+/* Nav progress */
+.nav-progress-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.nav-progress-bar {
+    display: inline-block;
+    width: 48px;
+    height: 6px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 3px;
+    overflow: hidden;
+}
+.nav-progress-fill {
+    display: block;
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent-light), #22c55e);
+    border-radius: 3px;
+    transition: width 0.5s ease;
+}
+.nav-progress-text {
+    font-size: 0.68rem;
+    color: rgba(255,255,255,0.7);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
 /* Notifications */
 .notif-nav {
     position: relative;
@@ -1203,6 +1232,22 @@ a.bar-link:hover { background: #f3f4f6; }
     transform: translateY(0);
 }
 
+.undo-btn {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 10px;
+    background: transparent;
+    color: #93c5fd;
+    border: 1px solid #93c5fd;
+    border-radius: 3px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    cursor: pointer;
+    vertical-align: middle;
+    transition: background 0.15s;
+}
+.undo-btn:hover { background: rgba(147,197,253,0.2); }
+
 /* ===== SELECTED ROW ===== */
 .sheet tbody tr.selected-row {
     outline: 2px solid var(--accent-light);
@@ -1313,10 +1358,33 @@ a.bar-link:hover { background: #f3f4f6; }
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background: #3b82f6;
+    background: var(--accent-light);
     margin-left: 4px;
     vertical-align: middle;
 }
+
+/* Table tags */
+.table-tags-wrap {
+    display: block;
+    margin-top: 2px;
+}
+.table-tag {
+    display: inline-block;
+    padding: 0 4px;
+    margin-right: 2px;
+    background: #e0e7ff;
+    color: #4338ca;
+    border-radius: 3px;
+    font-size: 0.58rem;
+    font-weight: 600;
+    line-height: 1.5;
+}
+.table-tag-more {
+    background: #f3f4f6;
+    color: #6b7280;
+}
+[data-theme="dark"] .table-tag { background: #312e81; color: #a5b4fc; }
+[data-theme="dark"] .table-tag-more { background: #1f2937; color: #9ca3af; }
 
 /* ===== ROW PREVIEW ===== */
 .row-preview {

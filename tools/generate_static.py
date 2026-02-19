@@ -339,6 +339,7 @@ def generate():
             <li><a href="#" id="nav-calendar" onclick="showView('calendar'); return false;">Calendar</a></li>
             <li><a href="#" id="nav-stats" onclick="showView('stats'); return false;">Stats</a></li>
             <li class="nclex-nav" title="Days until NCLEX ({nclex_date})"><span class="nclex-badge">{nclex_days if nclex_days is not None else '?'}d</span> NCLEX</li>
+            <li class="nav-progress-wrap" title="Application progress"><span class="nav-progress-bar" id="nav-progress-bar"><span class="nav-progress-fill" id="nav-progress-fill"></span></span><span class="nav-progress-text" id="nav-progress-text">0/{total}</span></li>
             <li class="notif-nav"><a href="#" onclick="toggleNotifications(); return false;" id="notif-toggle" title="Notifications">&#x1F514;<span class="notif-count" id="notif-count" style="display:none">0</span></a>
                 <div class="notif-panel" id="notif-panel" style="display:none">
                     <div class="notif-header"><strong>Notifications</strong><button onclick="clearNotifications(); return false;" class="notif-clear">Clear all</button></div>
@@ -848,6 +849,12 @@ function renderStatusSummary() {{
     bar.innerHTML = html;
     // Hide if all are Not Started
     bar.style.display = (counts['Not Started'] === total) ? 'none' : '';
+    // Update nav progress bar
+    var progressed = counts['In Progress'] + counts['Submitted'] + counts['Interview'] + counts['Offer'];
+    var fill = document.getElementById('nav-progress-fill');
+    var text = document.getElementById('nav-progress-text');
+    if (fill) fill.style.width = Math.round(progressed / total * 100) + '%';
+    if (text) text.textContent = progressed + '/' + total;
 }}
 
 function filterByStatus(status) {{
@@ -891,15 +898,26 @@ document.addEventListener('DOMContentLoaded', function() {{
         sel.addEventListener('change', function() {{
             var row = this.closest('tr');
             if (row) {{
-                applyRowStatus(row, this.value);
-                row.dataset.status = this.value;
-                saveStatus(this.dataset.id, this.value);
+                var prevStatus = row.dataset.status || 'Not Started';
+                var newStatus = this.value;
+                var selRef = this;
+                applyRowStatus(row, newStatus);
+                row.dataset.status = newStatus;
+                saveStatus(this.dataset.id, newStatus);
+                logActivity(parseInt(this.dataset.id), 'Status: ' + prevStatus + ' → ' + newStatus);
                 renderStatusSummary();
-                if (this.value === 'Offer') {{
-                    showToast('Congratulations! 🎉');
+                if (newStatus === 'Offer') {{
+                    showToast('Congratulations!');
                     launchConfetti();
                 }} else {{
-                    showToast('Status saved');
+                    showUndoToast('Status set to ' + newStatus, function() {{
+                        selRef.value = prevStatus;
+                        applyRowStatus(row, prevStatus);
+                        row.dataset.status = prevStatus;
+                        saveStatus(selRef.dataset.id, prevStatus);
+                        logActivity(parseInt(selRef.dataset.id), 'Undo: reverted to ' + prevStatus);
+                        renderStatusSummary();
+                    }});
                 }}
             }}
         }});
@@ -1068,6 +1086,7 @@ document.addEventListener('DOMContentLoaded', function() {{
     renderNotifications();
     renderSavedFilters();
     initRowPreview();
+    renderTableTags();
 
     // Close popups on outside click
     document.addEventListener('click', function(e) {{
@@ -2513,6 +2532,29 @@ function saveTags(id, tags) {{
     }} catch(e) {{}}
 }}
 
+function renderTableTags() {{
+    var allTags = JSON.parse(localStorage.getItem('rn_tracker_tags') || '{{}}');
+    document.querySelectorAll('.sheet tbody tr').forEach(function(row) {{
+        var id = row.dataset.id;
+        var tags = allTags[id] || [];
+        var hospCell = row.querySelector('.col-hospital');
+        if (!hospCell) return;
+        // Remove old tags
+        hospCell.querySelectorAll('.table-tag').forEach(function(t) {{ t.remove(); }});
+        if (tags.length > 0) {{
+            var tagHtml = '';
+            tags.slice(0, 2).forEach(function(t) {{
+                tagHtml += '<span class="table-tag">' + t + '</span>';
+            }});
+            if (tags.length > 2) tagHtml += '<span class="table-tag table-tag-more">+' + (tags.length - 2) + '</span>';
+            var wrap = document.createElement('span');
+            wrap.className = 'table-tags-wrap';
+            wrap.innerHTML = tagHtml;
+            hospCell.appendChild(wrap);
+        }}
+    }});
+}}
+
 function addTagFromSelect(id, sel) {{
     var val = sel.value;
     if (!val) return;
@@ -2529,6 +2571,7 @@ function addTagFromSelect(id, sel) {{
     }}
     sel.value = '';
     showDetail(id); // re-render
+    renderTableTags();
     showToast('Tag added');
 }}
 
@@ -2538,6 +2581,7 @@ function removeTag(id, tag) {{
     saveTags(id, tags);
     logActivity(id, 'Removed tag: ' + tag);
     showDetail(id); // re-render
+    renderTableTags();
     showToast('Tag removed');
 }}
 
@@ -3900,9 +3944,29 @@ function showToast(message) {{
         toast.className = 'toast';
         document.body.appendChild(toast);
     }}
-    toast.textContent = message;
+    toast.innerHTML = message;
     toast.classList.add('show');
-    setTimeout(function() {{ toast.classList.remove('show'); }}, 2500);
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(function() {{ toast.classList.remove('show'); }}, 2500);
+}}
+
+var undoTimer = null;
+function showUndoToast(message, undoFn) {{
+    var toast = document.querySelector('.toast');
+    if (!toast) {{
+        toast = document.createElement('div');
+        toast.className = 'toast';
+        document.body.appendChild(toast);
+    }}
+    toast.innerHTML = message + ' <button class="undo-btn" onclick="event.stopPropagation();">Undo</button>';
+    toast.querySelector('.undo-btn').addEventListener('click', function() {{
+        undoFn();
+        toast.classList.remove('show');
+        showToast('Undone');
+    }});
+    toast.classList.add('show');
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(function() {{ toast.classList.remove('show'); }}, 5000);
 }}
     </script>
 </body>
