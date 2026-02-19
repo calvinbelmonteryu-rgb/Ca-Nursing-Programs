@@ -1971,6 +1971,38 @@ document.addEventListener('DOMContentLoaded', function() {{
     renderStaleDataAlerts();
     checkBrowserNotifications();
     renderDailyIntention();
+    // Auto-scroll to most urgent program on load
+    setTimeout(function() {{
+        var today2 = new Date(); today2.setHours(0,0,0,0);
+        var savedStatuses2 = loadSavedStatuses();
+        var urgentRow = null;
+        var urgentDays = 999;
+        document.querySelectorAll('.sheet tbody tr').forEach(function(row) {{
+            if (row.style.display === 'none') return;
+            var id = row.dataset.id;
+            var st = savedStatuses2[id] || 'Not Started';
+            if (st === 'Rejected' || st === 'Offer' || st === 'Submitted') return;
+            var dateCells = row.querySelectorAll('.col-date');
+            if (dateCells.length >= 2) {{
+                var openRaw = dateCells[0].dataset.raw || '';
+                var closeRaw = dateCells[1].dataset.raw || '';
+                var openDate = parseDate(openRaw);
+                var closeDate = parseDate(closeRaw);
+                if (openDate && closeDate && openDate <= today2 && closeDate >= today2) {{
+                    var dLeft = Math.ceil((closeDate - today2) / 86400000);
+                    if (dLeft <= 2 && dLeft < urgentDays) {{
+                        urgentRow = row;
+                        urgentDays = dLeft;
+                    }}
+                }}
+            }}
+        }});
+        if (urgentRow) {{
+            urgentRow.scrollIntoView({{ behavior: 'smooth', block: 'center' }});
+            urgentRow.classList.add('urgent-flash');
+            setTimeout(function() {{ urgentRow.classList.remove('urgent-flash'); }}, 3000);
+        }}
+    }}, 800);
 
     // Close popups on outside click
     document.addEventListener('click', function(e) {{

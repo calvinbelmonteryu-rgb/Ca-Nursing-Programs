@@ -1586,6 +1586,20 @@ a.bar-link:hover { background: #f3f4f6; }
 .row-flash {
     animation: rowFlash 0.8s ease-out;
 }
+.urgent-flash {
+    animation: urgentPulse 1s ease-in-out 3;
+}
+@keyframes urgentPulse {
+    0%, 100% { background: transparent; }
+    50% { background: rgba(239, 68, 68, 0.15); }
+}
+[data-theme="dark"] .urgent-flash {
+    animation: urgentPulseDark 1s ease-in-out 3;
+}
+@keyframes urgentPulseDark {
+    0%, 100% { background: transparent; }
+    50% { background: rgba(239, 68, 68, 0.12); }
+}
 
 /* Notes indicator */
 .has-notes-dot {
