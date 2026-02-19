@@ -4226,6 +4226,26 @@ function highlightSelectedRow(rows, idx) {{
     if (idx >= 0 && idx < rows.length) {{
         rows[idx].classList.add('selected-row');
         rows[idx].scrollIntoView({{ block: 'nearest' }});
+        // Show row selection indicator
+        var indicator = document.getElementById('row-select-indicator');
+        if (!indicator) {{
+            indicator = document.createElement('div');
+            indicator.id = 'row-select-indicator';
+            indicator.className = 'row-select-indicator';
+            document.body.appendChild(indicator);
+        }}
+        var prog = PROGRAMS.find(function(p) {{ return p.id === parseInt(rows[idx].dataset.id); }});
+        var name = prog ? prog.hospital : '';
+        if (name.length > 20) name = name.substring(0, 20) + '...';
+        indicator.innerHTML = '<span class="rsi-idx">' + (idx + 1) + '/' + rows.length + '</span> ' + escHtml(name) + '<span class="rsi-hints">Enter:open &middot; e:status &middot; x:fav &middot; p:pin</span>';
+        indicator.style.display = 'block';
+        clearTimeout(window._rsiTimer);
+        window._rsiTimer = setTimeout(function() {{
+            indicator.style.display = 'none';
+        }}, 4000);
+    }} else {{
+        var indicator2 = document.getElementById('row-select-indicator');
+        if (indicator2) indicator2.style.display = 'none';
     }}
 }}
 
