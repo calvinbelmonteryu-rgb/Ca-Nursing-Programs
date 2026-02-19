@@ -351,6 +351,9 @@ def generate():
                 <button type="button" id="compare-btn" disabled onclick="goCompare()">Compare</button>
                 <button type="button" onclick="toggleDensity()" title="Toggle compact/comfortable view" id="density-btn">Compact</button>
                 <button type="button" onclick="exportCSV()" title="Export CSV">Export</button>
+                <button type="button" onclick="backupData()" title="Backup all your data (statuses, notes, checklists)">Backup</button>
+                <button type="button" onclick="document.getElementById('restore-file').click()" title="Restore from backup">Restore</button>
+                <input type="file" id="restore-file" accept=".json" style="display:none" onchange="restoreData(this)">
             </div>
         </div>
 
@@ -412,7 +415,7 @@ def generate():
 
     <footer class="container">
         <small>{total} programs across {len(regions)} regions &bull; Updated {today.strftime("%b %d, %Y")}</small>
-        <small class="shortcuts-hint"><kbd>/</kbd> Search &bull; <kbd>j</kbd><kbd>k</kbd> Navigate &bull; <kbd>Enter</kbd> Details &bull; <kbd>Esc</kbd> Close</small>
+        <small class="shortcuts-hint"><kbd>/</kbd> Search &bull; <kbd>j</kbd><kbd>k</kbd> Navigate &bull; <kbd>Enter</kbd> Details &bull; <kbd>&larr;</kbd><kbd>&rarr;</kbd> Prev/Next &bull; <kbd>d</kbd> Dark mode &bull; <kbd>Esc</kbd> Close</small>
     </footer>
 
     <button class="back-to-top" id="back-to-top" onclick="window.scrollTo({{top:0,behavior:'smooth'}})" title="Back to top">&uarr;</button>
@@ -602,6 +605,24 @@ document.addEventListener('DOMContentLoaded', function() {{
         if (e.key === 'Escape') document.activeElement.blur();
 
         if (!isEditing(e.target)) {{
+            // Dark mode shortcut
+            if (e.key === 'd') {{ toggleTheme(); return; }}
+
+            // Modal prev/next with arrow keys
+            var detailModal = document.getElementById('detail-modal');
+            if (detailModal && detailModal.classList.contains('modal-visible')) {{
+                if (e.key === 'ArrowLeft') {{
+                    var prevBtn = detailModal.querySelector('.modal-nav button:first-child');
+                    if (prevBtn && !prevBtn.disabled) prevBtn.click();
+                    return;
+                }}
+                if (e.key === 'ArrowRight') {{
+                    var nextBtn = detailModal.querySelector('.modal-nav button:last-child');
+                    if (nextBtn && !nextBtn.disabled) nextBtn.click();
+                    return;
+                }}
+            }}
+
             var visibleRows = Array.from(document.querySelectorAll('.sheet tbody tr')).filter(function(r) {{
                 return r.style.display !== 'none';
             }});
@@ -1246,6 +1267,47 @@ document.addEventListener('change', function(e) {{
     }} catch(ex) {{}}
 }})();
 
+function backupData() {{
+    var data = {{
+        statuses: loadSavedStatuses(),
+        notes: loadSavedNotes(),
+        checklists: JSON.parse(localStorage.getItem('rn_tracker_checklists') || '{{}}'),
+        theme: localStorage.getItem('rn_tracker_theme') || 'light',
+        density: localStorage.getItem('rn_tracker_density') || 'normal',
+        cols: JSON.parse(localStorage.getItem('rn_tracker_cols') || '{{}}'),
+        exported: new Date().toISOString()
+    }};
+    var blob = new Blob([JSON.stringify(data, null, 2)], {{type: 'application/json'}});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'rn_tracker_backup_' + new Date().toISOString().slice(0,10) + '.json';
+    a.click();
+    showToast('Backup saved');
+}}
+
+function restoreData(input) {{
+    var file = input.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(e) {{
+        try {{
+            var data = JSON.parse(e.target.result);
+            if (data.statuses) localStorage.setItem('rn_tracker_statuses', JSON.stringify(data.statuses));
+            if (data.notes) localStorage.setItem('rn_tracker_notes', JSON.stringify(data.notes));
+            if (data.checklists) localStorage.setItem('rn_tracker_checklists', JSON.stringify(data.checklists));
+            if (data.theme) localStorage.setItem('rn_tracker_theme', data.theme);
+            if (data.density) localStorage.setItem('rn_tracker_density', data.density);
+            if (data.cols) localStorage.setItem('rn_tracker_cols', JSON.stringify(data.cols));
+            showToast('Data restored! Reloading...');
+            setTimeout(function() {{ window.location.reload(); }}, 1000);
+        }} catch(ex) {{
+            showToast('Error: Invalid backup file');
+        }}
+    }};
+    reader.readAsText(file);
+    input.value = '';
+}}
+
 function toggleTheme() {{
     var html = document.documentElement;
     var btn = document.getElementById('theme-toggle');
@@ -1300,6 +1362,12 @@ function toggleDensity() {{
 function escHtml(str) {{
     if (!str) return '';
     return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}}
+
+function getVisibleProgramIds() {{
+    return Array.from(document.querySelectorAll('.sheet tbody tr')).filter(function(r) {{
+        return r.style.display !== 'none';
+    }}).map(function(r) {{ return parseInt(r.dataset.id); }});
 }}
 
 // Detail modal
@@ -1395,6 +1463,17 @@ function showDetail(id) {{
     if (p.application_url) {{
         html += '<div class="detail-actions"><a href="' + escHtml(p.application_url) + '" target="_blank" class="apply-btn-modal">Apply Now &rarr;</a></div>';
     }}
+
+    // Prev/Next navigation
+    var visibleIds = getVisibleProgramIds();
+    var currentIdx = visibleIds.indexOf(id);
+    var prevId = currentIdx > 0 ? visibleIds[currentIdx - 1] : null;
+    var nextId = currentIdx < visibleIds.length - 1 ? visibleIds[currentIdx + 1] : null;
+    html += '<div class="modal-nav">';
+    html += '<button onclick="showDetail(' + (prevId || 0) + ')"' + (prevId ? '' : ' disabled') + '>&larr; Previous</button>';
+    html += '<span style="color:#9ca3af;font-size:0.75rem">' + (currentIdx + 1) + ' of ' + visibleIds.length + '</span>';
+    html += '<button onclick="showDetail(' + (nextId || 0) + ')"' + (nextId ? '' : ' disabled') + '>Next &rarr;</button>';
+    html += '</div>';
 
     document.getElementById('modal-body').innerHTML = html;
     openModal('detail-modal');

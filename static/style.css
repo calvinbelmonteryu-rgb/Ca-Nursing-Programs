@@ -1250,6 +1250,47 @@ footer small {
     color: #1f2937;
 }
 
+.modal-nav {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.modal-nav button {
+    padding: 6px 14px;
+    font-size: 0.8rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: white;
+    cursor: pointer;
+    color: #374151;
+}
+
+.modal-nav button:hover {
+    background: #f3f4f6;
+}
+
+.modal-nav button:disabled {
+    opacity: 0.3;
+    cursor: default;
+}
+
+[data-theme="dark"] .modal-nav {
+    border-color: var(--border);
+}
+
+[data-theme="dark"] .modal-nav button {
+    background: var(--bg);
+    border-color: var(--border);
+    color: var(--text);
+}
+
+[data-theme="dark"] .modal-nav button:hover {
+    background: #334155;
+}
+
 .detail-modal-header h2 {
     margin: 0 0 4px 0;
     font-size: 1.3rem;
