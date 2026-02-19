@@ -7484,6 +7484,47 @@ mark.search-highlight {
     border-color: var(--accent, #3b82f6);
 }
 
+/* App window mini progress bar */
+.window-mini-bar {
+    height: 3px;
+    background: #e5e7eb;
+    border-radius: 2px;
+    margin-top: 3px;
+    overflow: hidden;
+}
+.window-mini-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.3s;
+}
+.wp-normal .window-mini-fill {
+    background: #22c55e;
+}
+.wp-urgent .window-mini-fill {
+    background: #f59e0b;
+}
+.wp-critical .window-mini-fill {
+    background: #ef4444;
+    animation: wp-pulse 1.5s ease-in-out infinite;
+}
+@keyframes wp-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+.window-mini-remaining {
+    display: block;
+    font-size: 0.6rem;
+    font-weight: 700;
+    margin-top: 1px;
+    line-height: 1;
+}
+.wp-normal + .window-mini-remaining { color: #16a34a; }
+.wp-urgent + .window-mini-remaining { color: #d97706; }
+.wp-critical + .window-mini-remaining { color: #dc2626; }
+[data-theme="dark"] .window-mini-bar {
+    background: #374151;
+}
+
     </style>
 </head>
 <body>
@@ -8178,7 +8219,7 @@ Contact: LAC_USC_NursingRecruitment@dhs.lacounty.gov or (323) 409-4663. Also che
 <td class="col-city" title="Santa Barbara">Santa Barbara</td>
 <td class="col-bsn bsn-pref clickable-filter" onclick="filterByBsn('Preferred')">Preferred</td>
 <td class="col-date" data-raw="2026-02-12" title="Currently open (2026-02-12)">Feb 12</td>
-<td class="col-date" data-raw="2026-02-22">Feb 22</td>
+<td class="col-date" data-raw="2026-02-22">Feb 22<div class="window-mini-bar wp-urgent"><div class="window-mini-fill" style="width:70%"></div></div><span class="window-mini-remaining">3d left</span></td>
 <td class="col-date" data-raw="2026-05-18">May 18</td>
 <td class="col-rep stars">★★★☆☆</td>
 <td class="col-pay" title="$48-58/hr">$48-58/hr<span class="pay-bar pay-bar-low"><span class="pay-bar-fill" style="width:20%"></span></span></td>

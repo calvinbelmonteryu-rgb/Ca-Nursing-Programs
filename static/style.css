@@ -7467,3 +7467,44 @@ mark.search-highlight {
 [data-theme="dark"] .region-card:hover {
     border-color: var(--accent, #3b82f6);
 }
+
+/* App window mini progress bar */
+.window-mini-bar {
+    height: 3px;
+    background: #e5e7eb;
+    border-radius: 2px;
+    margin-top: 3px;
+    overflow: hidden;
+}
+.window-mini-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.3s;
+}
+.wp-normal .window-mini-fill {
+    background: #22c55e;
+}
+.wp-urgent .window-mini-fill {
+    background: #f59e0b;
+}
+.wp-critical .window-mini-fill {
+    background: #ef4444;
+    animation: wp-pulse 1.5s ease-in-out infinite;
+}
+@keyframes wp-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+.window-mini-remaining {
+    display: block;
+    font-size: 0.6rem;
+    font-weight: 700;
+    margin-top: 1px;
+    line-height: 1;
+}
+.wp-normal + .window-mini-remaining { color: #16a34a; }
+.wp-urgent + .window-mini-remaining { color: #d97706; }
+.wp-critical + .window-mini-remaining { color: #dc2626; }
+[data-theme="dark"] .window-mini-bar {
+    background: #374151;
+}

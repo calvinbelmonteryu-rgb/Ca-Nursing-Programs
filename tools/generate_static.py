@@ -218,6 +218,16 @@ def generate():
             else:
                 open_title = f"Closed ({app_open_raw})"
 
+        # Compute app window progress bar
+        close_progress = ""
+        if open_d and close_d and open_d <= today and close_d >= today:
+            total_window = (close_d - open_d).days or 1
+            elapsed = (today - open_d).days
+            remaining = (close_d - today).days
+            pct_elapsed = min(int(elapsed / total_window * 100), 100)
+            urgency_cls = "wp-critical" if remaining <= 2 else "wp-urgent" if remaining <= 5 else "wp-normal"
+            close_progress = f'<div class="window-mini-bar {urgency_cls}"><div class="window-mini-fill" style="width:{pct_elapsed}%"></div></div><span class="window-mini-remaining">{remaining}d left</span>'
+
         bsn = p.get("bsn_required", "")
         bsn_cls = "bsn-no" if bsn == "No" else "bsn-pref" if bsn == "Preferred" else "bsn-req" if bsn == "Yes" else ""
 
@@ -250,7 +260,7 @@ def generate():
 <td class="col-city" title="{full_city}">{esc(city)}</td>
 <td class="col-bsn {bsn_cls} clickable-filter" onclick="filterByBsn('{esc(bsn)}')">{esc(bsn)}</td>
 <td class="col-date" data-raw="{esc(app_open_raw)}" title="{esc(open_title)}">{app_open_fmt}</td>
-<td class="col-date" data-raw="{esc(app_close_raw)}">{app_close_fmt}</td>
+<td class="col-date" data-raw="{esc(app_close_raw)}">{app_close_fmt}{close_progress}</td>
 <td class="col-date" data-raw="{esc(cohort_raw)}">{cohort_fmt}</td>
 <td class="col-rep stars">{stars}</td>
 <td class="col-pay" title="{esc(p.get('pay_range', ''))}">{esc(pay)}{pay_bar_html}</td>
