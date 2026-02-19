@@ -78,6 +78,12 @@ nav a.active {
 .sheet-count {
     font-size: 0.75rem;
     color: #6b7280;
+    transition: color 0.3s;
+}
+
+.sheet-count.count-changed {
+    color: #3b82f6;
+    font-weight: 600;
 }
 
 .sheet-filters {
@@ -233,6 +239,19 @@ tbody tr:hover .col-check { background: #eff6ff; }
 .col-hospital a:hover { text-decoration: underline; }
 .col-program { min-width: 160px; max-width: 240px; color: #6b7280; font-size: 0.74rem; }
 .col-region { min-width: 80px; white-space: nowrap; }
+.region-badge {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 4px;
+    vertical-align: middle;
+}
+.region-bay { background: #3b82f6; }
+.region-socal { background: #f59e0b; }
+.region-central { background: #22c55e; }
+.region-sacr { background: #8b5cf6; }
+.region-ie { background: #ef4444; }
 .col-city { min-width: 100px; white-space: nowrap; }
 .col-bsn { width: 40px; text-align: center; }
 .col-rep { width: 70px; white-space: nowrap; }
@@ -1354,6 +1373,11 @@ footer small {
     background: #fafafa;
 }
 
+.compare-best {
+    background: #ecfdf5 !important;
+    font-weight: 600;
+}
+
 /* ===== PAY CELL ===== */
 .pay-cell { font-size: 0.85rem; white-space: nowrap; }
 
@@ -1593,7 +1617,7 @@ footer small {
                 <input type="search" name="q" placeholder="Search... ( / )" value="">
                 <select data-instant="region">
                     <option value="">All Regions</option>
-                    <option value="Bay Area">Bay Area</option><option value="Central Valley">Central Valley</option><option value="NorCal">NorCal</option><option value="SoCal">SoCal</option><option value="Statewide">Statewide</option>
+                    <option value="Bay Area">Bay Area (8)</option><option value="Central Valley">Central Valley (5)</option><option value="NorCal">NorCal (5)</option><option value="SoCal">SoCal (37)</option><option value="Statewide">Statewide (2)</option>
                 </select>
                 <select data-instant="city">
                     <option value="">All Cities</option>
@@ -1671,7 +1695,7 @@ footer small {
 <td class="col-check"><input type="checkbox" class="compare-check" value="1"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="1">Kaiser Permanente (NorCal)</a></td>
 <td class="col-program">New Graduate RN Residency Program</td>
-<td class="col-region">NorCal</td>
+<td class="col-region"><span class="region-badge region-sacr"></span>NorCal</td>
 <td class="col-city" title="Multiple (Sacramento, Oakland, San Jose, Santa Rosa, etc.)">Sac, Oak, etc</td>
 <td class="col-bsn bsn-pref">Preferred</td>
 <td class="col-date" data-raw="2026-03-29">Mar 29</td>
@@ -1698,7 +1722,7 @@ Both Cohort 2 and 3 viable for May 2026 NCLEX taker. Apply via kaiserpermanentej
 <td class="col-check"><input type="checkbox" class="compare-check" value="2"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="2">UCLA Health</a></td>
 <td class="col-program">Vizient/AACN Nurse Residency Program</td>
-<td class="col-region">SoCal</td>
+<td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
 <td class="col-city" title="Los Angeles">LA</td>
 <td class="col-bsn bsn-req">Yes</td>
 <td class="col-date" data-raw="2026-03-02">Mar 2</td>
@@ -1715,7 +1739,7 @@ Both Cohort 2 and 3 viable for May 2026 NCLEX taker. Apply via kaiserpermanentej
 <td class="col-check"><input type="checkbox" class="compare-check" value="3"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="3">Cedars-Sinai Medical Center</a></td>
 <td class="col-program">New Graduate Nurse Residency</td>
-<td class="col-region">SoCal</td>
+<td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
 <td class="col-city" title="Los Angeles">LA</td>
 <td class="col-bsn bsn-no">No</td>
 <td class="col-date" data-raw="2026-06-15">Jun 15</td>
@@ -1732,7 +1756,7 @@ Both Cohort 2 and 3 viable for May 2026 NCLEX taker. Apply via kaiserpermanentej
 <td class="col-check"><input type="checkbox" class="compare-check" value="4"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="4">Stanford Health Care</a></td>
 <td class="col-program">New Graduate RN Residency</td>
-<td class="col-region">Bay Area</td>
+<td class="col-region"><span class="region-badge region-bay"></span>Bay Area</td>
 <td class="col-city" title="Palo Alto">Palo Alto</td>
 <td class="col-bsn bsn-no">No</td>
 <td class="col-date" data-raw=""></td>
@@ -1749,7 +1773,7 @@ Both Cohort 2 and 3 viable for May 2026 NCLEX taker. Apply via kaiserpermanentej
 <td class="col-check"><input type="checkbox" class="compare-check" value="5"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="5">UCSF Medical Center</a></td>
 <td class="col-program">New Nurse Residency Training Program (NNRTP)</td>
-<td class="col-region">Bay Area</td>
+<td class="col-region"><span class="region-badge region-bay"></span>Bay Area</td>
 <td class="col-city" title="San Francisco">SF</td>
 <td class="col-bsn bsn-no">No</td>
 <td class="col-date" data-raw=""></td>
@@ -1766,7 +1790,7 @@ Both Cohort 2 and 3 viable for May 2026 NCLEX taker. Apply via kaiserpermanentej
 <td class="col-check"><input type="checkbox" class="compare-check" value="6"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="6">UC Davis Medical Center</a></td>
 <td class="col-program">Nurse Residency Program</td>
-<td class="col-region">NorCal</td>
+<td class="col-region"><span class="region-badge region-sacr"></span>NorCal</td>
 <td class="col-city" title="Sacramento">Sac</td>
 <td class="col-bsn bsn-pref">Preferred</td>
 <td class="col-date" data-raw=""></td>
@@ -1783,7 +1807,7 @@ Both Cohort 2 and 3 viable for May 2026 NCLEX taker. Apply via kaiserpermanentej
 <td class="col-check"><input type="checkbox" class="compare-check" value="7"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="7">Providence Health</a></td>
 <td class="col-program">Transition into Practice (TIP) RN Residency Program</td>
-<td class="col-region">SoCal</td>
+<td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
 <td class="col-city" title="Multiple (Burbank, Mission Hills, Tarzana, Santa Monica, Torrance)">Burbank, Mission Hls, etc</td>
 <td class="col-bsn bsn-no">No</td>
 <td class="col-date" data-raw=""></td>
@@ -1817,7 +1841,7 @@ Both Cohort 2 and 3 viable for May 2026 NCLEX taker. Apply via kaiserpermanentej
 <td class="col-check"><input type="checkbox" class="compare-check" value="9"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="9">Sutter Health</a></td>
 <td class="col-program">New Graduate RN Residency</td>
-<td class="col-region">NorCal</td>
+<td class="col-region"><span class="region-badge region-sacr"></span>NorCal</td>
 <td class="col-city" title="Multiple (Sacramento, Bay Area)">Sac, Bay Area</td>
 <td class="col-bsn bsn-pref">Preferred</td>
 <td class="col-date" data-raw=""></td>
@@ -1867,7 +1891,7 @@ ADN accepted (BSN preferred). NCLEX not required at app time but valid license n
 <td class="col-check"><input type="checkbox" class="compare-check" value="11"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="11">Children&#39;s Hospital Los Angeles (CHLA)</a></td>
 <td class="col-program">RN Residency in Pediatrics</td>
-<td class="col-region">SoCal</td>
+<td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
 <td class="col-city" title="Los Angeles">LA</td>
 <td class="col-bsn bsn-req">Yes</td>
 <td class="col-date" data-raw=""></td>
@@ -1884,7 +1908,7 @@ ADN accepted (BSN preferred). NCLEX not required at app time but valid license n
 <td class="col-check"><input type="checkbox" class="compare-check" value="12"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="12">UC Irvine Medical Center</a></td>
 <td class="col-program">Vizient/AACN Nurse Residency Program</td>
-<td class="col-region">SoCal</td>
+<td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
 <td class="col-city" title="Orange">Orange</td>
 <td class="col-bsn bsn-req">Yes</td>
 <td class="col-date" data-raw="2026-06-15">Jun 15</td>
@@ -1901,7 +1925,7 @@ ADN accepted (BSN preferred). NCLEX not required at app time but valid license n
 <td class="col-check"><input type="checkbox" class="compare-check" value="13"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="13">Adventist Health White Memorial</a></td>
 <td class="col-program">New Grad Nurse Residency</td>
-<td class="col-region">SoCal</td>
+<td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
 <td class="col-city" title="Los Angeles (Boyle Heights)">LA (Boyle Hts)</td>
 <td class="col-bsn bsn-no">No</td>
 <td class="col-date" data-raw=""></td>
@@ -1918,7 +1942,7 @@ ADN accepted (BSN preferred). NCLEX not required at app time but valid license n
 <td class="col-check"><input type="checkbox" class="compare-check" value="14"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="14">Sharp HealthCare</a></td>
 <td class="col-program">New Graduate RN Residency</td>
-<td class="col-region">SoCal</td>
+<td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
 <td class="col-city" title="San Diego">SD</td>
 <td class="col-bsn bsn-pref">Preferred</td>
 <td class="col-date" data-raw="2026-03-10">Mar 10</td>
@@ -1946,7 +1970,7 @@ ADN accepted (BSN preferred). NCLEX not required at app time but valid license n
 <td class="col-check"><input type="checkbox" class="compare-check" value="15"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="15">Scripps Health</a></td>
 <td class="col-program">New Graduate Nurse Residency Program</td>
-<td class="col-region">SoCal</td>
+<td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
 <td class="col-city" title="San Diego">SD</td>
 <td class="col-bsn bsn-pref">Preferred</td>
 <td class="col-date" data-raw="2026-06-21">Jun 21</td>
@@ -1973,7 +1997,7 @@ HireVue video interview required (72-hr expiration, 10 questions, self-paced). 4
 <td class="col-check"><input type="checkbox" class="compare-check" value="16"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="16">Loma Linda University Health</a></td>
 <td class="col-program">Adult RN Residency Program</td>
-<td class="col-region">SoCal</td>
+<td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
 <td class="col-city" title="Loma Linda">Loma Linda</td>
 <td class="col-bsn bsn-req">Yes</td>
 <td class="col-date" data-raw="2026-02-23">Feb 23</td>
@@ -1999,7 +2023,7 @@ BSN required. &lt;12 months RN experience. 1-year program + 2-year employment co
 <td class="col-check"><input type="checkbox" class="compare-check" value="17"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="17">Keck Medicine of USC</a></td>
 <td class="col-program">Versant RN Residency Program</td>
-<td class="col-region">SoCal</td>
+<td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
 <td class="col-city" title="Los Angeles">LA</td>
 <td class="col-bsn bsn-req">Yes</td>
 <td class="col-date" data-raw="2026-06-02">Jun 2</td>
@@ -2016,7 +2040,7 @@ BSN required. &lt;12 months RN experience. 1-year program + 2-year employment co
 <td class="col-check"><input type="checkbox" class="compare-check" value="18"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="18">John Muir Health</a></td>
 <td class="col-program">Vizient/AACN Nurse Residency Program</td>
-<td class="col-region">Bay Area</td>
+<td class="col-region"><span class="region-badge region-bay"></span>Bay Area</td>
 <td class="col-city" title="Walnut Creek / Concord">W Creek / Concord</td>
 <td class="col-bsn bsn-pref">Preferred</td>
 <td class="col-date" data-raw=""></td>
@@ -2033,7 +2057,7 @@ BSN required. &lt;12 months RN experience. 1-year program + 2-year employment co
 <td class="col-check"><input type="checkbox" class="compare-check" value="19"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="19">Hoag Memorial Hospital Presbyterian</a></td>
 <td class="col-program">New Graduate Nurse Residency Program</td>
-<td class="col-region">SoCal</td>
+<td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
 <td class="col-city" title="Newport Beach / Irvine">Newport / Irvine</td>
 <td class="col-bsn bsn-req">Yes</td>
 <td class="col-date" data-raw=""></td>
@@ -2050,7 +2074,7 @@ BSN required. &lt;12 months RN experience. 1-year program + 2-year employment co
 <td class="col-check"><input type="checkbox" class="compare-check" value="20"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="20">Rady Children&#39;s Hospital San Diego</a></td>
 <td class="col-program">New Grad RN Transition to Practice Program</td>
-<td class="col-region">SoCal</td>
+<td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
 <td class="col-city" title="San Diego">SD</td>
 <td class="col-bsn bsn-pref">Preferred</td>
 <td class="col-date" data-raw=""></td>
@@ -2067,7 +2091,7 @@ BSN required. &lt;12 months RN experience. 1-year program + 2-year employment co
 <td class="col-check"><input type="checkbox" class="compare-check" value="21"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="21">Community Medical Centers</a></td>
 <td class="col-program">RN Residency Program</td>
-<td class="col-region">Central Valley</td>
+<td class="col-region"><span class="region-badge region-central"></span>Central Valley</td>
 <td class="col-city" title="Fresno / Clovis">Fresno / Clovis</td>
 <td class="col-bsn bsn-pref">Preferred</td>
 <td class="col-date" data-raw=""></td>
@@ -2084,7 +2108,7 @@ BSN required. &lt;12 months RN experience. 1-year program + 2-year employment co
 <td class="col-check"><input type="checkbox" class="compare-check" value="22"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="22">LA County + USC Medical Center (LAC+USC)</a></td>
 <td class="col-program">New Graduate RN Residency Program</td>
-<td class="col-region">SoCal</td>
+<td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
 <td class="col-city" title="Los Angeles">LA</td>
 <td class="col-bsn bsn-no">No</td>
 <td class="col-date" data-raw=""></td>
@@ -2103,7 +2127,7 @@ Contact: LAC_USC_NursingRecruitment@dhs.lacounty.gov or (323) 409-4663. Also che
 <td class="col-check"><input type="checkbox" class="compare-check" value="23"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="23">Zuckerberg San Francisco General Hospital</a></td>
 <td class="col-program">Registered Nurse Training Program (2320)</td>
-<td class="col-region">Bay Area</td>
+<td class="col-region"><span class="region-badge region-bay"></span>Bay Area</td>
 <td class="col-city" title="San Francisco">SF</td>
 <td class="col-bsn bsn-no">No</td>
 <td class="col-date" data-raw=""></td>
@@ -2120,7 +2144,7 @@ Contact: LAC_USC_NursingRecruitment@dhs.lacounty.gov or (323) 409-4663. Also che
 <td class="col-check"><input type="checkbox" class="compare-check" value="24"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="24">El Camino Health</a></td>
 <td class="col-program">New Graduate RN Residency Program</td>
-<td class="col-region">Bay Area</td>
+<td class="col-region"><span class="region-badge region-bay"></span>Bay Area</td>
 <td class="col-city" title="Mountain View / Los Gatos">Mtn View / Los Gatos</td>
 <td class="col-bsn bsn-pref">Preferred</td>
 <td class="col-date" data-raw="2026-06-01">Jun 1</td>
@@ -2137,7 +2161,7 @@ Contact: LAC_USC_NursingRecruitment@dhs.lacounty.gov or (323) 409-4663. Also che
 <td class="col-check"><input type="checkbox" class="compare-check" value="25"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="25">Valley Children&#39;s Healthcare</a></td>
 <td class="col-program">Transition to Practice (TTP) Program</td>
-<td class="col-region">Central Valley</td>
+<td class="col-region"><span class="region-badge region-central"></span>Central Valley</td>
 <td class="col-city" title="Madera">Madera</td>
 <td class="col-bsn bsn-pref">Preferred</td>
 <td class="col-date" data-raw=""></td>
@@ -2154,7 +2178,7 @@ Contact: LAC_USC_NursingRecruitment@dhs.lacounty.gov or (323) 409-4663. Also che
 <td class="col-check"><input type="checkbox" class="compare-check" value="26"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="26">Cottage Health</a></td>
 <td class="col-program">RN Residency Program</td>
-<td class="col-region">SoCal</td>
+<td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
 <td class="col-city" title="Santa Barbara">Santa Barbara</td>
 <td class="col-bsn bsn-pref">Preferred</td>
 <td class="col-date" data-raw="2026-02-12">Feb 12</td>
@@ -2183,7 +2207,7 @@ Contact: LAC_USC_NursingRecruitment@dhs.lacounty.gov or (323) 409-4663. Also che
 <td class="col-check"><input type="checkbox" class="compare-check" value="27"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="27">Eisenhower Health</a></td>
 <td class="col-program">Coeta &amp; Donald Barker Foundation Nurse Residency</td>
-<td class="col-region">SoCal</td>
+<td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
 <td class="col-city" title="Rancho Mirage">Rancho Mirage</td>
 <td class="col-bsn bsn-pref">Preferred</td>
 <td class="col-date" data-raw=""></td>
@@ -2200,7 +2224,7 @@ Contact: LAC_USC_NursingRecruitment@dhs.lacounty.gov or (323) 409-4663. Also che
 <td class="col-check"><input type="checkbox" class="compare-check" value="28"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="28">Arrowhead Regional Medical Center</a></td>
 <td class="col-program">New Graduate Nurse Residency Program</td>
-<td class="col-region">SoCal</td>
+<td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
 <td class="col-city" title="Colton">Colton</td>
 <td class="col-bsn bsn-no">No</td>
 <td class="col-date" data-raw=""></td>
@@ -2217,7 +2241,7 @@ Contact: LAC_USC_NursingRecruitment@dhs.lacounty.gov or (323) 409-4663. Also che
 <td class="col-check"><input type="checkbox" class="compare-check" value="29"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="29">MemorialCare Long Beach Medical Center / Miller Children&#39;s</a></td>
 <td class="col-program">New Grad RN Residency Program</td>
-<td class="col-region">SoCal</td>
+<td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
 <td class="col-city" title="Long Beach">Long Beach</td>
 <td class="col-bsn bsn-req">Yes</td>
 <td class="col-date" data-raw=""></td>
@@ -2234,7 +2258,7 @@ Contact: LAC_USC_NursingRecruitment@dhs.lacounty.gov or (323) 409-4663. Also che
 <td class="col-check"><input type="checkbox" class="compare-check" value="30"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="30">Palomar Health</a></td>
 <td class="col-program">Nurse Residency Program</td>
-<td class="col-region">SoCal</td>
+<td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
 <td class="col-city" title="Escondido / Poway">Escondido / Poway</td>
 <td class="col-bsn bsn-pref">Preferred</td>
 <td class="col-date" data-raw="2026-06-01">Jun 1</td>
@@ -2251,7 +2275,7 @@ Contact: LAC_USC_NursingRecruitment@dhs.lacounty.gov or (323) 409-4663. Also che
 <td class="col-check"><input type="checkbox" class="compare-check" value="31"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="31">Huntington Health</a></td>
 <td class="col-program">Nurse Residency Training Program</td>
-<td class="col-region">SoCal</td>
+<td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
 <td class="col-city" title="Pasadena">Pasadena</td>
 <td class="col-bsn bsn-pref">Preferred</td>
 <td class="col-date" data-raw=""></td>
@@ -2268,7 +2292,7 @@ Contact: LAC_USC_NursingRecruitment@dhs.lacounty.gov or (323) 409-4663. Also che
 <td class="col-check"><input type="checkbox" class="compare-check" value="32"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="32">Kaiser Permanente (SoCal)</a></td>
 <td class="col-program">New Graduate RN Residency Program</td>
-<td class="col-region">SoCal</td>
+<td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
 <td class="col-city" title="Multiple (Los Angeles, Orange County, San Diego, Inland Empire)">LA, OC, etc</td>
 <td class="col-bsn bsn-pref">Preferred</td>
 <td class="col-date" data-raw="2026-04-24">Apr 24</td>
@@ -2295,7 +2319,7 @@ Both Cohort 2 and 3 viable for May 2026 NCLEX taker. Apply via kaiserpermanentej
 <td class="col-check"><input type="checkbox" class="compare-check" value="33"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="33">UC San Diego Health</a></td>
 <td class="col-program">New Graduate RN Residency Program</td>
-<td class="col-region">SoCal</td>
+<td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
 <td class="col-city" title="San Diego / La Jolla">SD / La Jolla</td>
 <td class="col-bsn bsn-req">Yes</td>
 <td class="col-date" data-raw=""></td>
@@ -2312,7 +2336,7 @@ Both Cohort 2 and 3 viable for May 2026 NCLEX taker. Apply via kaiserpermanentej
 <td class="col-check"><input type="checkbox" class="compare-check" value="34"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="34">Lucile Packard Children&#39;s Hospital Stanford</a></td>
 <td class="col-program">New Graduate RN Residency Program</td>
-<td class="col-region">Bay Area</td>
+<td class="col-region"><span class="region-badge region-bay"></span>Bay Area</td>
 <td class="col-city" title="Palo Alto">Palo Alto</td>
 <td class="col-bsn bsn-req">Yes</td>
 <td class="col-date" data-raw="2026-03-06">Mar 6</td>
@@ -2329,7 +2353,7 @@ Both Cohort 2 and 3 viable for May 2026 NCLEX taker. Apply via kaiserpermanentej
 <td class="col-check"><input type="checkbox" class="compare-check" value="35"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="35">Children&#39;s Hospital of Orange County (CHOC)</a></td>
 <td class="col-program">New Graduate Nurse Residency Program</td>
-<td class="col-region">SoCal</td>
+<td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
 <td class="col-city" title="Orange">Orange</td>
 <td class="col-bsn bsn-no">No</td>
 <td class="col-date" data-raw="2026-05-16">May 16</td>
@@ -2346,7 +2370,7 @@ Both Cohort 2 and 3 viable for May 2026 NCLEX taker. Apply via kaiserpermanentej
 <td class="col-check"><input type="checkbox" class="compare-check" value="36"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="36">PIH Health Whittier Hospital</a></td>
 <td class="col-program">New Graduate Nurse Residency Program</td>
-<td class="col-region">SoCal</td>
+<td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
 <td class="col-city" title="Whittier">Whittier</td>
 <td class="col-bsn bsn-no">No</td>
 <td class="col-date" data-raw="2026-03-09">Mar 9</td>
@@ -2373,7 +2397,7 @@ Current cohort started 2/23/2026. ~25-30 nurses per cohort. Apply via jobs.pihhe
 <td class="col-check"><input type="checkbox" class="compare-check" value="37"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="37">Torrance Memorial Medical Center</a></td>
 <td class="col-program">New Graduate RN Residency Program</td>
-<td class="col-region">SoCal</td>
+<td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
 <td class="col-city" title="Torrance">Torrance</td>
 <td class="col-bsn bsn-pref">Preferred</td>
 <td class="col-date" data-raw=""></td>
@@ -2390,7 +2414,7 @@ Current cohort started 2/23/2026. ~25-30 nurses per cohort. Apply via jobs.pihhe
 <td class="col-check"><input type="checkbox" class="compare-check" value="38"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="38">Pomona Valley Hospital Medical Center</a></td>
 <td class="col-program">Versant RN Residency Program</td>
-<td class="col-region">SoCal</td>
+<td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
 <td class="col-city" title="Pomona">Pomona</td>
 <td class="col-bsn bsn-no">No</td>
 <td class="col-date" data-raw=""></td>
@@ -2407,7 +2431,7 @@ Current cohort started 2/23/2026. ~25-30 nurses per cohort. Apply via jobs.pihhe
 <td class="col-check"><input type="checkbox" class="compare-check" value="39"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="39">City of Hope National Medical Center</a></td>
 <td class="col-program">New Graduate RN Residency Program</td>
-<td class="col-region">SoCal</td>
+<td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
 <td class="col-city" title="Duarte">Duarte</td>
 <td class="col-bsn bsn-req">Yes</td>
 <td class="col-date" data-raw="2026-08-01">Aug 1</td>
@@ -2424,7 +2448,7 @@ Current cohort started 2/23/2026. ~25-30 nurses per cohort. Apply via jobs.pihhe
 <td class="col-check"><input type="checkbox" class="compare-check" value="40"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="40">VA Greater Los Angeles Healthcare System</a></td>
 <td class="col-program">Transition to Practice (TTP) Nurse Residency</td>
-<td class="col-region">SoCal</td>
+<td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
 <td class="col-city" title="Los Angeles (West LA)">LA (West LA)</td>
 <td class="col-bsn bsn-req">Yes</td>
 <td class="col-date" data-raw="2026-04-01">Apr 1</td>
@@ -2441,7 +2465,7 @@ Current cohort started 2/23/2026. ~25-30 nurses per cohort. Apply via jobs.pihhe
 <td class="col-check"><input type="checkbox" class="compare-check" value="41"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="41">Santa Clara Valley Medical Center</a></td>
 <td class="col-program">New Graduate RN Residency Program</td>
-<td class="col-region">Bay Area</td>
+<td class="col-region"><span class="region-badge region-bay"></span>Bay Area</td>
 <td class="col-city" title="San Jose">SJ</td>
 <td class="col-bsn bsn-no">No</td>
 <td class="col-date" data-raw=""></td>
@@ -2458,7 +2482,7 @@ Current cohort started 2/23/2026. ~25-30 nurses per cohort. Apply via jobs.pihhe
 <td class="col-check"><input type="checkbox" class="compare-check" value="42"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="42">Emanate Health</a></td>
 <td class="col-program">New Graduate Nurse Residency Program</td>
-<td class="col-region">SoCal</td>
+<td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
 <td class="col-city" title="West Covina / Covina / Glendora">W Covina+</td>
 <td class="col-bsn bsn-no">No</td>
 <td class="col-date" data-raw=""></td>
@@ -2477,7 +2501,7 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
 <td class="col-check"><input type="checkbox" class="compare-check" value="43"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="43">Riverside University Health System</a></td>
 <td class="col-program">New Graduate RN Residency Program</td>
-<td class="col-region">SoCal</td>
+<td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
 <td class="col-city" title="Moreno Valley">Moreno Valley</td>
 <td class="col-bsn bsn-no">No</td>
 <td class="col-date" data-raw=""></td>
@@ -2494,7 +2518,7 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
 <td class="col-check"><input type="checkbox" class="compare-check" value="44"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="44">Kaweah Health</a></td>
 <td class="col-program">New Graduate Nurse Residency Program</td>
-<td class="col-region">Central Valley</td>
+<td class="col-region"><span class="region-badge region-central"></span>Central Valley</td>
 <td class="col-city" title="Visalia">Visalia</td>
 <td class="col-bsn bsn-no">No</td>
 <td class="col-date" data-raw=""></td>
@@ -2511,7 +2535,7 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
 <td class="col-check"><input type="checkbox" class="compare-check" value="45"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="45">Washington Hospital Healthcare System</a></td>
 <td class="col-program">New Graduate RN Residency Program</td>
-<td class="col-region">Bay Area</td>
+<td class="col-region"><span class="region-badge region-bay"></span>Bay Area</td>
 <td class="col-city" title="Fremont">Fremont</td>
 <td class="col-bsn bsn-req">Yes</td>
 <td class="col-date" data-raw=""></td>
@@ -2528,7 +2552,7 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
 <td class="col-check"><input type="checkbox" class="compare-check" value="46"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="46">NorthBay Healthcare</a></td>
 <td class="col-program">New Graduate RN Residency Program</td>
-<td class="col-region">NorCal</td>
+<td class="col-region"><span class="region-badge region-sacr"></span>NorCal</td>
 <td class="col-city" title="Fairfield / Vacaville">Fairfield / Vacaville</td>
 <td class="col-bsn bsn-no">No</td>
 <td class="col-date" data-raw=""></td>
@@ -2545,7 +2569,7 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
 <td class="col-check"><input type="checkbox" class="compare-check" value="47"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="47">Kern Medical</a></td>
 <td class="col-program">New Graduate RN Residency Program</td>
-<td class="col-region">Central Valley</td>
+<td class="col-region"><span class="region-badge region-central"></span>Central Valley</td>
 <td class="col-city" title="Bakersfield">Bakersfield</td>
 <td class="col-bsn bsn-no">No</td>
 <td class="col-date" data-raw=""></td>
@@ -2562,7 +2586,7 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
 <td class="col-check"><input type="checkbox" class="compare-check" value="48"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="48">Redlands Community Hospital</a></td>
 <td class="col-program">New Grad Registered Nurse Program</td>
-<td class="col-region">SoCal</td>
+<td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
 <td class="col-city" title="Redlands">Redlands</td>
 <td class="col-bsn bsn-no">No</td>
 <td class="col-date" data-raw=""></td>
@@ -2579,7 +2603,7 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
 <td class="col-check"><input type="checkbox" class="compare-check" value="49"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="49">USC Arcadia Hospital</a></td>
 <td class="col-program">RN New Grad Training Program</td>
-<td class="col-region">SoCal</td>
+<td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
 <td class="col-city" title="Arcadia">Arcadia</td>
 <td class="col-bsn bsn-pref">Preferred</td>
 <td class="col-date" data-raw=""></td>
@@ -2596,7 +2620,7 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
 <td class="col-check"><input type="checkbox" class="compare-check" value="50"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="50">Ventura County Medical Center</a></td>
 <td class="col-program">RN Residency Program</td>
-<td class="col-region">SoCal</td>
+<td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
 <td class="col-city" title="Ventura">Ventura</td>
 <td class="col-bsn bsn-no">No</td>
 <td class="col-date" data-raw=""></td>
@@ -2613,7 +2637,7 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
 <td class="col-check"><input type="checkbox" class="compare-check" value="51"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="51">MemorialCare Orange Coast Medical Center</a></td>
 <td class="col-program">New Grad RN Residency Program</td>
-<td class="col-region">SoCal</td>
+<td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
 <td class="col-city" title="Fountain Valley">Fountain Valley</td>
 <td class="col-bsn bsn-pref">Preferred</td>
 <td class="col-date" data-raw="2026-06-01">Jun 1</td>
@@ -2630,7 +2654,7 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
 <td class="col-check"><input type="checkbox" class="compare-check" value="52"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="52">MemorialCare Saddleback Medical Center</a></td>
 <td class="col-program">New Grad RN Residency Program</td>
-<td class="col-region">SoCal</td>
+<td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
 <td class="col-city" title="Laguna Hills">Laguna Hills</td>
 <td class="col-bsn bsn-pref">Preferred</td>
 <td class="col-date" data-raw="2026-06-01">Jun 1</td>
@@ -2647,7 +2671,7 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
 <td class="col-check"><input type="checkbox" class="compare-check" value="53"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="53">PIH Health Downey Hospital</a></td>
 <td class="col-program">New Graduate Nurse Residency Program</td>
-<td class="col-region">SoCal</td>
+<td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
 <td class="col-city" title="Downey">Downey</td>
 <td class="col-bsn bsn-no">No</td>
 <td class="col-date" data-raw=""></td>
@@ -2664,7 +2688,7 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
 <td class="col-check"><input type="checkbox" class="compare-check" value="54"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="54">PIH Health Good Samaritan Hospital</a></td>
 <td class="col-program">New Graduate Nurse Residency Program</td>
-<td class="col-region">SoCal</td>
+<td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
 <td class="col-city" title="Los Angeles">LA</td>
 <td class="col-bsn bsn-no">No</td>
 <td class="col-date" data-raw=""></td>
@@ -2681,7 +2705,7 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
 <td class="col-check"><input type="checkbox" class="compare-check" value="55"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="55">Adventist Health Glendale</a></td>
 <td class="col-program">New Grad Nurse Residency</td>
-<td class="col-region">SoCal</td>
+<td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
 <td class="col-city" title="Glendale">Glendale</td>
 <td class="col-bsn bsn-no">No</td>
 <td class="col-date" data-raw=""></td>
@@ -2698,7 +2722,7 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
 <td class="col-check"><input type="checkbox" class="compare-check" value="56"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="56">Adventist Health Roseville</a></td>
 <td class="col-program">New Grad Nurse Residency</td>
-<td class="col-region">NorCal</td>
+<td class="col-region"><span class="region-badge region-sacr"></span>NorCal</td>
 <td class="col-city" title="Roseville">Roseville</td>
 <td class="col-bsn bsn-no">No</td>
 <td class="col-date" data-raw=""></td>
@@ -2715,7 +2739,7 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
 <td class="col-check"><input type="checkbox" class="compare-check" value="57"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="57">Adventist Health Central CA (Hanford / Bakersfield)</a></td>
 <td class="col-program">New Grad Nurse Residency</td>
-<td class="col-region">Central Valley</td>
+<td class="col-region"><span class="region-badge region-central"></span>Central Valley</td>
 <td class="col-city" title="Hanford / Bakersfield">Hanford / Bakersfield</td>
 <td class="col-bsn bsn-no">No</td>
 <td class="col-date" data-raw=""></td>
@@ -3057,9 +3081,19 @@ function filterTable() {
         if (show) visibleCount++;
     });
 
-    var countEl = document.querySelector('.sheet-count');
-    if (countEl) countEl.textContent = visibleCount + ' of ' + rows.length + ' rows';
+    updateCount(visibleCount, rows.length);
     restripe();
+}
+
+function updateCount(visible, total) {
+    var countEl = document.querySelector('.sheet-count');
+    if (!countEl) return;
+    countEl.textContent = visible + ' of ' + total + ' rows';
+    if (visible < total) {
+        countEl.classList.add('count-changed');
+    } else {
+        countEl.classList.remove('count-changed');
+    }
 }
 
 function resetFilters() {
@@ -3143,8 +3177,7 @@ function filterTableSpecial() {
         if (show) visibleCount++;
     });
 
-    var countEl = document.querySelector('.sheet-count');
-    if (countEl) countEl.textContent = visibleCount + ' of ' + rows.length + ' rows';
+    updateCount(visibleCount, rows.length);
     var clearBtn = document.getElementById('clear-all-btn');
     if (clearBtn) clearBtn.style.display = '';
     restripe();
@@ -3348,20 +3381,34 @@ function goCompare() {
     });
     html += '</tr></thead><tbody>';
 
+    // Find best values for highlighting
+    var maxRep = Math.max.apply(null, progs.map(function(p) { return p.reputation || 0; }));
+    var parsedPays = progs.map(function(p) {
+        var m = (p.pay_range || '').match(/(\d[\d.,]+)/);
+        return m ? parseFloat(m[1].replace(',', '')) : 0;
+    });
+    var maxPay = Math.max.apply(null, parsedPays);
+
     fields.forEach(function(f) {
         html += '<tr><td class="compare-label">' + f[0] + '</td>';
-        progs.forEach(function(p) {
+        progs.forEach(function(p, i) {
             var val = '';
+            var best = false;
             if (f[1] === '_stars') {
                 val = '★'.repeat(p.reputation) + '☆'.repeat(5 - p.reputation);
+                if (p.reputation === maxRep && maxRep > 0) best = true;
             } else if (f[1] === '_length') {
                 val = p.program_length_months + ' months';
             } else if (f[1] === '_specs') {
                 val = (p.specialty_units || []).join(', ');
+            } else if (f[1] === 'pay_range') {
+                val = p[f[1]] || '';
+                if (parsedPays[i] === maxPay && maxPay > 0) best = true;
             } else {
                 val = p[f[1]] || '';
             }
-            html += '<td>' + escHtml(val).replace(/\n/g, '<br>') + '</td>';
+            var cls = best ? ' class="compare-best"' : '';
+            html += '<td' + cls + '>' + escHtml(val).replace(/\n/g, '<br>') + '</td>';
         });
         html += '</tr>';
     });

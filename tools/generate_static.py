@@ -128,6 +128,10 @@ def generate():
     nclex_days = (nclex_parsed - today).days if nclex_parsed else None
 
     regions = sorted(set(p["region"] for p in programs))
+    region_counts = {}
+    for p in programs:
+        r = p["region"]
+        region_counts[r] = region_counts.get(r, 0) + 1
     cities = sorted(set(p["city"] for p in programs))
     bsn_values = sorted(set(p.get("bsn_required", "") for p in programs if p.get("bsn_required")))
     statuses = ["Not Started", "In Progress", "Submitted", "Interview", "Offer", "Rejected"]
@@ -168,11 +172,20 @@ def generate():
         bsn = p.get("bsn_required", "")
         bsn_cls = "bsn-no" if bsn == "No" else "bsn-pref" if bsn == "Preferred" else "bsn-req" if bsn == "Yes" else ""
 
+        region = p.get("region", "")
+        region_cls = ""
+        if "Bay" in region: region_cls = "region-bay"
+        elif "SoCal" in region or "Los Angeles" in region or "Orange" in region or "San Diego" in region: region_cls = "region-socal"
+        elif "Central" in region: region_cls = "region-central"
+        elif "Sacr" in region or "NorCal" in region: region_cls = "region-sacr"
+        elif "Inland" in region: region_cls = "region-ie"
+        region_dot = f'<span class="region-badge {region_cls}"></span>' if region_cls else ""
+
         row = f"""<tr data-id="{p['id']}" data-region="{esc(p.get('region',''))}" data-city="{esc(p.get('city',''))}" data-bsn="{esc(bsn)}" data-status="{esc(status)}">
 <td class="col-check"><input type="checkbox" class="compare-check" value="{p['id']}"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="{p['id']}">{esc(p['hospital'])}</a></td>
 <td class="col-program">{esc(p.get('program_name',''))}</td>
-<td class="col-region">{esc(p.get('region',''))}</td>
+<td class="col-region">{region_dot}{esc(p.get('region',''))}</td>
 <td class="col-city" title="{full_city}">{esc(city)}</td>
 <td class="col-bsn {bsn_cls}">{esc(bsn)}</td>
 <td class="col-date" data-raw="{esc(app_open_raw)}">{app_open_fmt}</td>
@@ -188,7 +201,7 @@ def generate():
 </tr>"""
         rows_html.append(row)
 
-    region_options = ''.join(f'<option value="{esc(r)}">{esc(r)}</option>' for r in regions)
+    region_options = ''.join(f'<option value="{esc(r)}">{esc(r)} ({region_counts[r]})</option>' for r in regions)
     city_options = ''.join(f'<option value="{esc(c)}">{esc(c)}</option>' for c in cities)
     bsn_options = ''.join(f'<option value="{esc(b)}">{esc(b)}</option>' for b in bsn_values)
     status_options_filter = ''.join(f'<option value="{esc(s)}">{esc(s)}</option>' for s in statuses)
@@ -653,9 +666,19 @@ function filterTable() {{
         if (show) visibleCount++;
     }});
 
-    var countEl = document.querySelector('.sheet-count');
-    if (countEl) countEl.textContent = visibleCount + ' of ' + rows.length + ' rows';
+    updateCount(visibleCount, rows.length);
     restripe();
+}}
+
+function updateCount(visible, total) {{
+    var countEl = document.querySelector('.sheet-count');
+    if (!countEl) return;
+    countEl.textContent = visible + ' of ' + total + ' rows';
+    if (visible < total) {{
+        countEl.classList.add('count-changed');
+    }} else {{
+        countEl.classList.remove('count-changed');
+    }}
 }}
 
 function resetFilters() {{
@@ -739,8 +762,7 @@ function filterTableSpecial() {{
         if (show) visibleCount++;
     }});
 
-    var countEl = document.querySelector('.sheet-count');
-    if (countEl) countEl.textContent = visibleCount + ' of ' + rows.length + ' rows';
+    updateCount(visibleCount, rows.length);
     var clearBtn = document.getElementById('clear-all-btn');
     if (clearBtn) clearBtn.style.display = '';
     restripe();
@@ -944,20 +966,34 @@ function goCompare() {{
     }});
     html += '</tr></thead><tbody>';
 
+    // Find best values for highlighting
+    var maxRep = Math.max.apply(null, progs.map(function(p) {{ return p.reputation || 0; }}));
+    var parsedPays = progs.map(function(p) {{
+        var m = (p.pay_range || '').match(/(\\d[\\d.,]+)/);
+        return m ? parseFloat(m[1].replace(',', '')) : 0;
+    }});
+    var maxPay = Math.max.apply(null, parsedPays);
+
     fields.forEach(function(f) {{
         html += '<tr><td class="compare-label">' + f[0] + '</td>';
-        progs.forEach(function(p) {{
+        progs.forEach(function(p, i) {{
             var val = '';
+            var best = false;
             if (f[1] === '_stars') {{
                 val = '\u2605'.repeat(p.reputation) + '\u2606'.repeat(5 - p.reputation);
+                if (p.reputation === maxRep && maxRep > 0) best = true;
             }} else if (f[1] === '_length') {{
                 val = p.program_length_months + ' months';
             }} else if (f[1] === '_specs') {{
                 val = (p.specialty_units || []).join(', ');
+            }} else if (f[1] === 'pay_range') {{
+                val = p[f[1]] || '';
+                if (parsedPays[i] === maxPay && maxPay > 0) best = true;
             }} else {{
                 val = p[f[1]] || '';
             }}
-            html += '<td>' + escHtml(val).replace(/\\n/g, '<br>') + '</td>';
+            var cls = best ? ' class="compare-best"' : '';
+            html += '<td' + cls + '>' + escHtml(val).replace(/\\n/g, '<br>') + '</td>';
         }});
         html += '</tr>';
     }});
