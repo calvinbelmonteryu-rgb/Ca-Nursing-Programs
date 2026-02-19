@@ -1192,6 +1192,12 @@ footer small {
     border-bottom: 1px solid #e5e7eb;
 }
 
+.detail-updated {
+    font-size: 0.72rem;
+    color: #9ca3af;
+    margin-left: auto;
+}
+
 .detail-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;

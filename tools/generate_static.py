@@ -179,9 +179,9 @@ def generate():
 <td class="col-date" data-raw="{esc(app_close_raw)}">{app_close_fmt}</td>
 <td class="col-date" data-raw="{esc(cohort_raw)}">{cohort_fmt}</td>
 <td class="col-rep stars">{stars}</td>
-<td class="col-pay">{esc(pay)}</td>
+<td class="col-pay" title="{esc(p.get('pay_range', ''))}">{esc(pay)}</td>
 <td class="col-len">{p.get('program_length_months','')}mo</td>
-<td class="col-specialties">{esc(specs)}</td>
+<td class="col-specialties" title="{esc(specs)}">{esc(specs)}</td>
 <td class="col-status"><select class="status-select" data-id="{p['id']}">{status_options}</select></td>
 <td class="col-notes">{notes_cell}</td>
 <td class="col-apply">{apply_cell}</td>
@@ -214,6 +214,7 @@ def generate():
         "personal_notes": p.get("personal_notes", ""),
         "reputation_notes": p.get("reputation_notes", ""),
         "info_session_dates": p.get("info_session_dates", []),
+        "last_updated": p.get("last_updated", ""),
     } for p in programs])
 
     nclex_stat = f"<strong>{nclex_days}d</strong>" if nclex_days is not None else nclex_date
@@ -524,6 +525,14 @@ document.addEventListener('DOMContentLoaded', function() {{
         th.addEventListener('click', function() {{
             sortTable(this);
         }});
+    }});
+
+    // Double-click row to open detail
+    document.querySelector('.sheet tbody').addEventListener('dblclick', function(e) {{
+        var row = e.target.closest('tr');
+        if (row && row.dataset.id) {{
+            showDetail(parseInt(row.dataset.id));
+        }}
     }});
 
     // Note expand/collapse + hospital detail links
@@ -1072,7 +1081,11 @@ function showDetail(id) {{
     html += '<h2>' + escHtml(p.hospital) + '</h2>';
     html += '<p class="detail-program-name">' + escHtml(p.program_name) + '</p>';
     html += '<div class="detail-meta"><span class="stars">' + stars + '</span>';
-    html += ' <span class="' + bsnCls + '">' + escHtml(p.bsn_required || 'N/A') + ' BSN</span></div>';
+    html += ' <span class="' + bsnCls + '">' + escHtml(p.bsn_required || 'N/A') + ' BSN</span>';
+    if (p.last_updated) {{
+        html += ' <span class="detail-updated">Updated: ' + escHtml(p.last_updated) + '</span>';
+    }}
+    html += '</div>';
     html += '</div>';
 
     html += '<div class="detail-grid">';
