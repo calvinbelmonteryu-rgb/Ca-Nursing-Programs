@@ -5855,6 +5855,73 @@ function renderStats() {{
         html += '</svg></div>';
     }}
 
+    // GitHub-style activity heatmap (last 12 weeks)
+    if (allLog && allLog.length > 0) {{
+        var heatWeeks = 12;
+        var heatDays = heatWeeks * 7;
+        var heatData = {{}};
+        allLog.forEach(function(e) {{
+            if (e.time) {{
+                var dayKey = e.time.slice(0, 10);
+                heatData[dayKey] = (heatData[dayKey] || 0) + 1;
+            }}
+        }});
+        var heatMax = 0;
+        Object.keys(heatData).forEach(function(k) {{ if (heatData[k] > heatMax) heatMax = heatData[k]; }});
+        heatMax = heatMax || 1;
+        var cellSize = 14, cellGap = 2, labelW = 24;
+        var gridW = heatWeeks * (cellSize + cellGap) + labelW;
+        var gridH = 7 * (cellSize + cellGap) + 20;
+        var dayLabels = ['', 'Mon', '', 'Wed', '', 'Fri', ''];
+        html += '<div class="activity-heatmap">';
+        html += '<div class="heatmap-header">Activity Heatmap (12 weeks)</div>';
+        html += '<svg viewBox="0 0 ' + gridW + ' ' + gridH + '" class="heatmap-svg">';
+        // Day labels
+        dayLabels.forEach(function(lbl, di) {{
+            if (lbl) {{
+                html += '<text x="0" y="' + (di * (cellSize + cellGap) + cellSize - 2) + '" fill="#9ca3af" font-size="8">' + lbl + '</text>';
+            }}
+        }});
+        // Cells
+        var startDate = new Date(today);
+        startDate.setDate(startDate.getDate() - heatDays + 1);
+        // Align to Sunday
+        startDate.setDate(startDate.getDate() - startDate.getDay());
+        for (var wi = 0; wi < heatWeeks; wi++) {{
+            for (var di2 = 0; di2 < 7; di2++) {{
+                var cellDate = new Date(startDate);
+                cellDate.setDate(cellDate.getDate() + wi * 7 + di2);
+                var dateKey = cellDate.toISOString().slice(0, 10);
+                var count = heatData[dateKey] || 0;
+                var intensity = count === 0 ? 0 : Math.min(Math.ceil(count / heatMax * 4), 4);
+                var colors = ['#ebedf0', '#9be9a8', '#40c463', '#30a14e', '#216e39'];
+                var cx2 = labelW + wi * (cellSize + cellGap);
+                var cy2 = di2 * (cellSize + cellGap);
+                html += '<rect x="' + cx2 + '" y="' + cy2 + '" width="' + cellSize + '" height="' + cellSize + '" rx="2" fill="' + colors[intensity] + '">';
+                html += '<title>' + dateKey + ': ' + count + ' action' + (count !== 1 ? 's' : '') + '</title></rect>';
+            }}
+        }}
+        // Month labels at bottom
+        var months2 = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        var lastMonth = -1;
+        for (var wi2 = 0; wi2 < heatWeeks; wi2++) {{
+            var wDate = new Date(startDate);
+            wDate.setDate(wDate.getDate() + wi2 * 7);
+            if (wDate.getMonth() !== lastMonth) {{
+                lastMonth = wDate.getMonth();
+                html += '<text x="' + (labelW + wi2 * (cellSize + cellGap)) + '" y="' + (7 * (cellSize + cellGap) + 12) + '" fill="#9ca3af" font-size="8">' + months2[lastMonth] + '</text>';
+            }}
+        }}
+        html += '</svg>';
+        // Legend
+        html += '<div class="heatmap-legend"><span>Less</span>';
+        ['#ebedf0', '#9be9a8', '#40c463', '#30a14e', '#216e39'].forEach(function(c) {{
+            html += '<span class="heatmap-legend-cell" style="background:' + c + '"></span>';
+        }});
+        html += '<span>More</span></div>';
+        html += '</div>';
+    }}
+
     html += '<div class="stats-header">';
     html += '<h2>Program Analytics</h2>';
     html += '<div class="stats-summary-cards">';
