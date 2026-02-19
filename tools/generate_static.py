@@ -2691,6 +2691,39 @@ function computeSmartScore(p, statuses, today) {{
     return score;
 }}
 
+function findSimilarPrograms(prog, count) {{
+    var scores = [];
+    PROGRAMS.forEach(function(p) {{
+        if (p.id === prog.id) return;
+        var score = 0;
+        // Same region = big boost
+        if (p.region === prog.region) score += 30;
+        // Similar reputation
+        var repDiff = Math.abs((p.reputation || 0) - (prog.reputation || 0));
+        score += Math.max(0, 20 - repDiff * 8);
+        // Similar pay
+        var pay1 = parsePay(prog.pay_range || '');
+        var pay2 = parsePay(p.pay_range || '');
+        if (pay1 && pay2) {{
+            var payDiff = Math.abs(pay1 - pay2);
+            score += Math.max(0, 20 - payDiff / 2);
+        }}
+        // Same BSN requirement
+        if (p.bsn_required === prog.bsn_required) score += 10;
+        // Similar program length
+        var lenDiff = Math.abs((p.program_length_months || 12) - (prog.program_length_months || 12));
+        score += Math.max(0, 10 - lenDiff * 3);
+        // Overlapping specialties
+        var s1 = prog.specialty_units || [];
+        var s2 = p.specialty_units || [];
+        var overlap = s1.filter(function(s) {{ return s2.indexOf(s) !== -1; }}).length;
+        score += Math.min(10, overlap * 5);
+        scores.push({{ prog: p, score: Math.min(100, Math.round(score)) }});
+    }});
+    scores.sort(function(a, b) {{ return b.score - a.score; }});
+    return scores.slice(0, count).filter(function(s) {{ return s.score >= 30; }});
+}}
+
 function bulkSetStatus() {{
     var sel = document.getElementById('bulk-status-select');
     var status = sel.value;
@@ -3796,6 +3829,28 @@ function showDetail(id) {{
             html += '<span class="stars" style="font-size:0.65rem">' + spStars + '</span>';
             html += '<span style="font-size:0.7rem;color:#6b7280">' + escHtml(sp.region) + '</span>';
             html += '</a>';
+        }});
+        html += '</div></div>';
+    }}
+
+    // Similar programs
+    var similar = findSimilarPrograms(p, 4);
+    if (similar.length > 0) {{
+        html += '<div class="detail-section similar-section"><h3>Similar Programs</h3>';
+        html += '<div class="similar-grid">';
+        similar.forEach(function(sp) {{
+            var spStars = '\u2605'.repeat(sp.prog.reputation) + '\u2606'.repeat(5 - sp.prog.reputation);
+            var spPay = '';
+            if (sp.prog.pay_range) {{
+                var pm = sp.prog.pay_range.match(/(\\$[\\d.,]+\\/hr)/);
+                if (pm) spPay = pm[1];
+            }}
+            html += '<div class="similar-card" onclick="showDetail(' + sp.prog.id + ')">';
+            html += '<div class="similar-name">' + escHtml(sp.prog.hospital) + '</div>';
+            html += '<div class="similar-meta">' + spStars + ' &bull; ' + escHtml(sp.prog.region) + '</div>';
+            if (spPay) html += '<div class="similar-pay">' + spPay + '</div>';
+            html += '<div class="similar-match">' + sp.score + '% match</div>';
+            html += '</div>';
         }});
         html += '</div></div>';
     }}
