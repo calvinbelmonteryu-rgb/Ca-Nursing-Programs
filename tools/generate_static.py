@@ -4837,6 +4837,46 @@ function renderStats() {{
         html += '</div></div>';
     }}
 
+    // Top Programs Leaderboard
+    var payRanked = PROGRAMS.slice().filter(function(p) {{
+        return (p.pay_range || '').match(/(\\d[\\d.,]+)\\/hr/);
+    }}).sort(function(a, b) {{
+        var pa = parseFloat((a.pay_range || '').match(/(\\d[\\d.,]+)\\/hr/)[1].replace(',',''));
+        var pb = parseFloat((b.pay_range || '').match(/(\\d[\\d.,]+)\\/hr/)[1].replace(',',''));
+        return pb - pa;
+    }});
+    var repRanked = PROGRAMS.slice().sort(function(a, b) {{
+        return (b.reputation || 0) - (a.reputation || 0) || (a.hospital < b.hospital ? -1 : 1);
+    }});
+
+    html += '<div class="leaderboard-section">';
+    html += '<div class="leaderboard">';
+    html += '<h3>&#127942; Top Pay</h3>';
+    payRanked.slice(0, 5).forEach(function(p, i) {{
+        var pm = p.pay_range.match(/(\\$[\\d.,]+\\/hr)/);
+        var medalColors = ['#fbbf24', '#9ca3af', '#cd7f32', '#6b7280', '#6b7280'];
+        html += '<div class="lb-row" onclick="showDetail(' + p.id + ')">';
+        html += '<span class="lb-rank" style="color:' + medalColors[i] + '">' + (i+1) + '</span>';
+        html += '<span class="lb-name">' + escHtml(p.hospital) + '</span>';
+        html += '<span class="lb-val">' + (pm ? pm[1] : '') + '</span>';
+        html += '</div>';
+    }});
+    html += '</div>';
+
+    html += '<div class="leaderboard">';
+    html += '<h3>&#11088; Top Reputation</h3>';
+    repRanked.slice(0, 5).forEach(function(p, i) {{
+        var stars = '\\u2605'.repeat(p.reputation) + '\\u2606'.repeat(5 - p.reputation);
+        var medalColors = ['#fbbf24', '#9ca3af', '#cd7f32', '#6b7280', '#6b7280'];
+        html += '<div class="lb-row" onclick="showDetail(' + p.id + ')">';
+        html += '<span class="lb-rank" style="color:' + medalColors[i] + '">' + (i+1) + '</span>';
+        html += '<span class="lb-name">' + escHtml(p.hospital) + '</span>';
+        html += '<span class="lb-val">' + stars + '</span>';
+        html += '</div>';
+    }});
+    html += '</div>';
+    html += '</div>';
+
     html += '<div class="stats-grid">';
     html += barChart('Application Status', statusCounts, statusColors);
     html += barChart('By Region', regionCounts, regionColors);
