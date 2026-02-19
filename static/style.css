@@ -8087,3 +8087,49 @@ mark.search-highlight {
 [data-theme="dark"] .stale-more { color: #fcd34d; }
 [data-theme="dark"] .stale-dismiss { color: #fcd34d; }
 [data-theme="dark"] .stale-dismiss:hover { background: #78350f; }
+
+/* Status suggestion bar */
+.status-suggest-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, #ecfdf5, #f0fdf4);
+    border: 1px solid #86efac;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    color: #166534;
+    font-weight: 500;
+    animation: suggestSlide 0.2s ease-out;
+}
+@keyframes suggestSlide {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.status-suggest-bar button {
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: none;
+    font-size: 0.75rem;
+    cursor: pointer;
+    font-weight: 600;
+    background: #22c55e;
+    color: white;
+}
+.status-suggest-bar button:hover { background: #16a34a; }
+.status-suggest-bar .suggest-dismiss {
+    background: transparent;
+    color: #6b7280;
+    font-weight: 400;
+}
+.status-suggest-bar .suggest-dismiss:hover { background: #f3f4f6; color: #374151; }
+[data-theme="dark"] .status-suggest-bar {
+    background: linear-gradient(135deg, #064e3b, #052e16);
+    border-color: #047857;
+    color: #6ee7b7;
+}
+[data-theme="dark"] .status-suggest-bar button { background: #059669; }
+[data-theme="dark"] .status-suggest-bar button:hover { background: #047857; }
+[data-theme="dark"] .status-suggest-bar .suggest-dismiss { color: #9ca3af; }
+[data-theme="dark"] .status-suggest-bar .suggest-dismiss:hover { background: #1f2937; color: #d1d5db; }

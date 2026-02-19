@@ -5063,6 +5063,27 @@ function showDetail(id) {{
     history.replaceState(null, '', '#program-' + id);
     trackRecentView(id);
 
+    // Status suggestion: prompt if app is open but status is Not Started
+    if (currentStatus === 'Not Started') {{
+        var suggestToday = new Date(); suggestToday.setHours(0,0,0,0);
+        var suggestOpen = parseDate(p.app_open_date);
+        var suggestClose = parseDate(p.app_close_date);
+        if (suggestOpen && suggestClose && suggestOpen <= suggestToday && suggestClose >= suggestToday) {{
+            var suggestKey = 'rn_tracker_suggest_dismissed_' + p.id;
+            if (!sessionStorage.getItem(suggestKey)) {{
+                var suggestBar = document.createElement('div');
+                suggestBar.className = 'status-suggest-bar';
+                suggestBar.innerHTML = 'This program is currently open! ' +
+                    '<button onclick="quickSetStatus(' + p.id + ', \\\'In Progress\\\'); this.parentElement.remove()">Start Application</button>' +
+                    '<button class="suggest-dismiss" onclick="sessionStorage.setItem(\\\'' + suggestKey + '\\\', \\\'1\\\'); this.parentElement.remove()">Dismiss</button>';
+                var modalBody = document.getElementById('modal-body');
+                if (modalBody && modalBody.firstChild) {{
+                    modalBody.insertBefore(suggestBar, modalBody.children[1]);
+                }}
+            }}
+        }}
+    }}
+
     // Auto-save notes on input
     var notesArea = document.getElementById('modal-notes');
     if (notesArea) {{
