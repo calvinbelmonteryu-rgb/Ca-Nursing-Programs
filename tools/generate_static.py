@@ -369,6 +369,7 @@ def generate():
     </nav>
 
     <div class="urgency-banner" id="urgency-banner" style="display:none"></div>
+    <div class="deadline-ticker" id="deadline-ticker" style="display:none"></div>
 
     <main class="container-fluid sheet-page" role="main" id="main-table">
         <div class="sheet-toolbar">
@@ -1002,6 +1003,53 @@ function renderStatusSummary() {{
     if (text) text.textContent = progressed + '/' + total;
 }}
 
+function renderDeadlineTicker() {{
+    var ticker = document.getElementById('deadline-ticker');
+    if (!ticker) return;
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+    var savedStatuses = loadSavedStatuses();
+
+    // Find upcoming deadlines (within 30 days, not closed, not rejected/submitted/offer)
+    var urgentItems = [];
+    PROGRAMS.forEach(function(p) {{
+        var status = savedStatuses[p.id] || p.application_status || 'Not Started';
+        if (status === 'Submitted' || status === 'Offer' || status === 'Rejected') return;
+        var close = parseDate(p.app_close_date);
+        var open = parseDate(p.app_open_date);
+        if (!close || close < today) return;
+        var daysLeft = Math.ceil((close - today) / 86400000);
+        if (daysLeft > 30) return;
+        var isOpen = open && open <= today && close >= today;
+        urgentItems.push({{ hospital: p.hospital, daysLeft: daysLeft, isOpen: isOpen, id: p.id, url: p.application_url }});
+    }});
+
+    if (urgentItems.length === 0) {{
+        ticker.style.display = 'none';
+        return;
+    }}
+
+    urgentItems.sort(function(a, b) {{ return a.daysLeft - b.daysLeft; }});
+    var top3 = urgentItems.slice(0, 3);
+
+    var html = '<div class="ticker-inner">';
+    html += '<span class="ticker-label">&#9200; Upcoming</span>';
+    top3.forEach(function(item) {{
+        var urgencyClass = item.daysLeft <= 3 ? 'ticker-critical' : item.daysLeft <= 7 ? 'ticker-warning' : 'ticker-info';
+        html += '<span class="ticker-item ' + urgencyClass + '" onclick="showDetail(' + item.id + ')">';
+        html += '<strong>' + escHtml(item.hospital) + '</strong> ';
+        if (item.isOpen) html += '<span class="ticker-open">OPEN</span> ';
+        html += item.daysLeft + 'd';
+        html += '</span>';
+    }});
+    if (urgentItems.length > 3) {{
+        html += '<span class="ticker-more">+' + (urgentItems.length - 3) + ' more</span>';
+    }}
+    html += '</div>';
+    ticker.innerHTML = html;
+    ticker.style.display = '';
+}}
+
 function filterByStatus(status) {{
     resetFilters();
     var statusSel = document.querySelector('[data-instant="status"]');
@@ -1293,6 +1341,7 @@ document.addEventListener('DOMContentLoaded', function() {{
     renderRecentViewed();
     renderUrgencyBanner();
     renderNotifications();
+    renderDeadlineTicker();
     renderSavedFilters();
     initRowPreview();
     renderTableTags();
