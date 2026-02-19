@@ -877,34 +877,63 @@ footer {
 .sortable {
     cursor: pointer;
     user-select: none;
+    transition: background 0.1s;
 }
 
 .sortable:hover {
-    background: #e5e7eb;
+    background: #dbeafe !important;
+}
+
+.sortable:active {
+    background: #bfdbfe !important;
 }
 
 .sort-arrow {
-    display: inline-block;
-    width: 0;
-    height: 0;
-    margin-left: 4px;
-    vertical-align: middle;
+    font-size: 0.6rem;
     opacity: 0.3;
-    border-left: 4px solid transparent;
-    border-right: 4px solid transparent;
-    border-bottom: 5px solid #374151;
+    margin-left: 2px;
 }
 
-.sort-asc .sort-arrow {
-    opacity: 1;
-    border-bottom: 5px solid #374151;
-    border-top: none;
-}
-
+.sort-asc .sort-arrow,
 .sort-desc .sort-arrow {
     opacity: 1;
-    border-bottom: none;
-    border-top: 5px solid #374151;
+    color: #1d4ed8;
+}
+
+.sort-asc,
+.sort-desc {
+    background: #eff6ff !important;
+}
+
+/* ===== NOTE EXPAND/COLLAPSE ===== */
+.note-expand,
+.note-collapse {
+    color: #1d4ed8;
+    font-size: 0.7rem;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.note-expand:hover,
+.note-collapse:hover {
+    text-decoration: underline;
+}
+
+/* ===== ZEBRA STRIPING (after sort) ===== */
+.sheet tbody tr.even-row {
+    background: #fafafa;
+}
+
+.sheet tbody tr.odd-row {
+    background: white;
+}
+
+.sheet tbody tr.even-row .frozen-col {
+    background: #fafafa;
+}
+
+.sheet tbody tr.odd-row .frozen-col {
+    background: white;
 }
 
 /* ===== PAY CELL ===== */

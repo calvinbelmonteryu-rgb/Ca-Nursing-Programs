@@ -77,6 +77,14 @@ def short_city(city_str):
     return city_str
 
 
+def format_date(date_str):
+    """Format 2026-03-10 as Mar 10 for display."""
+    d = parse_date(date_str)
+    if not d:
+        return esc(date_str) if date_str else ""
+    return d.strftime("%b %d").replace(" 0", " ")
+
+
 def esc(text):
     """HTML-escape a string."""
     return (str(text)
@@ -142,21 +150,35 @@ def generate():
         if p.get("application_url"):
             apply_cell = f'<a href="{esc(p["application_url"])}" target="_blank" class="apply-link">Apply &rarr;</a>'
 
+        notes_raw = p.get('personal_notes', '')
+        notes_esc = esc(notes_raw)
+        if len(notes_raw) > 120:
+            notes_cell = f'<span class="note-trunc" title="{notes_esc}">{esc(notes_raw[:120])}&hellip; <a href="#" class="note-expand">more</a></span><span class="note-full" style="display:none">{notes_esc} <a href="#" class="note-collapse">less</a></span>'
+        else:
+            notes_cell = notes_esc
+
+        app_open_raw = p.get('app_open_date', '')
+        app_close_raw = p.get('app_close_date', '')
+        cohort_raw = p.get('cohort_start', '')
+        app_open_fmt = format_date(app_open_raw)
+        app_close_fmt = format_date(app_close_raw)
+        cohort_fmt = format_date(cohort_raw) if parse_date(cohort_raw) else esc(cohort_raw)
+
         row = f"""<tr data-id="{p['id']}" data-region="{esc(p.get('region',''))}" data-city="{esc(p.get('city',''))}" data-status="{esc(status)}">
 <td class="col-check"><input type="checkbox" class="compare-check" value="{p['id']}"></td>
 <td class="col-hospital frozen-col"><a href="#{p['id']}">{esc(p['hospital'])}</a></td>
 <td class="col-program">{esc(p.get('program_name',''))}</td>
 <td class="col-region">{esc(p.get('region',''))}</td>
 <td class="col-city" title="{full_city}">{esc(city)}</td>
-<td class="col-date">{esc(p.get('app_open_date',''))}</td>
-<td class="col-date">{esc(p.get('app_close_date',''))}</td>
-<td class="col-date">{esc(p.get('cohort_start',''))}</td>
+<td class="col-date" data-raw="{esc(app_open_raw)}">{app_open_fmt}</td>
+<td class="col-date" data-raw="{esc(app_close_raw)}">{app_close_fmt}</td>
+<td class="col-date" data-raw="{esc(cohort_raw)}">{cohort_fmt}</td>
 <td class="col-rep stars">{stars}</td>
 <td class="col-pay">{esc(pay)}</td>
 <td class="col-len">{p.get('program_length_months','')}mo</td>
 <td class="col-specialties">{esc(specs)}</td>
 <td class="col-status"><select class="status-select" data-id="{p['id']}">{status_options}</select></td>
-<td class="col-notes">{esc(p.get('personal_notes',''))}</td>
+<td class="col-notes">{notes_cell}</td>
 <td class="col-apply">{apply_cell}</td>
 </tr>"""
         rows_html.append(row)
@@ -236,19 +258,19 @@ def generate():
                 <thead>
                     <tr>
                         <th class="col-check"><input type="checkbox" id="select-all"></th>
-                        <th class="col-hospital frozen-col sortable" data-col="1" data-sort="text">Hospital <span class="sort-arrow"></span></th>
-                        <th class="col-program sortable" data-col="2" data-sort="text">Program <span class="sort-arrow"></span></th>
-                        <th class="col-region sortable" data-col="3" data-sort="text">Region <span class="sort-arrow"></span></th>
-                        <th class="col-city sortable" data-col="4" data-sort="text">City <span class="sort-arrow"></span></th>
-                        <th class="col-date sortable" data-col="5" data-sort="date">App Open <span class="sort-arrow"></span></th>
-                        <th class="col-date sortable" data-col="6" data-sort="date">App Close <span class="sort-arrow"></span></th>
-                        <th class="col-date sortable" data-col="7" data-sort="date">Cohort <span class="sort-arrow"></span></th>
-                        <th class="col-rep sortable" data-col="8" data-sort="stars">Rep <span class="sort-arrow"></span></th>
-                        <th class="col-pay sortable" data-col="9" data-sort="pay">Pay <span class="sort-arrow"></span></th>
-                        <th class="col-len sortable" data-col="10" data-sort="num">Len <span class="sort-arrow"></span></th>
-                        <th class="col-specialties sortable" data-col="11" data-sort="text">Specialties <span class="sort-arrow"></span></th>
-                        <th class="col-status sortable" data-col="12" data-sort="status">Status <span class="sort-arrow"></span></th>
-                        <th class="col-notes sortable" data-col="13" data-sort="text">Notes <span class="sort-arrow"></span></th>
+                        <th class="col-hospital frozen-col sortable" data-col="1" data-sort="text" data-label="Hospital">Hospital <span class="sort-arrow">&udarr;</span></th>
+                        <th class="col-program sortable" data-col="2" data-sort="text" data-label="Program">Program <span class="sort-arrow">&udarr;</span></th>
+                        <th class="col-region sortable" data-col="3" data-sort="text" data-label="Region">Region <span class="sort-arrow">&udarr;</span></th>
+                        <th class="col-city sortable" data-col="4" data-sort="text" data-label="City">City <span class="sort-arrow">&udarr;</span></th>
+                        <th class="col-date sortable" data-col="5" data-sort="date" data-label="App Open">App Open <span class="sort-arrow">&udarr;</span></th>
+                        <th class="col-date sortable" data-col="6" data-sort="date" data-label="App Close">App Close <span class="sort-arrow">&udarr;</span></th>
+                        <th class="col-date sortable" data-col="7" data-sort="date" data-label="Cohort">Cohort <span class="sort-arrow">&udarr;</span></th>
+                        <th class="col-rep sortable" data-col="8" data-sort="stars" data-label="Reputation">Rep <span class="sort-arrow">&udarr;</span></th>
+                        <th class="col-pay sortable" data-col="9" data-sort="pay" data-label="Pay">Pay <span class="sort-arrow">&udarr;</span></th>
+                        <th class="col-len sortable" data-col="10" data-sort="num" data-label="Length">Len <span class="sort-arrow">&udarr;</span></th>
+                        <th class="col-specialties sortable" data-col="11" data-sort="text" data-label="Specialties">Specialties <span class="sort-arrow">&udarr;</span></th>
+                        <th class="col-status sortable" data-col="12" data-sort="status" data-label="Status">Status <span class="sort-arrow">&udarr;</span></th>
+                        <th class="col-notes sortable" data-col="13" data-sort="text" data-label="Notes">Notes <span class="sort-arrow">&udarr;</span></th>
                         <th class="col-apply">Apply</th>
                     </tr>
                 </thead>
@@ -260,7 +282,7 @@ def generate():
     </main>
 
     <footer class="container">
-        <small>CA New Grad RN Program Tracker &bull; NCLEX Target: May 2026</small>
+        <small>CA New Grad RN Program Tracker &bull; NCLEX Target: May 2026 &bull; Updated {today.strftime("%b %d, %Y")}</small>
     </footer>
 
     <script>
@@ -345,6 +367,22 @@ document.addEventListener('DOMContentLoaded', function() {{
             sortTable(this);
         }});
     }});
+
+    // Note expand/collapse
+    document.addEventListener('click', function(e) {{
+        if (e.target.classList.contains('note-expand')) {{
+            e.preventDefault();
+            var td = e.target.closest('td');
+            td.querySelector('.note-trunc').style.display = 'none';
+            td.querySelector('.note-full').style.display = '';
+        }}
+        if (e.target.classList.contains('note-collapse')) {{
+            e.preventDefault();
+            var td = e.target.closest('td');
+            td.querySelector('.note-trunc').style.display = '';
+            td.querySelector('.note-full').style.display = 'none';
+        }}
+    }});
 }});
 
 function debounce(fn, ms) {{
@@ -393,12 +431,12 @@ function filterTable() {{
         if (show && cohortStatus) {{
             var dateCells = row.querySelectorAll('.col-date');
             var cohortCell = dateCells.length >= 3 ? dateCells[2] : null;
-            var cohortText = cohortCell ? cohortCell.textContent.trim().toLowerCase() : '';
-            var isDate = /^\\d{{4}}-\\d{{2}}-\\d{{2}}/.test(cohortText);
+            var cohortRaw = cohortCell ? (cohortCell.dataset.raw || cohortCell.textContent.trim()).toLowerCase() : '';
+            var isDate = /^\\d{{4}}-\\d{{2}}-\\d{{2}}/.test(cohortRaw);
             if (cohortStatus === 'released' && !isDate) show = false;
-            if (cohortStatus === 'not-released' && (isDate || cohortText.indexOf('rolling') !== -1 || cohortText.indexOf('paused') !== -1)) show = false;
-            if (cohortStatus === 'rolling' && cohortText.indexOf('rolling') === -1) show = false;
-            if (cohortStatus === 'paused' && cohortText.indexOf('paused') === -1) show = false;
+            if (cohortStatus === 'not-released' && (isDate || cohortRaw.indexOf('rolling') !== -1 || cohortRaw.indexOf('paused') !== -1)) show = false;
+            if (cohortStatus === 'rolling' && cohortRaw.indexOf('rolling') === -1) show = false;
+            if (cohortStatus === 'paused' && cohortRaw.indexOf('paused') === -1) show = false;
         }}
         row.style.display = show ? '' : 'none';
         if (show) visibleCount++;
@@ -416,32 +454,34 @@ function highlightDeadlines() {{
         var dateCells = row.querySelectorAll('.col-date');
         if (dateCells.length >= 2) {{
             var closeCell = dateCells[1];
-            var dateStr = closeCell.textContent.trim();
-            if (dateStr) {{
-                var closeDate = parseDate(dateStr);
+            var closeRaw = closeCell.dataset.raw || closeCell.textContent.trim();
+            var displayText = closeCell.textContent.trim();
+            if (closeRaw) {{
+                var closeDate = parseDate(closeRaw);
                 if (closeDate) {{
                     var daysLeft = Math.ceil((closeDate - today) / (1000 * 60 * 60 * 24));
                     if (daysLeft < 0) {{
-                        closeCell.innerHTML = dateStr + ' <span class="deadline-past">closed</span>';
+                        closeCell.innerHTML = displayText + ' <span class="deadline-past">closed</span>';
                     }} else if (daysLeft <= 7) {{
-                        closeCell.innerHTML = dateStr + ' <span class="deadline-urgent">' + daysLeft + 'd</span>';
+                        closeCell.innerHTML = displayText + ' <span class="deadline-urgent">' + daysLeft + 'd</span>';
                         row.classList.add('urgent-row');
                     }} else if (daysLeft <= 14) {{
-                        closeCell.innerHTML = dateStr + ' <span class="deadline-warning">' + daysLeft + 'd</span>';
+                        closeCell.innerHTML = displayText + ' <span class="deadline-warning">' + daysLeft + 'd</span>';
                         row.classList.add('warning-row');
                     }} else if (daysLeft <= 30) {{
-                        closeCell.innerHTML = dateStr + ' <span class="deadline-soon">' + daysLeft + 'd</span>';
+                        closeCell.innerHTML = displayText + ' <span class="deadline-soon">' + daysLeft + 'd</span>';
                     }}
                 }}
             }}
 
             var openCell = dateCells[0];
-            var openStr = openCell.textContent.trim();
-            if (openStr && dateStr) {{
-                var openDate = parseDate(openStr);
-                var closeDate2 = parseDate(dateStr);
+            var openRaw = openCell.dataset.raw || openCell.textContent.trim();
+            var openDisplay = openCell.textContent.trim();
+            if (openRaw && closeRaw) {{
+                var openDate = parseDate(openRaw);
+                var closeDate2 = parseDate(closeRaw);
                 if (openDate && closeDate2 && openDate <= today && closeDate2 >= today) {{
-                    openCell.innerHTML = openStr + ' <span class="badge-open">OPEN</span>';
+                    openCell.innerHTML = openDisplay + ' <span class="badge-open">OPEN</span>';
                 }}
             }}
         }}
@@ -462,6 +502,7 @@ var currentSort = {{ col: null, asc: true }};
 function sortTable(th) {{
     var colIdx = parseInt(th.dataset.col);
     var sortType = th.dataset.sort;
+    var label = th.dataset.label || 'column';
     var tbody = document.querySelector('.sheet tbody');
     var rows = Array.from(tbody.querySelectorAll('tr'));
 
@@ -476,8 +517,12 @@ function sortTable(th) {{
     // Update arrow indicators
     document.querySelectorAll('.sortable').forEach(function(h) {{
         h.classList.remove('sort-asc', 'sort-desc');
+        var arrow = h.querySelector('.sort-arrow');
+        if (arrow) arrow.innerHTML = '\u21C5';
     }});
     th.classList.add(currentSort.asc ? 'sort-asc' : 'sort-desc');
+    var activeArrow = th.querySelector('.sort-arrow');
+    if (activeArrow) activeArrow.innerHTML = currentSort.asc ? '\u25B2' : '\u25BC';
 
     rows.sort(function(a, b) {{
         var cellA = a.querySelectorAll('td')[colIdx];
@@ -487,9 +532,10 @@ function sortTable(th) {{
         var valA, valB;
 
         if (sortType === 'date') {{
-            valA = parseSortDate(cellA.textContent.trim());
-            valB = parseSortDate(cellB.textContent.trim());
-            // Push empty/null dates to bottom
+            var rawA = cellA.dataset.raw || cellA.textContent.trim();
+            var rawB = cellB.dataset.raw || cellB.textContent.trim();
+            valA = parseSortDate(rawA);
+            valB = parseSortDate(rawB);
             if (!valA && !valB) return 0;
             if (!valA) return 1;
             if (!valB) return -1;
@@ -528,6 +574,20 @@ function sortTable(th) {{
     }});
 
     rows.forEach(function(row) {{ tbody.appendChild(row); }});
+    restripe();
+    showToast('Sorted by ' + label + (currentSort.asc ? ' \u25B2' : ' \u25BC'));
+}}
+
+function restripe() {{
+    var rows = document.querySelectorAll('.sheet tbody tr');
+    var i = 0;
+    rows.forEach(function(row) {{
+        if (row.style.display !== 'none') {{
+            row.classList.remove('even-row', 'odd-row');
+            row.classList.add(i % 2 === 0 ? 'odd-row' : 'even-row');
+            i++;
+        }}
+    }});
 }}
 
 function parseSortDate(str) {{
