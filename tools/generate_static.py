@@ -4803,6 +4803,46 @@ function renderStats() {{
         html += '</div></div>';
     }}
 
+    // Activity sparkline (last 28 days)
+    var allLog = getActivityLog();
+    if (allLog.length > 0) {{
+        var sparkDays = 28;
+        var dayCounts = [];
+        var labels = [];
+        for (var si = sparkDays - 1; si >= 0; si--) {{
+            var d = new Date(today);
+            d.setDate(d.getDate() - si);
+            var dayStr = d.toISOString().slice(0, 10);
+            var count = allLog.filter(function(e) {{
+                return e.time && e.time.slice(0, 10) === dayStr;
+            }}).length;
+            dayCounts.push(count);
+            if (si % 7 === 0) {{
+                labels.push(d.toLocaleDateString('en-US', {{month:'short', day:'numeric'}}));
+            }} else {{
+                labels.push('');
+            }}
+        }}
+        var maxCount = Math.max.apply(null, dayCounts) || 1;
+        var sparkW = 700, sparkH = 60;
+        var barW = Math.floor(sparkW / sparkDays) - 1;
+
+        html += '<div class="activity-sparkline">';
+        html += '<div class="spark-header"><span>Activity (28 days)</span><span class="spark-total">' + allLog.length + ' total actions</span></div>';
+        html += '<svg viewBox="0 0 ' + sparkW + ' ' + (sparkH + 16) + '" class="spark-svg">';
+        dayCounts.forEach(function(c, i) {{
+            var bH = Math.max(2, (c / maxCount) * sparkH);
+            var bx = i * (barW + 1);
+            var by = sparkH - bH;
+            var color = c === 0 ? '#e5e7eb' : i >= sparkDays - 7 ? 'var(--accent,#2563eb)' : '#93c5fd';
+            html += '<rect x="' + bx + '" y="' + by + '" width="' + barW + '" height="' + bH + '" rx="2" fill="' + color + '"/>';
+            if (labels[i]) {{
+                html += '<text x="' + (bx + barW/2) + '" y="' + (sparkH + 12) + '" text-anchor="middle" fill="#9ca3af" font-size="8">' + labels[i] + '</text>';
+            }}
+        }});
+        html += '</svg></div>';
+    }}
+
     html += '<div class="stats-header">';
     html += '<h2>Program Analytics</h2>';
     html += '<div class="stats-summary-cards">';

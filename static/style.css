@@ -6621,3 +6621,41 @@ mark.search-highlight {
     align-items: center;
     flex-wrap: wrap;
 }
+
+/* ===== ACTIVITY SPARKLINE ===== */
+.activity-sparkline {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 14px 20px;
+    margin-bottom: 16px;
+}
+
+.spark-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #374151;
+}
+
+.spark-total {
+    font-weight: 400;
+    color: #9ca3af;
+    font-size: 0.78rem;
+}
+
+.spark-svg {
+    width: 100%;
+    height: auto;
+}
+
+[data-theme="dark"] .activity-sparkline {
+    background: #1f2937;
+    border-color: #374151;
+}
+
+[data-theme="dark"] .spark-header { color: #e5e7eb; }
+[data-theme="dark"] .spark-svg rect[fill="#e5e7eb"] { fill: #374151; }
