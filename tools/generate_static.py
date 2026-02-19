@@ -335,6 +335,7 @@ def generate():
         </ul>
         <ul>
             <li><a href="#" class="active" id="nav-table" onclick="showView('table'); return false;">Table</a></li>
+            <li><a href="#" id="nav-cards" onclick="showView('cards'); return false;">Cards</a></li>
             <li><a href="#" id="nav-pipeline" onclick="showView('pipeline'); return false;">Pipeline</a></li>
             <li><a href="#" id="nav-calendar" onclick="showView('calendar'); return false;">Calendar</a></li>
             <li><a href="#" id="nav-stats" onclick="showView('stats'); return false;">Stats</a></li>
@@ -507,6 +508,24 @@ def generate():
         </div>
     </main>
 
+    <!-- Cards View -->
+    <div id="cards-view" class="container-fluid" style="display:none">
+        <div class="cards-toolbar">
+            <input type="search" id="cards-search" placeholder="Filter cards..." class="cards-search-input">
+            <select id="cards-region-filter" class="cards-filter-select">
+                <option value="">All Regions</option>
+                {region_options}
+            </select>
+            <select id="cards-sort" class="cards-filter-select" onchange="renderCards()">
+                <option value="deadline">By Deadline</option>
+                <option value="reputation">By Reputation</option>
+                <option value="pay">By Pay</option>
+                <option value="smart">Smart Match</option>
+            </select>
+        </div>
+        <div class="cards-grid" id="cards-grid"></div>
+    </div>
+
     <!-- Pipeline View -->
     <div id="pipeline-view" class="container-fluid" style="display:none">
         <div class="pipeline-toolbar">
@@ -648,7 +667,7 @@ def generate():
 
     <footer class="container">
         <small>{total} programs across {len(regions)} regions &bull; Data updated {metadata.get('last_updated', today.strftime('%Y-%m-%d'))} &bull; Generated {today.strftime("%b %d, %Y")}</small>
-        <small class="shortcuts-hint"><kbd>/</kbd> Search &bull; <kbd>j</kbd><kbd>k</kbd> Navigate &bull; <kbd>Enter</kbd> Details &bull; <kbd>f</kbd> Favorite &bull; <kbd>n</kbd> Notify &bull; <kbd>1</kbd>-<kbd>4</kbd> Views &bull; <kbd>d</kbd> Dark &bull; <kbd>?</kbd> Help</small>
+        <small class="shortcuts-hint"><kbd>/</kbd> Search &bull; <kbd>j</kbd><kbd>k</kbd> Navigate &bull; <kbd>Enter</kbd> Details &bull; <kbd>f</kbd> Favorite &bull; <kbd>n</kbd> Notify &bull; <kbd>1</kbd>-<kbd>5</kbd> Views &bull; <kbd>d</kbd> Dark &bull; <kbd>?</kbd> Help</small>
     </footer>
 
     <button class="back-to-top" id="back-to-top" onclick="window.scrollTo({{top:0,behavior:'smooth'}})" title="Back to top">&uarr;</button>
@@ -1072,9 +1091,10 @@ document.addEventListener('DOMContentLoaded', function() {{
             }}
             if (e.key === '?') {{ toggleShortcutHelp(); return; }}
             if (e.key === '1') {{ showView('table'); return; }}
-            if (e.key === '2') {{ showView('pipeline'); return; }}
-            if (e.key === '3') {{ showView('calendar'); return; }}
-            if (e.key === '4') {{ showView('stats'); return; }}
+            if (e.key === '2') {{ showView('cards'); return; }}
+            if (e.key === '3') {{ showView('pipeline'); return; }}
+            if (e.key === '4') {{ showView('calendar'); return; }}
+            if (e.key === '5') {{ showView('stats'); return; }}
 
             // Modal prev/next with arrow keys
             var detailModal = document.getElementById('detail-modal');
@@ -3247,8 +3267,10 @@ function renderRecentViewed() {{
 function showView(view) {{
     var tableView = document.querySelector('.sheet-page');
     var pipelineView = document.getElementById('pipeline-view');
+    var cardsView = document.getElementById('cards-view');
     var navTable = document.getElementById('nav-table');
     var navPipeline = document.getElementById('nav-pipeline');
+    var navCards = document.getElementById('nav-cards');
 
     var calendarView = document.getElementById('calendar-view');
     var statsView = document.getElementById('stats-view');
@@ -3256,10 +3278,14 @@ function showView(view) {{
     var navStats = document.getElementById('nav-stats');
 
     // Hide all
-    [tableView, pipelineView, calendarView, statsView].forEach(function(v) {{ v.style.display = 'none'; }});
-    [navTable, navPipeline, navCalendar, navStats].forEach(function(n) {{ n.classList.remove('active'); }});
+    [tableView, pipelineView, cardsView, calendarView, statsView].forEach(function(v) {{ if (v) v.style.display = 'none'; }});
+    [navTable, navPipeline, navCards, navCalendar, navStats].forEach(function(n) {{ if (n) n.classList.remove('active'); }});
 
-    if (view === 'pipeline') {{
+    if (view === 'cards') {{
+        cardsView.style.display = 'block';
+        navCards.classList.add('active');
+        renderCards();
+    }} else if (view === 'pipeline') {{
         pipelineView.style.display = 'block';
         navPipeline.classList.add('active');
         renderPipeline();
@@ -3327,6 +3353,103 @@ function onPipelineDrop(e) {{
     renderPipeline();
     showToast('Moved to ' + newStatus);
 }}
+
+function renderCards() {{
+    var grid = document.getElementById('cards-grid');
+    if (!grid) return;
+    var savedStatuses = loadSavedStatuses();
+    var savedNotes = loadSavedNotes();
+    var favs = loadFavorites();
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+    var searchVal = (document.getElementById('cards-search') || {{}}).value || '';
+    var regionVal = (document.getElementById('cards-region-filter') || {{}}).value || '';
+    var sortVal = (document.getElementById('cards-sort') || {{}}).value || 'deadline';
+
+    var progs = PROGRAMS.filter(function(p) {{
+        if (searchVal && (p.hospital + ' ' + p.program_name + ' ' + p.region).toLowerCase().indexOf(searchVal.toLowerCase()) === -1) return false;
+        if (regionVal && p.region !== regionVal) return false;
+        return true;
+    }});
+
+    // Sort
+    progs.sort(function(a, b) {{
+        if (sortVal === 'reputation') return (b.reputation || 0) - (a.reputation || 0);
+        if (sortVal === 'pay') {{
+            var ap = parsePay(a.pay_range || ''), bp = parsePay(b.pay_range || '');
+            return (bp || 0) - (ap || 0);
+        }}
+        if (sortVal === 'smart') {{
+            return computeSmartScore(b, savedStatuses, today) - computeSmartScore(a, savedStatuses, today);
+        }}
+        // Default: deadline
+        var ad = parseDate(a.app_close_date), bd = parseDate(b.app_close_date);
+        if (!ad && !bd) return 0;
+        if (!ad) return 1;
+        if (!bd) return -1;
+        return ad - bd;
+    }});
+
+    var html = '';
+    progs.forEach(function(p) {{
+        var st = savedStatuses[p.id] || p.application_status || 'Not Started';
+        var stCls = st.toLowerCase().replace(/\\s+/g, '-');
+        var stars = '';
+        for (var i = 0; i < 5; i++) stars += i < (p.reputation || 0) ? '\\u2605' : '\\u2606';
+        var isFav = favs.indexOf(p.id) !== -1;
+        var note = savedNotes[p.id] || '';
+        var tags = loadTags(p.id);
+
+        var deadlineInfo = '';
+        var closeDate = parseDate(p.app_close_date);
+        if (closeDate) {{
+            var daysLeft = Math.ceil((closeDate - today) / (1000 * 60 * 60 * 24));
+            if (daysLeft < 0) deadlineInfo = '<span class="card-badge card-badge-closed">Closed</span>';
+            else if (daysLeft <= 3) deadlineInfo = '<span class="card-badge card-badge-urgent">' + daysLeft + 'd left</span>';
+            else if (daysLeft <= 7) deadlineInfo = '<span class="card-badge card-badge-warning">' + daysLeft + 'd left</span>';
+            else if (daysLeft <= 30) deadlineInfo = '<span class="card-badge card-badge-soon">' + daysLeft + 'd</span>';
+        }}
+        var openDate = parseDate(p.app_open_date);
+        if (openDate && closeDate && openDate <= today && closeDate >= today) {{
+            deadlineInfo = '<span class="card-badge card-badge-open">OPEN NOW</span>';
+        }}
+
+        html += '<div class="prog-card prog-card-' + stCls + '" onclick="showDetail(' + p.id + ')">';
+        html += '<div class="prog-card-header"><span class="prog-card-status prog-card-st-' + stCls + '">' + st + '</span>';
+        if (isFav) html += '<span class="prog-card-fav">\\u2605</span>';
+        html += '</div>';
+        html += '<h3 class="prog-card-name">' + p.hospital + '</h3>';
+        html += '<div class="prog-card-program">' + (p.program_name || '') + '</div>';
+        html += '<div class="prog-card-meta">';
+        html += '<span class="prog-card-stars">' + stars + '</span>';
+        html += '<span class="prog-card-region">' + p.region + '</span>';
+        html += '</div>';
+        if (p.pay_range) html += '<div class="prog-card-pay">' + p.pay_range + '</div>';
+        html += '<div class="prog-card-dates">';
+        if (p.app_open_date) html += '<span>Open: ' + p.app_open_date + '</span>';
+        if (p.app_close_date) html += '<span>Close: ' + p.app_close_date + '</span>';
+        html += '</div>';
+        if (deadlineInfo) html += '<div class="prog-card-deadline">' + deadlineInfo + '</div>';
+        if (tags.length) {{
+            html += '<div class="prog-card-tags">';
+            tags.forEach(function(t) {{ html += '<span class="prog-card-tag">' + t + '</span>'; }});
+            html += '</div>';
+        }}
+        if (note) html += '<div class="prog-card-note">' + note.substring(0, 80) + (note.length > 80 ? '...' : '') + '</div>';
+        if (p.application_url) html += '<a href="' + p.application_url + '" target="_blank" class="prog-card-apply" onclick="event.stopPropagation()">Apply &rarr;</a>';
+        html += '</div>';
+    }});
+
+    grid.innerHTML = html;
+}}
+
+// Cards view filter listeners
+(function() {{
+    var s = document.getElementById('cards-search');
+    if (s) s.addEventListener('input', debounce(renderCards, 200));
+    var r = document.getElementById('cards-region-filter');
+    if (r) r.addEventListener('change', renderCards);
+}})();
 
 function renderPipeline() {{
     var savedStatuses = loadSavedStatuses();
