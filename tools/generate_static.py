@@ -2706,9 +2706,20 @@ function insertNoteTemplate(text) {{
     var ta = document.getElementById('modal-notes');
     if (!ta) return;
     var current = ta.value.trim();
-    ta.value = current ? current + '\\n' + text : text;
+    var newVal = current ? current + '\\n' + text : text;
+    ta.value = newVal;
     ta.dispatchEvent(new Event('input'));
     ta.focus();
+    // Place cursor at first placeholder [...]
+    var bracketStart = newVal.indexOf('[', current ? current.length : 0);
+    if (bracketStart !== -1) {{
+        var bracketEnd = newVal.indexOf(']', bracketStart);
+        if (bracketEnd !== -1) {{
+            ta.setSelectionRange(bracketStart, bracketEnd + 1);
+        }}
+    }} else {{
+        ta.setSelectionRange(newVal.length, newVal.length);
+    }}
 }}
 
 function closeQuickNote() {{
@@ -4260,9 +4271,17 @@ function showDetail(id) {{
     var currentNotes = savedNotes[p.id] !== undefined ? savedNotes[p.id] : (p.personal_notes || '');
     html += '<div class="detail-section"><h3>Your Notes</h3>';
     html += '<div class="note-templates">';
-    var noteTemplates = ['Need references', 'Resume updated', 'Cover letter drafted', 'Waiting for response', 'Interview scheduled', 'Strong match', 'Backup option'];
+    var todayStr = new Date().toISOString().substring(0, 10);
+    var noteTemplates = [
+        {{ label: '&#128221; Submitted', text: 'Submitted application on ' + todayStr }},
+        {{ label: '&#128197; Info session', text: 'Attended info session on ' + todayStr + ' - ' }},
+        {{ label: '&#128222; Interview', text: 'Interview scheduled for [DATE] at [TIME]' }},
+        {{ label: '&#9989; Offered', text: 'Received offer on ' + todayStr + '! Details: ' }},
+        {{ label: '&#128200; Follow up', text: 'Follow-up needed by [DATE] - ' }},
+        {{ label: '&#128276; Reminder', text: '[' + todayStr + '] ' }}
+    ];
     noteTemplates.forEach(function(t) {{
-        html += '<button class="note-tpl-btn" onclick="insertNoteTemplate(\'' + t + '\')">' + t + '</button>';
+        html += '<button class="note-tpl-btn" onclick="insertNoteTemplate(\'' + t.text.replace(/'/g, "\\\\'") + '\')">' + t.label + '</button>';
     }});
     html += '</div>';
     html += '<textarea id="modal-notes" class="modal-notes-input" rows="4" placeholder="Add your notes here...">' + escHtml(currentNotes) + '</textarea>';
