@@ -436,15 +436,40 @@ document.addEventListener('DOMContentLoaded', function() {{
         cb.addEventListener('change', updateCompareBtn);
     }});
 
-    // Search
+    // Restore filters from URL params
+    var params = new URLSearchParams(window.location.search);
     var searchInput = document.querySelector('.sheet-filters input[type="search"]');
+    if (params.get('q') && searchInput) searchInput.value = params.get('q');
+    if (params.get('region')) {{
+        var rs = document.querySelector('[data-instant="region"]');
+        if (rs) rs.value = params.get('region');
+    }}
+    if (params.get('city')) {{
+        var cs = document.querySelector('[data-instant="city"]');
+        if (cs) cs.value = params.get('city');
+    }}
+    if (params.get('bsn')) {{
+        var bs = document.querySelector('[data-instant="bsn"]');
+        if (bs) bs.value = params.get('bsn');
+    }}
+    if (params.get('status')) {{
+        var ss = document.querySelector('[data-instant="status"]');
+        if (ss) ss.value = params.get('status');
+    }}
+    if (params.get('cohort')) {{
+        var co = document.querySelector('[data-instant="cohort-status"]');
+        if (co) co.value = params.get('cohort');
+    }}
+    if (params.toString()) filterTable();
+
+    // Search
     if (searchInput) {{
-        searchInput.addEventListener('input', debounce(filterTable, 150));
+        searchInput.addEventListener('input', debounce(function() {{ filterTable(); updateUrlParams(); }}, 150));
     }}
 
     // Filter dropdowns
     document.querySelectorAll('.sheet-filters select[data-instant]').forEach(function(sel) {{
-        sel.addEventListener('change', filterTable);
+        sel.addEventListener('change', function() {{ filterTable(); updateUrlParams(); }});
     }});
 
     // Keyboard: / to search, j/k to navigate rows, Enter to open detail
@@ -610,6 +635,7 @@ function clearAllFilters() {{
     // Clear special filters
     window._specialFilter = null;
     filterTable();
+    updateUrlParams();
     showToast('Filters cleared');
 }}
 
@@ -927,6 +953,20 @@ function exportCSV() {{
     a.download = 'ca_rn_programs.csv';
     a.click();
     showToast('CSV exported');
+}}
+
+function updateUrlParams() {{
+    var params = new URLSearchParams();
+    var si = document.querySelector('.sheet-filters input[type="search"]');
+    if (si && si.value) params.set('q', si.value);
+    document.querySelectorAll('.sheet-filters select[data-instant]').forEach(function(sel) {{
+        if (sel.value) {{
+            var key = sel.dataset.instant === 'cohort-status' ? 'cohort' : sel.dataset.instant;
+            params.set(key, sel.value);
+        }}
+    }});
+    var newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+    history.replaceState(null, '', newUrl);
 }}
 
 function highlightSelectedRow(rows, idx) {{

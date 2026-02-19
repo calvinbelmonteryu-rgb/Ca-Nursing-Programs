@@ -358,9 +358,17 @@ tbody tr:hover .frozen-col {
 .status-rejected { background: #fee2e2; color: #991b1b; }
 
 /* ===== BSN BADGES ===== */
-.bsn-req { color: #dc2626; font-weight: 600; }
-.bsn-pref { color: #d97706; font-weight: 600; }
-.bsn-no { color: #16a34a; font-weight: 600; }
+.bsn-req, .bsn-pref, .bsn-no {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 10px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+.bsn-req { background: #fee2e2; color: #dc2626; }
+.bsn-pref { background: #fef3c7; color: #b45309; }
+.bsn-no { background: #d1fae5; color: #065f46; }
 
 /* ===== STARS ===== */
 .stars {
