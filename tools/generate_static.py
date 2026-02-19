@@ -301,6 +301,8 @@ def generate():
         <ul>
             <li><a href="#" class="active" id="nav-table" onclick="showView('table'); return false;">Table</a></li>
             <li><a href="#" id="nav-pipeline" onclick="showView('pipeline'); return false;">Pipeline</a></li>
+            <li><a href="#" id="nav-calendar" onclick="showView('calendar'); return false;">Calendar</a></li>
+            <li><a href="#" id="nav-stats" onclick="showView('stats'); return false;">Stats</a></li>
             <li class="nclex-nav" title="Days until NCLEX ({nclex_date})"><span class="nclex-badge">{nclex_days if nclex_days is not None else '?'}d</span> NCLEX</li>
             <li><a href="#" onclick="toggleTheme(); return false;" id="theme-toggle" title="Toggle dark mode">Dark</a></li>
             <li><a href="#" onclick="toggleShortcutHelp(); return false;" title="Keyboard shortcuts (?)" class="nav-help">?</a></li>
@@ -344,6 +346,7 @@ def generate():
                         <button type="button" onclick="toggleColMenu()">Columns</button>
                         <button type="button" onclick="toggleDensity(); toggleMoreMenu();" id="density-btn">Compact</button>
                         <button type="button" onclick="exportCSV(); toggleMoreMenu();">Export CSV</button>
+                        <button type="button" onclick="exportICS(); toggleMoreMenu();">Export Calendar</button>
                         <button type="button" onclick="backupData(); toggleMoreMenu();">Backup</button>
                         <button type="button" onclick="document.getElementById('restore-file').click(); toggleMoreMenu();">Restore</button>
                     </div>
@@ -429,6 +432,27 @@ def generate():
     <!-- Pipeline View -->
     <div id="pipeline-view" class="container-fluid" style="display:none">
         <div class="pipeline-container" id="pipeline-container"></div>
+    </div>
+
+    <!-- Stats View -->
+    <div id="stats-view" class="container" style="display:none">
+        <div class="stats-dashboard" id="stats-dashboard"></div>
+    </div>
+
+    <!-- Calendar View -->
+    <div id="calendar-view" class="container-fluid" style="display:none">
+        <div class="cal-nav">
+            <button onclick="calPrev()">&larr;</button>
+            <h2 id="cal-month-title"></h2>
+            <button onclick="calNext()">&rarr;</button>
+            <button onclick="calToday()" class="cal-today-btn">Today</button>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+        <div class="cal-legend">
+            <span><span class="cal-legend-dot cal-dot-open"></span> App window open</span>
+            <span><span class="cal-legend-dot cal-dot-close"></span> App deadline</span>
+            <span><span class="cal-legend-dot cal-dot-cohort"></span> Cohort start</span>
+        </div>
     </div>
 
     <!-- Detail Modal -->
@@ -1471,6 +1495,75 @@ function closeCompareModal() {{
     closeModalEl(document.getElementById('compare-modal'));
 }}
 
+function exportICS() {{
+    var today = new Date();
+    var lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//CA RN Tracker//EN', 'CALSCALE:GREGORIAN'];
+    PROGRAMS.forEach(function(p) {{
+        var openD = parseDate(p.app_open_date);
+        var closeD = parseDate(p.app_close_date);
+        var cohortD = parseDate(p.cohort_start);
+
+        if (openD) {{
+            lines.push('BEGIN:VEVENT');
+            lines.push('DTSTART;VALUE=DATE:' + fmtICS(openD));
+            lines.push('DTEND;VALUE=DATE:' + fmtICS(new Date(openD.getTime() + 86400000)));
+            lines.push('SUMMARY:' + p.hospital + ' - App Opens');
+            lines.push('DESCRIPTION:Application window opens for ' + p.program_name + '\\nRegion: ' + p.region);
+            if (p.application_url) lines.push('URL:' + p.application_url);
+            lines.push('BEGIN:VALARM');
+            lines.push('TRIGGER:-P1D');
+            lines.push('ACTION:DISPLAY');
+            lines.push('DESCRIPTION:' + p.hospital + ' application opens tomorrow!');
+            lines.push('END:VALARM');
+            lines.push('END:VEVENT');
+        }}
+
+        if (closeD) {{
+            lines.push('BEGIN:VEVENT');
+            lines.push('DTSTART;VALUE=DATE:' + fmtICS(closeD));
+            lines.push('DTEND;VALUE=DATE:' + fmtICS(new Date(closeD.getTime() + 86400000)));
+            lines.push('SUMMARY:DEADLINE: ' + p.hospital + ' - App Closes');
+            lines.push('DESCRIPTION:Application deadline for ' + p.program_name + '\\nRegion: ' + p.region);
+            if (p.application_url) lines.push('URL:' + p.application_url);
+            lines.push('BEGIN:VALARM');
+            lines.push('TRIGGER:-P3D');
+            lines.push('ACTION:DISPLAY');
+            lines.push('DESCRIPTION:' + p.hospital + ' deadline in 3 days!');
+            lines.push('END:VALARM');
+            lines.push('BEGIN:VALARM');
+            lines.push('TRIGGER:-P1D');
+            lines.push('ACTION:DISPLAY');
+            lines.push('DESCRIPTION:' + p.hospital + ' deadline TOMORROW!');
+            lines.push('END:VALARM');
+            lines.push('END:VEVENT');
+        }}
+
+        if (cohortD) {{
+            lines.push('BEGIN:VEVENT');
+            lines.push('DTSTART;VALUE=DATE:' + fmtICS(cohortD));
+            lines.push('DTEND;VALUE=DATE:' + fmtICS(new Date(cohortD.getTime() + 86400000)));
+            lines.push('SUMMARY:' + p.hospital + ' - Cohort Starts');
+            lines.push('DESCRIPTION:Residency cohort begins at ' + p.program_name);
+            lines.push('END:VEVENT');
+        }}
+    }});
+    lines.push('END:VCALENDAR');
+
+    var blob = new Blob([lines.join('\\r\\n')], {{type: 'text/calendar'}});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'ca_rn_programs.ics';
+    a.click();
+    showToast('Calendar exported! Import into Google Calendar, Apple Calendar, or Outlook.');
+}}
+
+function fmtICS(d) {{
+    var y = d.getFullYear();
+    var m = String(d.getMonth() + 1).padStart(2, '0');
+    var day = String(d.getDate()).padStart(2, '0');
+    return y + m + day;
+}}
+
 function exportCSV() {{
     var checklistLabels = ['Review requirements', 'Prepare resume/CV', 'Write cover letter', 'Gather references', 'Submit application', 'Follow up'];
     var csv = 'Hospital,Program,Region,City,BSN Required,App Open,App Close,Cohort,Reputation,Pay,Length (mo),Specialties,Requirements,Status,Checklist Progress,Notes,URL\\n';
@@ -1933,17 +2026,30 @@ function showView(view) {{
     var navTable = document.getElementById('nav-table');
     var navPipeline = document.getElementById('nav-pipeline');
 
+    var calendarView = document.getElementById('calendar-view');
+    var statsView = document.getElementById('stats-view');
+    var navCalendar = document.getElementById('nav-calendar');
+    var navStats = document.getElementById('nav-stats');
+
+    // Hide all
+    [tableView, pipelineView, calendarView, statsView].forEach(function(v) {{ v.style.display = 'none'; }});
+    [navTable, navPipeline, navCalendar, navStats].forEach(function(n) {{ n.classList.remove('active'); }});
+
     if (view === 'pipeline') {{
-        tableView.style.display = 'none';
         pipelineView.style.display = 'block';
-        navTable.classList.remove('active');
         navPipeline.classList.add('active');
         renderPipeline();
+    }} else if (view === 'calendar') {{
+        calendarView.style.display = 'block';
+        navCalendar.classList.add('active');
+        renderCalendar();
+    }} else if (view === 'stats') {{
+        statsView.style.display = 'block';
+        navStats.classList.add('active');
+        renderStats();
     }} else {{
         tableView.style.display = '';
-        pipelineView.style.display = 'none';
         navTable.classList.add('active');
-        navPipeline.classList.remove('active');
     }}
 }}
 
@@ -2009,6 +2115,232 @@ function renderPipeline() {{
     }});
 
     document.getElementById('pipeline-container').innerHTML = html;
+}}
+
+// Stats view
+function renderStats() {{
+    var savedStatuses = loadSavedStatuses();
+    var favs = loadFavorites();
+    var today = new Date(); today.setHours(0,0,0,0);
+
+    // Status counts
+    var statusCounts = {{}};
+    ['Not Started','In Progress','Submitted','Interview','Offer','Rejected'].forEach(function(s) {{ statusCounts[s] = 0; }});
+    PROGRAMS.forEach(function(p) {{
+        var s = savedStatuses[p.id] || p.application_status || 'Not Started';
+        statusCounts[s] = (statusCounts[s] || 0) + 1;
+    }});
+
+    // Region counts
+    var regionCounts = {{}};
+    PROGRAMS.forEach(function(p) {{ regionCounts[p.region] = (regionCounts[p.region] || 0) + 1; }});
+
+    // BSN counts
+    var bsnCounts = {{}};
+    PROGRAMS.forEach(function(p) {{ bsnCounts[p.bsn_required || 'Unknown'] = (bsnCounts[p.bsn_required || 'Unknown'] || 0) + 1; }});
+
+    // Pay distribution
+    var payBuckets = {{ 'Under $50/hr': 0, '$50-60/hr': 0, '$60-70/hr': 0, '$70-80/hr': 0, '$80+/hr': 0, 'Unknown': 0 }};
+    PROGRAMS.forEach(function(p) {{
+        var m = (p.pay_range || '').match(/(\\d[\\d.,]+)\\/hr/);
+        if (m) {{
+            var val = parseFloat(m[1].replace(',', ''));
+            if (val < 50) payBuckets['Under $50/hr']++;
+            else if (val < 60) payBuckets['$50-60/hr']++;
+            else if (val < 70) payBuckets['$60-70/hr']++;
+            else if (val < 80) payBuckets['$70-80/hr']++;
+            else payBuckets['$80+/hr']++;
+        }} else {{
+            payBuckets['Unknown']++;
+        }}
+    }});
+
+    // Deadline timeline
+    var openNow = 0, upcoming30 = 0, future = 0, closed = 0, tbd = 0;
+    PROGRAMS.forEach(function(p) {{
+        var openD = parseDate(p.app_open_date);
+        var closeD = parseDate(p.app_close_date);
+        if (!openD || !closeD) {{ tbd++; return; }}
+        if (closeD < today) {{ closed++; }}
+        else if (openD <= today && closeD >= today) {{ openNow++; }}
+        else if (closeD.getTime() - today.getTime() <= 30 * 86400000) {{ upcoming30++; }}
+        else {{ future++; }}
+    }});
+
+    // Reputation distribution
+    var repCounts = {{1:0, 2:0, 3:0, 4:0, 5:0}};
+    PROGRAMS.forEach(function(p) {{ repCounts[p.reputation || 1] = (repCounts[p.reputation || 1] || 0) + 1; }});
+
+    var total = PROGRAMS.length;
+
+    function barChart(title, data, colors) {{
+        var maxVal = Math.max.apply(null, Object.values(data));
+        var html = '<div class="stats-card"><h3>' + title + '</h3>';
+        Object.keys(data).forEach(function(key) {{
+            var val = data[key];
+            var pct = maxVal > 0 ? Math.round(val / maxVal * 100) : 0;
+            var color = colors ? (colors[key] || '#3b82f6') : '#3b82f6';
+            html += '<div class="stats-bar-row">';
+            html += '<span class="stats-bar-label">' + key + '</span>';
+            html += '<div class="stats-bar-track"><div class="stats-bar-fill" style="width:' + pct + '%;background:' + color + '"></div></div>';
+            html += '<span class="stats-bar-value">' + val + '</span>';
+            html += '</div>';
+        }});
+        html += '</div>';
+        return html;
+    }}
+
+    var statusColors = {{
+        'Not Started': '#9ca3af', 'In Progress': '#f59e0b', 'Submitted': '#3b82f6',
+        'Interview': '#8b5cf6', 'Offer': '#22c55e', 'Rejected': '#ef4444'
+    }};
+
+    var regionColors = {{}};
+    Object.keys(regionCounts).forEach(function(r) {{
+        if (r.indexOf('Bay') !== -1) regionColors[r] = '#3b82f6';
+        else if (r.indexOf('SoCal') !== -1 || r.indexOf('LA') !== -1 || r.indexOf('Orange') !== -1 || r.indexOf('Diego') !== -1) regionColors[r] = '#f59e0b';
+        else if (r.indexOf('Central') !== -1) regionColors[r] = '#22c55e';
+        else if (r.indexOf('Sacr') !== -1 || r.indexOf('NorCal') !== -1) regionColors[r] = '#8b5cf6';
+        else if (r.indexOf('Inland') !== -1) regionColors[r] = '#ef4444';
+        else regionColors[r] = '#6b7280';
+    }});
+
+    var bsnColors = {{ 'No': '#22c55e', 'Preferred': '#f59e0b', 'Yes': '#ef4444', 'Unknown': '#9ca3af' }};
+    var payColors = {{ 'Under $50/hr': '#ef4444', '$50-60/hr': '#f59e0b', '$60-70/hr': '#3b82f6', '$70-80/hr': '#8b5cf6', '$80+/hr': '#22c55e', 'Unknown': '#9ca3af' }};
+
+    var html = '<div class="stats-header">';
+    html += '<h2>Program Analytics</h2>';
+    html += '<div class="stats-summary-cards">';
+    html += '<div class="stats-num-card"><span class="stats-big-num">' + total + '</span><span>Total Programs</span></div>';
+    html += '<div class="stats-num-card"><span class="stats-big-num stat-green">' + openNow + '</span><span>Open Now</span></div>';
+    html += '<div class="stats-num-card"><span class="stats-big-num" style="color:#f59e0b">' + upcoming30 + '</span><span>Closing in 30d</span></div>';
+    html += '<div class="stats-num-card"><span class="stats-big-num" style="color:#8b5cf6">' + favs.length + '</span><span>Favorites</span></div>';
+    html += '</div></div>';
+
+    html += '<div class="stats-grid">';
+    html += barChart('Application Status', statusCounts, statusColors);
+    html += barChart('By Region', regionCounts, regionColors);
+    html += barChart('BSN Requirement', bsnCounts, bsnColors);
+    html += barChart('Pay Distribution', payBuckets, payColors);
+
+    // Timeline status
+    var timelineData = {{ 'Open Now': openNow, 'Upcoming (30d)': upcoming30, 'Future': future, 'Closed': closed, 'TBD': tbd }};
+    var timelineColors = {{ 'Open Now': '#22c55e', 'Upcoming (30d)': '#f59e0b', 'Future': '#3b82f6', 'Closed': '#9ca3af', 'TBD': '#d1d5db' }};
+    html += barChart('Application Timeline', timelineData, timelineColors);
+
+    // Rep distribution
+    var repData = {{}};
+    [5,4,3,2,1].forEach(function(r) {{ repData['\u2605'.repeat(r) + '\u2606'.repeat(5-r)] = repCounts[r]; }});
+    html += barChart('Reputation Distribution', repData, null);
+
+    html += '</div>';
+
+    document.getElementById('stats-dashboard').innerHTML = html;
+}}
+
+// Calendar view
+var calMonth = new Date().getMonth();
+var calYear = new Date().getFullYear();
+
+function calPrev() {{ calMonth--; if (calMonth < 0) {{ calMonth = 11; calYear--; }} renderCalendar(); }}
+function calNext() {{ calMonth++; if (calMonth > 11) {{ calMonth = 0; calYear++; }} renderCalendar(); }}
+function calToday() {{ var now = new Date(); calMonth = now.getMonth(); calYear = now.getFullYear(); renderCalendar(); }}
+
+function renderCalendar() {{
+    var months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    var title = document.getElementById('cal-month-title');
+    if (title) title.textContent = months[calMonth] + ' ' + calYear;
+
+    var firstDay = new Date(calYear, calMonth, 1).getDay();
+    var daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+    var today = new Date(); today.setHours(0,0,0,0);
+
+    // Collect events for this month
+    var events = {{}};
+    PROGRAMS.forEach(function(p) {{
+        var openD = parseDate(p.app_open_date);
+        var closeD = parseDate(p.app_close_date);
+        var cohortD = parseDate(p.cohort_start);
+
+        // Mark each day in the open window
+        if (openD && closeD) {{
+            var d = new Date(openD);
+            while (d <= closeD) {{
+                if (d.getMonth() === calMonth && d.getFullYear() === calYear) {{
+                    var day = d.getDate();
+                    if (!events[day]) events[day] = [];
+                    // Only add the hospital once per day
+                    var existing = events[day].find(function(e) {{ return e.id === p.id && e.type === 'open'; }});
+                    if (!existing) {{
+                        events[day].push({{id: p.id, hospital: p.hospital, type: 'open'}});
+                    }}
+                }}
+                d.setDate(d.getDate() + 1);
+            }}
+        }}
+
+        // Close date marker
+        if (closeD && closeD.getMonth() === calMonth && closeD.getFullYear() === calYear) {{
+            var cDay = closeD.getDate();
+            if (!events[cDay]) events[cDay] = [];
+            events[cDay].push({{id: p.id, hospital: p.hospital, type: 'close'}});
+        }}
+
+        // Cohort start marker
+        if (cohortD && cohortD.getMonth() === calMonth && cohortD.getFullYear() === calYear) {{
+            var coDay = cohortD.getDate();
+            if (!events[coDay]) events[coDay] = [];
+            events[coDay].push({{id: p.id, hospital: p.hospital, type: 'cohort'}});
+        }}
+    }});
+
+    var html = '<div class="cal-header-row">';
+    ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(function(d) {{
+        html += '<div class="cal-header-cell">' + d + '</div>';
+    }});
+    html += '</div>';
+
+    html += '<div class="cal-body">';
+    var dayCount = 0;
+    for (var w = 0; w < 6; w++) {{
+        if (dayCount >= daysInMonth && w > 0) break;
+        html += '<div class="cal-row">';
+        for (var dow = 0; dow < 7; dow++) {{
+            var dayNum = w * 7 + dow - firstDay + 1;
+            if (dayNum < 1 || dayNum > daysInMonth) {{
+                html += '<div class="cal-cell cal-empty"></div>';
+            }} else {{
+                var isToday = (dayNum === today.getDate() && calMonth === today.getMonth() && calYear === today.getFullYear());
+                var dayEvents = events[dayNum] || [];
+                var cls = 'cal-cell' + (isToday ? ' cal-today' : '') + (dayEvents.length > 0 ? ' cal-has-events' : '');
+                html += '<div class="' + cls + '">';
+                html += '<span class="cal-day-num">' + dayNum + '</span>';
+                if (dayEvents.length > 0) {{
+                    html += '<div class="cal-events">';
+                    // Deduplicate and limit to 3
+                    var shown = {{}};
+                    var count = 0;
+                    dayEvents.forEach(function(ev) {{
+                        if (shown[ev.id + ev.type] || count >= 3) return;
+                        shown[ev.id + ev.type] = true;
+                        count++;
+                        var dotCls = ev.type === 'close' ? 'cal-evt-close' : ev.type === 'cohort' ? 'cal-evt-cohort' : 'cal-evt-open';
+                        html += '<a href="#" class="cal-event ' + dotCls + '" onclick="showDetail(' + ev.id + '); return false;" title="' + escHtml(ev.hospital) + '">' + escHtml(ev.hospital.substring(0, 12)) + '</a>';
+                    }});
+                    if (dayEvents.length > 3) {{
+                        html += '<span class="cal-more">+' + (dayEvents.length - 3) + ' more</span>';
+                    }}
+                    html += '</div>';
+                }}
+                html += '</div>';
+                dayCount = dayNum;
+            }}
+        }}
+        html += '</div>';
+    }}
+    html += '</div>';
+
+    document.getElementById('cal-grid').innerHTML = html;
 }}
 
 function toggleShortcutHelp() {{
