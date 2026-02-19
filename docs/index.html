@@ -6809,6 +6809,111 @@ mark.search-highlight {
     box-shadow: 0 0 8px rgba(34, 197, 94, 0.4);
 }
 
+/* Apply checklist modal */
+.checklist-subtitle {
+    color: #6b7280;
+    font-size: 0.85rem;
+    margin: -8px 0 16px;
+}
+.checklist-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    margin: 4px 0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.15s;
+    border: 1px solid #e5e7eb;
+}
+.checklist-item:hover {
+    background: #f3f4f6;
+}
+.checklist-item.checklist-done {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+}
+.checklist-item.checklist-done .checklist-label {
+    text-decoration: line-through;
+    color: #6b7280;
+}
+.checklist-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #22c55e;
+    flex-shrink: 0;
+    margin: 0;
+}
+.checklist-icon {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+.checklist-label {
+    flex: 1;
+    font-size: 0.9rem;
+}
+.checklist-actions {
+    margin-top: 20px;
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+.checklist-go-btn {
+    background: var(--accent, #2563eb);
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+}
+.checklist-go-btn:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+}
+.checklist-go-btn.checklist-ready {
+    background: #22c55e;
+    animation: checklist-pulse 1.5s ease-in-out infinite;
+}
+@keyframes checklist-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+    50% { box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+}
+.checklist-skip-btn {
+    background: none;
+    border: 1px solid #d1d5db;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    color: #6b7280;
+}
+.checklist-skip-btn:hover {
+    background: #f3f4f6;
+}
+[data-theme="dark"] .checklist-item {
+    border-color: #374151;
+}
+[data-theme="dark"] .checklist-item:hover {
+    background: #1f2937;
+}
+[data-theme="dark"] .checklist-item.checklist-done {
+    background: #052e16;
+    border-color: #166534;
+}
+[data-theme="dark"] .checklist-subtitle {
+    color: #9ca3af;
+}
+[data-theme="dark"] .checklist-skip-btn {
+    border-color: #4b5563;
+    color: #9ca3af;
+}
+[data-theme="dark"] .checklist-skip-btn:hover {
+    background: #1f2937;
+}
+
     </style>
 </head>
 <body>
@@ -8336,6 +8441,19 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
         </div>
     </div>
 
+    <div id="apply-checklist-modal" class="modal-overlay" style="display:none" role="dialog" aria-modal="true" aria-label="Application Checklist">
+        <div class="modal-content" style="max-width:480px">
+            <button class="modal-close" onclick="closeModal('apply-checklist-modal')" aria-label="Close">&times;</button>
+            <h2 style="margin-top:0" id="checklist-title">Pre-Flight Checklist</h2>
+            <p class="checklist-subtitle" id="checklist-subtitle"></p>
+            <div id="checklist-items"></div>
+            <div class="checklist-actions">
+                <button class="checklist-go-btn" id="checklist-go-btn" onclick="checklistProceed()">Open Application &rarr;</button>
+                <button class="checklist-skip-btn" onclick="checklistProceed()">Skip checklist</button>
+            </div>
+        </div>
+    </div>
+
     <footer class="container">
         <small>57 programs across 5 regions &bull; Data updated 2026-02-18 &bull; Generated Feb 19, 2026</small>
         <small class="shortcuts-hint"><kbd>/</kbd> Search &bull; <kbd>j</kbd><kbd>k</kbd> Navigate &bull; <kbd>Enter</kbd> Detail &bull; <kbd>a</kbd> Apply &bull; <kbd>e</kbd> Status &bull; <kbd>x</kbd> Fav &bull; <kbd>gg</kbd>/<kbd>G</kbd> Top/Bottom &bull; <kbd>1</kbd>-<kbd>6</kbd> Views &bull; <kbd>?</kbd> Help</small>
@@ -8720,13 +8838,72 @@ function filterByStatus(status) {
     showToast('Showing ' + status);
 }
 
+var _checklistPending = null;
+var CHECKLIST_ITEMS = [
+    { id: 'resume', label: 'Resume / CV updated', icon: '&#128196;' },
+    { id: 'cover_letter', label: 'Cover letter customized', icon: '&#9993;' },
+    { id: 'transcripts', label: 'Transcripts ready', icon: '&#127891;' },
+    { id: 'references', label: 'References contacted', icon: '&#128101;' },
+    { id: 'license', label: 'License / NCLEX info ready', icon: '&#9878;' },
+    { id: 'certifications', label: 'BLS / certifications uploaded', icon: '&#10010;' }
+];
+
 function markApplied(btn) {
     var id = parseInt(btn.dataset.id);
     var url = btn.dataset.url;
+    var prog = PROGRAMS.find(function(p) { return p.id === id; });
+    _checklistPending = { id: id, url: url, btn: btn };
+    var saved = JSON.parse(localStorage.getItem('rn_tracker_checklist_state') || '{}');
+    var programState = saved[id] || {};
+    var container = document.getElementById('checklist-items');
+    container.innerHTML = '';
+    CHECKLIST_ITEMS.forEach(function(item) {
+        var checked = programState[item.id] ? ' checked' : '';
+        container.innerHTML += '<label class="checklist-item' + (checked ? ' checklist-done' : '') + '">' +
+            '<input type="checkbox" onchange="toggleChecklistItem(' + id + ',\'' + item.id + '\', this)"' + checked + '>' +
+            '<span class="checklist-icon">' + item.icon + '</span>' +
+            '<span class="checklist-label">' + item.label + '</span>' +
+            '</label>';
+    });
+    document.getElementById('checklist-subtitle').textContent = prog ? prog.hospital : '';
+    updateChecklistProgress(id);
+    openModal('apply-checklist-modal');
+}
+
+function toggleChecklistItem(progId, itemId, el) {
+    var saved = JSON.parse(localStorage.getItem('rn_tracker_checklist_state') || '{}');
+    if (!saved[progId]) saved[progId] = {};
+    saved[progId][itemId] = el.checked;
+    localStorage.setItem('rn_tracker_checklist_state', JSON.stringify(saved));
+    var label = el.closest('.checklist-item');
+    if (label) {
+        if (el.checked) label.classList.add('checklist-done');
+        else label.classList.remove('checklist-done');
+    }
+    updateChecklistProgress(progId);
+}
+
+function updateChecklistProgress(progId) {
+    var saved = JSON.parse(localStorage.getItem('rn_tracker_checklist_state') || '{}');
+    var state = saved[progId] || {};
+    var done = 0;
+    CHECKLIST_ITEMS.forEach(function(item) { if (state[item.id]) done++; });
+    var goBtn = document.getElementById('checklist-go-btn');
+    if (goBtn) {
+        goBtn.textContent = done === CHECKLIST_ITEMS.length ? 'All set! Open Application \u2192' : 'Open Application (' + done + '/' + CHECKLIST_ITEMS.length + ') \u2192';
+        goBtn.className = 'checklist-go-btn' + (done === CHECKLIST_ITEMS.length ? ' checklist-ready' : '');
+    }
+}
+
+function checklistProceed() {
+    if (!_checklistPending) return;
+    var id = _checklistPending.id;
+    var url = _checklistPending.url;
+    var btn = _checklistPending.btn;
     window.open(url, '_blank');
     saveStatus(id, 'Submitted');
     logActivity(id, 'Marked as Submitted via Apply button');
-    var row = btn.closest('tr');
+    var row = btn ? btn.closest('tr') : null;
     if (row) {
         applyRowStatus(row, 'Submitted');
         row.dataset.status = 'Submitted';
@@ -8734,7 +8911,9 @@ function markApplied(btn) {
         if (sel) sel.value = 'Submitted';
     }
     renderStatusSummary();
+    closeModal('apply-checklist-modal');
     showToast('Opened application & marked as Submitted');
+    _checklistPending = null;
 }
 
 function filterByRegion(region) {
@@ -11164,6 +11343,7 @@ function backupData() {
         pins: JSON.parse(localStorage.getItem('rn_tracker_pins') || '[]'),
         statusHistory: JSON.parse(localStorage.getItem('rn_tracker_status_history') || '{}'),
         milestones: JSON.parse(localStorage.getItem('rn_tracker_milestones') || '[]'),
+        applyChecklist: JSON.parse(localStorage.getItem('rn_tracker_checklist_state') || '{}'),
         exported: new Date().toISOString()
     };
     var blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
@@ -11196,6 +11376,7 @@ function restoreData(input) {
             if (data.pins) localStorage.setItem('rn_tracker_pins', JSON.stringify(data.pins));
             if (data.statusHistory) localStorage.setItem('rn_tracker_status_history', JSON.stringify(data.statusHistory));
             if (data.milestones) localStorage.setItem('rn_tracker_milestones', JSON.stringify(data.milestones));
+            if (data.applyChecklist) localStorage.setItem('rn_tracker_checklist_state', JSON.stringify(data.applyChecklist));
             showToast('Data restored! Reloading...');
             setTimeout(function() { window.location.reload(); }, 1000);
         } catch(ex) {
