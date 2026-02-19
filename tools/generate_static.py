@@ -256,7 +256,7 @@ def generate():
 <td class="col-pay" title="{esc(p.get('pay_range', ''))}">{esc(pay)}{pay_bar_html}</td>
 <td class="col-len">{p.get('program_length_months','')}mo</td>
 <td class="col-specialties" title="{esc(specs)}">{esc(specs)}</td>
-<td class="col-status"><select class="status-select" data-id="{p['id']}" aria-label="Status for {esc(p.get('hospital', ''))}">{status_options}</select></td>
+<td class="col-status"><select class="status-select" data-id="{p['id']}" aria-label="Status for {esc(p.get('hospital', ''))}">{status_options}</select><svg class="mini-donut" data-id="{p['id']}" viewBox="0 0 20 20" width="16" height="16" title="Checklist progress"><circle cx="10" cy="10" r="7" fill="none" stroke="#e5e7eb" stroke-width="3"/><circle class="mini-donut-fill" cx="10" cy="10" r="7" fill="none" stroke="var(--accent,#2563eb)" stroke-width="3" stroke-dasharray="0 44" stroke-dashoffset="-11" stroke-linecap="round"/></svg></td>
 <td class="col-notes" data-id="{p['id']}" ondblclick="inlineEditNote(this)" title="Double-click to edit">{notes_cell}</td>
 <td class="col-apply">{apply_cell}</td>
 </tr>"""
@@ -1387,6 +1387,7 @@ document.addEventListener('DOMContentLoaded', function() {{
     renderUrgencyBanner();
     renderNotifications();
     renderDeadlineTicker();
+    updateMiniDonuts();
     renderSavedFilters();
     initRowPreview();
     renderTableTags();
@@ -1725,11 +1726,16 @@ function filterTable() {{
     var rows = document.querySelectorAll('.sheet tbody tr');
     var visibleCount = 0;
 
+    var savedNotes = loadSavedNotes();
+    var savedTags = JSON.parse(localStorage.getItem('rn_tracker_tags') || '{{}}');
     rows.forEach(function(row) {{
         var show = true;
         if (query) {{
             var text = row.textContent.toLowerCase();
-            if (text.indexOf(query) === -1) show = false;
+            var rowId = row.dataset.id;
+            var noteText = (savedNotes[rowId] || '').toLowerCase();
+            var tagText = ((savedTags[rowId] || []).join(' ')).toLowerCase();
+            if (text.indexOf(query) === -1 && noteText.indexOf(query) === -1 && tagText.indexOf(query) === -1) show = false;
         }}
         if (show && region) {{
             var regionCell = row.querySelector('.col-region');
@@ -2043,6 +2049,30 @@ function deleteFilterPreset(idx) {{
     localStorage.setItem('rn_tracker_filter_presets', JSON.stringify(presets));
     renderSavedFilters();
     showToast('Filter deleted');
+}}
+
+function updateMiniDonuts() {{
+    var totalItems = 6; // 6 checklist items per program
+    var circumference = 2 * Math.PI * 7; // r=7
+    document.querySelectorAll('.mini-donut').forEach(function(svg) {{
+        var id = parseInt(svg.dataset.id);
+        var completed = loadChecklist(id).length;
+        var fill = svg.querySelector('.mini-donut-fill');
+        if (fill) {{
+            var pct = completed / totalItems;
+            var dashLen = pct * circumference;
+            fill.setAttribute('stroke-dasharray', dashLen + ' ' + circumference);
+            if (completed === 0) {{
+                fill.style.opacity = '0.2';
+            }} else if (completed === totalItems) {{
+                fill.setAttribute('stroke', '#22c55e');
+                fill.style.opacity = '1';
+            }} else {{
+                fill.style.opacity = '1';
+            }}
+            svg.setAttribute('title', completed + '/' + totalItems + ' checklist items');
+        }}
+    }});
 }}
 
 function renderSavedFilters() {{

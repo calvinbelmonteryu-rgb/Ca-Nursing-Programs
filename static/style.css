@@ -6360,3 +6360,27 @@ mark.search-highlight {
 @media (max-width: 640px) {
     .similar-grid { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ===== MINI DONUT (CHECKLIST PROGRESS) ===== */
+.mini-donut {
+    vertical-align: middle;
+    margin-left: 4px;
+    cursor: help;
+    flex-shrink: 0;
+}
+
+.mini-donut-fill {
+    transition: stroke-dasharray 0.3s;
+    transform-origin: center;
+    transform: rotate(-90deg);
+}
+
+.col-status {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+[data-theme="dark"] .mini-donut circle:first-child {
+    stroke: #374151;
+}
