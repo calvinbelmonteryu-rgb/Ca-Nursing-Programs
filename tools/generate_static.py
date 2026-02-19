@@ -338,8 +338,8 @@ def generate():
         <ul>
             <li><a href="#" class="active" id="nav-table" onclick="showView('table'); return false;">Table</a></li>
             <li><a href="#" id="nav-cards" onclick="showView('cards'); return false;">Cards</a></li>
-            <li><a href="#" id="nav-pipeline" onclick="showView('pipeline'); return false;">Pipeline</a></li>
-            <li><a href="#" id="nav-calendar" onclick="showView('calendar'); return false;">Calendar</a></li>
+            <li><a href="#" id="nav-pipeline" onclick="showView('pipeline'); return false;">Pipeline <span class="nav-badge" id="nav-badge-active" style="display:none"></span></a></li>
+            <li><a href="#" id="nav-calendar" onclick="showView('calendar'); return false;">Calendar <span class="nav-badge" id="nav-badge-upcoming" style="display:none"></span></a></li>
             <li><a href="#" id="nav-stats" onclick="showView('stats'); return false;">Stats</a></li>
             <li><a href="#" id="nav-timeline" onclick="showView('timeline'); return false;">Timeline</a></li>
             <li class="nclex-nav" title="Days until NCLEX ({nclex_date})"><span class="nclex-badge">{nclex_days if nclex_days is not None else '?'}d</span> NCLEX</li>
@@ -1443,6 +1443,7 @@ document.addEventListener('DOMContentLoaded', function() {{
     renderDeadlineTicker();
     updateMiniDonuts();
     renderWaitingBadges();
+    updateNavBadges();
     renderSavedFilters();
     initRowPreview();
     renderTableTags();
@@ -2121,6 +2122,42 @@ function deleteFilterPreset(idx) {{
     localStorage.setItem('rn_tracker_filter_presets', JSON.stringify(presets));
     renderSavedFilters();
     showToast('Filter deleted');
+}}
+
+function updateNavBadges() {{
+    var savedStatuses = loadSavedStatuses();
+    var today = new Date(); today.setHours(0,0,0,0);
+    var activeCount = 0;
+    var upcomingCount = 0;
+    PROGRAMS.forEach(function(p) {{
+        var s = savedStatuses[p.id] || p.application_status || 'Not Started';
+        if (s === 'In Progress' || s === 'Submitted' || s === 'Interview') activeCount++;
+        var closeD = parseDate(p.app_close_date);
+        var openD = parseDate(p.app_open_date);
+        if (openD && closeD && openD <= today && closeD >= today) upcomingCount++;
+        else if (closeD && closeD > today) {{
+            var daysUntil = Math.ceil((closeD - today) / 86400000);
+            if (daysUntil <= 14) upcomingCount++;
+        }}
+    }});
+    var activeBadge = document.getElementById('nav-badge-active');
+    if (activeBadge) {{
+        if (activeCount > 0) {{
+            activeBadge.textContent = activeCount;
+            activeBadge.style.display = '';
+        }} else {{
+            activeBadge.style.display = 'none';
+        }}
+    }}
+    var upcomingBadge = document.getElementById('nav-badge-upcoming');
+    if (upcomingBadge) {{
+        if (upcomingCount > 0) {{
+            upcomingBadge.textContent = upcomingCount;
+            upcomingBadge.style.display = '';
+        }} else {{
+            upcomingBadge.style.display = 'none';
+        }}
+    }}
 }}
 
 function renderWaitingBadges() {{
