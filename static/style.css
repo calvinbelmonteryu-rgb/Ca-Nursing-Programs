@@ -7595,6 +7595,86 @@ mark.search-highlight {
     .next-action-card { display: none !important; }
 }
 
+/* Offer celebration overlay */
+.offer-celebration {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+.offer-celebration.offer-visible {
+    opacity: 1;
+}
+.offer-content {
+    background: #fff;
+    border-radius: 20px;
+    padding: 40px 50px;
+    text-align: center;
+    max-width: 400px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: offer-bounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes offer-bounce {
+    from { transform: scale(0.5); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+.offer-emoji {
+    font-size: 3rem;
+    margin-bottom: 12px;
+    animation: offer-wiggle 0.5s ease-in-out 0.3s;
+}
+@keyframes offer-wiggle {
+    0%, 100% { transform: rotate(0); }
+    25% { transform: rotate(-10deg); }
+    75% { transform: rotate(10deg); }
+}
+.offer-title {
+    font-size: 2rem;
+    margin: 0 0 8px;
+    background: linear-gradient(135deg, #f59e0b, #ef4444, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.offer-msg {
+    color: #4b5563;
+    font-size: 1rem;
+    margin: 0 0 20px;
+    line-height: 1.5;
+}
+.offer-msg strong {
+    color: #1e293b;
+    font-size: 1.1rem;
+}
+.offer-close-btn {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: #fff;
+    border: none;
+    padding: 12px 32px;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.15s;
+}
+.offer-close-btn:hover {
+    transform: scale(1.05);
+}
+[data-theme="dark"] .offer-content {
+    background: #1e1e1e;
+}
+[data-theme="dark"] .offer-msg {
+    color: #9ca3af;
+}
+[data-theme="dark"] .offer-msg strong {
+    color: #e5e7eb;
+}
+
 /* Application funnel chart */
 .funnel-chart {
     position: relative;

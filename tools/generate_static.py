@@ -851,6 +851,7 @@ function loadSavedStatuses() {{
 function saveStatus(id, status) {{
     try {{
         var all = loadSavedStatuses();
+        var prevStatus = all[id];
         all[id] = status;
         localStorage.setItem('rn_tracker_statuses', JSON.stringify(all));
         logActivity(id, 'Status changed to ' + status);
@@ -861,7 +862,33 @@ function saveStatus(id, status) {{
         localStorage.setItem('rn_tracker_status_history', JSON.stringify(history));
         // Check milestones
         checkMilestones(all);
+        // Offer celebration
+        if (status === 'Offer' && prevStatus !== 'Offer') {{
+            var prog = PROGRAMS.find(function(p) {{ return p.id === id; }});
+            celebrateOffer(prog ? prog.hospital : 'this program');
+        }}
     }} catch(e) {{}}
+}}
+
+function celebrateOffer(hospitalName) {{
+    launchConfetti();
+    setTimeout(launchConfetti, 500);
+    var overlay = document.createElement('div');
+    overlay.className = 'offer-celebration';
+    overlay.innerHTML = '<div class="offer-content">' +
+        '<div class="offer-emoji">&#127881;&#127882;&#127881;</div>' +
+        '<h2 class="offer-title">Congratulations!</h2>' +
+        '<p class="offer-msg">You received an offer from<br><strong>' + hospitalName + '</strong></p>' +
+        '<button class="offer-close-btn" onclick="this.closest(\\\'.offer-celebration\\\').remove()">Amazing!</button>' +
+        '</div>';
+    document.body.appendChild(overlay);
+    setTimeout(function() {{ overlay.classList.add('offer-visible'); }}, 10);
+    setTimeout(function() {{
+        if (overlay.parentElement) {{
+            overlay.classList.remove('offer-visible');
+            setTimeout(function() {{ overlay.remove(); }}, 300);
+        }}
+    }}, 6000);
 }}
 
 function checkMilestones(allStatuses) {{
