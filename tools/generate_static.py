@@ -226,6 +226,7 @@ def generate():
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Track {total} California new graduate RN residency programs — application dates, deadlines, pay rates, and requirements.">
     <title>CA New Grad RN Tracker</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏥</text></svg>">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
@@ -330,17 +331,17 @@ def generate():
     </main>
 
     <!-- Detail Modal -->
-    <div id="detail-modal" class="modal-overlay" style="display:none">
+    <div id="detail-modal" class="modal-overlay" style="display:none" role="dialog" aria-modal="true" aria-label="Program Details">
         <div class="modal-content">
-            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <button class="modal-close" onclick="closeModal()" aria-label="Close">&times;</button>
             <div id="modal-body"></div>
         </div>
     </div>
 
     <!-- Compare Modal -->
-    <div id="compare-modal" class="modal-overlay" style="display:none">
+    <div id="compare-modal" class="modal-overlay" style="display:none" role="dialog" aria-modal="true" aria-label="Compare Programs">
         <div class="modal-content modal-wide">
-            <button class="modal-close" onclick="closeCompareModal()">&times;</button>
+            <button class="modal-close" onclick="closeCompareModal()" aria-label="Close">&times;</button>
             <div id="compare-body"></div>
         </div>
     </div>
