@@ -256,7 +256,7 @@ def generate():
 <td class="col-pay" title="{esc(p.get('pay_range', ''))}">{esc(pay)}{pay_bar_html}</td>
 <td class="col-len">{p.get('program_length_months','')}mo</td>
 <td class="col-specialties" title="{esc(specs)}">{esc(specs)}</td>
-<td class="col-status"><select class="status-select" data-id="{p['id']}">{status_options}</select></td>
+<td class="col-status"><select class="status-select" data-id="{p['id']}" aria-label="Status for {esc(p.get('hospital', ''))}">{status_options}</select></td>
 <td class="col-notes" data-id="{p['id']}" ondblclick="inlineEditNote(this)" title="Double-click to edit">{notes_cell}</td>
 <td class="col-apply">{apply_cell}</td>
 </tr>"""
@@ -329,6 +329,7 @@ def generate():
 </head>
 <body>
     <a href="#main-table" class="skip-link">Skip to programs table</a>
+    <div id="live-region" class="live-region" aria-live="polite" aria-atomic="true"></div>
     <nav class="container-fluid" role="navigation" aria-label="Main navigation">
         <ul>
             <li><strong>CA New Grad RN Tracker</strong></li>
@@ -370,24 +371,24 @@ def generate():
     <main class="container-fluid sheet-page" role="main" id="main-table">
         <div class="sheet-toolbar">
             <div class="sheet-filters">
-                <div class="search-wrap"><input type="search" name="q" placeholder="Search... ( / )" value="" id="main-search" autocomplete="off"><div class="search-suggest" id="search-suggest"></div></div>
-                <select data-instant="region">
+                <div class="search-wrap"><input type="search" name="q" placeholder="Search... ( / )" value="" id="main-search" autocomplete="off" aria-label="Search programs"><div class="search-suggest" id="search-suggest" role="listbox"></div></div>
+                <select data-instant="region" aria-label="Filter by region">
                     <option value="">All Regions</option>
                     {region_options}
                 </select>
-                <select data-instant="city">
+                <select data-instant="city" aria-label="Filter by city">
                     <option value="">All Cities</option>
                     {city_options}
                 </select>
-                <select data-instant="bsn">
+                <select data-instant="bsn" aria-label="Filter by BSN requirement">
                     <option value="">All BSN</option>
                     {bsn_options}
                 </select>
-                <select data-instant="status">
+                <select data-instant="status" aria-label="Filter by application status">
                     <option value="">All Statuses</option>
                     {status_options_filter}
                 </select>
-                <select data-instant="cohort-status">
+                <select data-instant="cohort-status" aria-label="Filter by cohort status">
                     <option value="">All Cohorts</option>
                     <option value="released">Released</option>
                     <option value="not-released">Not Released</option>
@@ -398,7 +399,7 @@ def generate():
                 <button type="button" class="clear-filter" id="clear-all-btn" onclick="clearAllFilters()" style="display:none">Clear All</button>
                 <button type="button" class="jump-btn" onclick="jumpToOpen()" title="Jump to first open program">&darr; Open</button>
                 <span class="filter-spacer"></span>
-                <select id="sort-preset" onchange="applySortPreset(this.value)" style="height:28px;font-size:0.75rem;padding:4px 8px;margin:0;border:1px solid #d1d5db;border-radius:3px">
+                <select id="sort-preset" onchange="applySortPreset(this.value)" aria-label="Sort programs" style="height:28px;font-size:0.75rem;padding:4px 8px;margin:0;border:1px solid #d1d5db;border-radius:3px">
                     <option value="">Sort by...</option>
                     <option value="deadline">Nearest Deadline</option>
                     <option value="pay-high">Highest Pay</option>
@@ -408,7 +409,7 @@ def generate():
                     <option value="hospital">Hospital A-Z</option>
                     <option value="smart">Smart Match</option>
                 </select>
-                <select id="group-by" onchange="applyGrouping()" style="height:28px;font-size:0.75rem;padding:4px 8px;margin:0;border:1px solid #d1d5db;border-radius:3px">
+                <select id="group-by" onchange="applyGrouping()" aria-label="Group programs" style="height:28px;font-size:0.75rem;padding:4px 8px;margin:0;border:1px solid #d1d5db;border-radius:3px">
                     <option value="">Group by...</option>
                     <option value="region">Region</option>
                     <option value="status">Status</option>
@@ -705,7 +706,7 @@ def generate():
     </div>
 
     <!-- Mobile Bottom Nav -->
-    <nav class="mobile-bottom-nav" id="mobile-bottom-nav">
+    <nav class="mobile-bottom-nav" id="mobile-bottom-nav" aria-label="View navigation">
         <button class="mnav-btn mnav-active" data-view="table" onclick="showView('table')"><span class="mnav-icon">&#9783;</span><span class="mnav-label">Table</span></button>
         <button class="mnav-btn" data-view="cards" onclick="showView('cards')"><span class="mnav-icon">&#9642;</span><span class="mnav-label">Cards</span></button>
         <button class="mnav-btn" data-view="pipeline" onclick="showView('pipeline')"><span class="mnav-icon">&#9654;</span><span class="mnav-label">Pipeline</span></button>
@@ -3892,6 +3893,7 @@ function showView(view) {{
     }});
     window._currentView = view;
     window.scrollTo({{ top: 0, behavior: 'smooth' }});
+    announce('Switched to ' + view + ' view');
 }}
 
 // Pipeline drag and drop
@@ -4811,6 +4813,14 @@ function quickSetStatus(id, status) {{
     showToast('Status: ' + status);
 }}
 
+function announce(message) {{
+    var region = document.getElementById('live-region');
+    if (region) {{
+        region.textContent = '';
+        setTimeout(function() {{ region.textContent = message; }}, 50);
+    }}
+}}
+
 function showToast(message) {{
     var toast = document.querySelector('.toast');
     if (!toast) {{
@@ -4820,6 +4830,7 @@ function showToast(message) {{
     }}
     toast.innerHTML = message;
     toast.classList.add('show');
+    announce(message.replace(/<[^>]*>/g, ''));
     clearTimeout(toast._timer);
     toast._timer = setTimeout(function() {{ toast.classList.remove('show'); }}, 2500);
 }}
