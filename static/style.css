@@ -1,5 +1,11 @@
 /* CA New Grad RN Tracker — Custom Styles */
 
+:root {
+    --accent: #2563eb;
+    --accent-light: #3b82f6;
+    --accent-dark: #1d4ed8;
+}
+
 html {
     scroll-behavior: smooth;
 }
@@ -65,7 +71,7 @@ nav a.active {
 .nclex-badge {
     display: inline-block;
     padding: 2px 8px;
-    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    background: linear-gradient(135deg, var(--accent-light), var(--accent-dark));
     color: white;
     border-radius: 12px;
     font-weight: 800;
@@ -235,9 +241,55 @@ nav a.active {
 }
 
 .sheet-count.count-changed {
-    color: #3b82f6;
+    color: var(--accent-light);
     font-weight: 600;
 }
+
+/* ===== ACCENT COLOR PICKER ===== */
+.accent-picker-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+.accent-swatch {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid rgba(255,255,255,0.5);
+    cursor: pointer;
+    vertical-align: middle;
+    transition: transform 0.15s;
+}
+.accent-swatch:hover { transform: scale(1.15); }
+.accent-palette {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 8px;
+    gap: 6px;
+    z-index: 999;
+    flex-wrap: wrap;
+    width: 156px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+.accent-palette.visible { display: flex; }
+.accent-dot {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: transform 0.15s, border-color 0.15s;
+}
+.accent-dot:hover { transform: scale(1.2); }
+.accent-dot.active { border-color: white; }
+[data-theme="dark"] .accent-palette { background: #0f172a; border-color: #1e293b; }
 
 .sheet-filters {
     display: flex;
@@ -394,8 +446,35 @@ tbody tr:hover .col-check { background: #eff6ff; }
 .row-rejected .col-check { background: #fef2f2 !important; }
 .col-id { width: 30px; text-align: center; color: #9ca3af; }
 .col-hospital { min-width: 180px; max-width: 220px; font-weight: 500; }
-.col-hospital a { color: #1d4ed8; text-decoration: none; }
+.col-hospital a { color: var(--accent-dark); text-decoration: none; }
 .col-hospital a:hover { text-decoration: underline; }
+
+/* Completion ring */
+.comp-ring {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: conic-gradient(var(--comp-color) calc(var(--comp-pct) * 3.6deg), #e5e7eb calc(var(--comp-pct) * 3.6deg));
+    font-size: 0;
+    margin-right: 4px;
+    vertical-align: middle;
+    position: relative;
+    flex-shrink: 0;
+}
+.comp-ring::after {
+    content: '';
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: white;
+    position: absolute;
+}
+.comp-val { display: none; }
+[data-theme="dark"] .comp-ring::after { background: var(--surface, #1e293b); }
+[data-theme="dark"] .comp-ring { background: conic-gradient(var(--comp-color) calc(var(--comp-pct) * 3.6deg), #374151 calc(var(--comp-pct) * 3.6deg)); }
 .col-program { min-width: 160px; max-width: 240px; color: #6b7280; font-size: 0.74rem; }
 .col-region { min-width: 80px; white-space: nowrap; }
 .region-badge {
@@ -616,7 +695,7 @@ tbody tr:hover .frozen-col {
 .bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
 .bar-label { min-width: 100px; font-size: 0.85rem; }
 .bar-track { flex: 1; height: 18px; background: #f3f4f6; border-radius: 3px; overflow: hidden; }
-.bar-fill { height: 100%; background: #3b82f6; border-radius: 3px; transition: width 0.3s; }
+.bar-fill { height: 100%; background: var(--accent-light); border-radius: 3px; transition: width 0.3s; }
 .bar-red { background: #ef4444; }
 .bar-yellow { background: #f59e0b; }
 .bar-green { background: #22c55e; }
@@ -1126,7 +1205,7 @@ a.bar-link:hover { background: #f3f4f6; }
 
 /* ===== SELECTED ROW ===== */
 .sheet tbody tr.selected-row {
-    outline: 2px solid #3b82f6;
+    outline: 2px solid var(--accent-light);
     outline-offset: -2px;
     background: #eff6ff !important;
 }
@@ -1135,6 +1214,88 @@ a.bar-link:hover { background: #f3f4f6; }
 .sheet tbody tr.selected-row .col-check,
 .sheet tbody tr.selected-row .col-fav {
     background: #eff6ff !important;
+}
+
+/* Quick note button and popover */
+.qnote-btn {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    font-size: 0.7rem;
+    cursor: pointer;
+    padding: 0 2px;
+    margin-left: 2px;
+    opacity: 0;
+    transition: opacity 0.15s;
+    vertical-align: middle;
+}
+.col-hospital:hover .qnote-btn,
+.qnote-btn:focus {
+    opacity: 1;
+}
+.qnote-btn:hover { color: #3b82f6; }
+
+.qnote-popover {
+    position: absolute;
+    z-index: 100;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    padding: 8px;
+    width: 260px;
+}
+.qnote-textarea {
+    width: 100%;
+    min-height: 60px;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+    padding: 6px;
+    font-size: 0.78rem;
+    resize: vertical;
+    font-family: inherit;
+    margin: 0;
+}
+.qnote-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 6px;
+    justify-content: flex-end;
+}
+.qnote-actions button {
+    padding: 4px 12px;
+    font-size: 0.72rem;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 1px solid #d1d5db;
+    background: white;
+}
+.qnote-actions button:first-child {
+    background: var(--accent-light);
+    color: white;
+    border-color: var(--accent-light);
+}
+.qnote-actions button:first-child:hover { background: var(--accent); }
+
+[data-theme="dark"] .qnote-btn { color: #6b7280; }
+[data-theme="dark"] .qnote-btn:hover { color: #60a5fa; }
+[data-theme="dark"] .qnote-popover {
+    background: #1e293b;
+    border-color: #334155;
+}
+[data-theme="dark"] .qnote-textarea {
+    background: #0f172a;
+    border-color: #334155;
+    color: #e2e8f0;
+}
+[data-theme="dark"] .qnote-actions button {
+    background: #1e293b;
+    border-color: #334155;
+    color: #e2e8f0;
+}
+[data-theme="dark"] .qnote-actions button:first-child {
+    background: #3b82f6;
+    border-color: #3b82f6;
 }
 
 /* Row flash on status change */
@@ -2154,7 +2315,7 @@ footer small {
 
 .checklist-progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, #3b82f6, #22c55e);
+    background: linear-gradient(90deg, var(--accent-light), #22c55e);
     border-radius: 2px;
     transition: width 0.3s ease;
 }
@@ -2224,11 +2385,11 @@ footer small {
 .pp-done .pp-label { color: #22c55e; font-weight: 600; }
 .pp-line-done { background: #22c55e; }
 .pp-current .pp-dot {
-    background: #3b82f6;
-    border-color: #3b82f6;
+    background: var(--accent-light);
+    border-color: var(--accent-light);
     box-shadow: 0 0 0 3px rgba(59,130,246,0.25);
 }
-.pp-current .pp-label { color: #3b82f6; font-weight: 700; }
+.pp-current .pp-label { color: var(--accent-light); font-weight: 700; }
 .pp-rejected .pp-dot { border-color: #d1d5db; background: white; }
 .pp-rejected .pp-label { color: #d1d5db; }
 .pp-rejected-step .pp-dot {
@@ -2244,7 +2405,7 @@ footer small {
 [data-theme="dark"] .pp-done .pp-dot { background: #22c55e; border-color: #22c55e; }
 [data-theme="dark"] .pp-done .pp-label { color: #6ee7b7; }
 [data-theme="dark"] .pp-line-done { background: #22c55e; }
-[data-theme="dark"] .pp-current .pp-dot { background: #3b82f6; border-color: #3b82f6; }
+[data-theme="dark"] .pp-current .pp-dot { background: var(--accent-light); border-color: var(--accent-light); }
 [data-theme="dark"] .pp-current .pp-label { color: #60a5fa; }
 [data-theme="dark"] .pp-rejected .pp-dot { border-color: #4b5563; background: var(--surface); }
 [data-theme="dark"] .pp-rejected .pp-label { color: #4b5563; }
@@ -2623,7 +2784,7 @@ tbody tr:hover .col-fav { background: #eff6ff; }
 
 .nclex-countdown {
     text-align: center;
-    background: linear-gradient(135deg, #1e40af, #3b82f6);
+    background: linear-gradient(135deg, var(--accent-dark), var(--accent-light));
     color: white;
     padding: 16px 24px;
     border-radius: 12px;
@@ -2850,7 +3011,7 @@ mark.search-highlight {
 }
 
 .back-to-top:hover {
-    background: #3b82f6;
+    background: var(--accent-light);
 }
 
 /* ===== DARK MODE ===== */
@@ -3333,7 +3494,7 @@ mark.search-highlight {
 }
 .goal-fill {
     height: 100%;
-    background: linear-gradient(90deg, #3b82f6, #22c55e);
+    background: linear-gradient(90deg, var(--accent-light), #22c55e);
     border-radius: 5px;
     transition: width 0.5s ease;
 }

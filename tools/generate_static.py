@@ -167,6 +167,21 @@ def generate():
         full_city = esc(p.get("city", ""))
         status = p.get("application_status", "Not Started")
 
+        # Compute data completeness
+        comp_fields = [
+            bool(p.get('app_open_date')),
+            bool(p.get('app_close_date')),
+            bool(p.get('cohort_start')),
+            bool(p.get('pay_range')),
+            bool(p.get('application_url')),
+            bool(p.get('bsn_required')),
+            bool(p.get('program_length_months')),
+            bool(p.get('reputation', 0)),
+        ]
+        comp_pct = int(sum(comp_fields) / len(comp_fields) * 100)
+        comp_color = '#22c55e' if comp_pct >= 80 else '#f59e0b' if comp_pct >= 50 else '#ef4444'
+        comp_ring = f'<span class="comp-ring" title="{comp_pct}% data complete" style="--comp-pct:{comp_pct};--comp-color:{comp_color}"><span class="comp-val">{comp_pct}</span></span>' if comp_pct < 100 else ''
+
         status_options = ""
         for s in statuses:
             sel = " selected" if s == status else ""
@@ -229,7 +244,7 @@ def generate():
         row = f"""<tr data-id="{p['id']}" data-region="{esc(p.get('region',''))}" data-city="{esc(p.get('city',''))}" data-bsn="{esc(bsn)}" data-status="{esc(status)}">
 <td class="col-check"><input type="checkbox" class="compare-check" value="{p['id']}"></td>
 <td class="col-fav"><button class="fav-btn" data-id="{p['id']}" onclick="toggleFav({p['id']})" title="Toggle favorite">&#9734;</button></td>
-<td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="{p['id']}">{esc(p['hospital'])}</a></td>
+<td class="col-hospital frozen-col">{comp_ring}<a href="#" class="hospital-link" data-id="{p['id']}">{esc(p['hospital'])}</a><button class="qnote-btn" data-id="{p['id']}" onclick="event.stopPropagation(); showQuickNote({p['id']}, this)" title="Quick note">&#9998;</button></td>
 <td class="col-program">{esc(p.get('program_name',''))}</td>
 <td class="col-region">{region_dot}{esc(p.get('region',''))}</td>
 <td class="col-city" title="{full_city}">{esc(city)}</td>
@@ -331,6 +346,19 @@ def generate():
                 </div>
             </li>
             <li><a href="#" onclick="toggleTheme(); return false;" id="theme-toggle" title="Toggle dark mode">Dark</a></li>
+            <li class="accent-picker-wrap"><span class="accent-swatch" id="accent-swatch" onclick="toggleAccentPalette()" title="Accent color"></span>
+                <div class="accent-palette" id="accent-palette">
+                    <span class="accent-dot" style="background:#2563eb" onclick="setAccent('#2563eb','#3b82f6','#1d4ed8')" title="Blue"></span>
+                    <span class="accent-dot" style="background:#7c3aed" onclick="setAccent('#7c3aed','#8b5cf6','#6d28d9')" title="Purple"></span>
+                    <span class="accent-dot" style="background:#db2777" onclick="setAccent('#db2777','#ec4899','#be185d')" title="Pink"></span>
+                    <span class="accent-dot" style="background:#dc2626" onclick="setAccent('#dc2626','#ef4444','#b91c1c')" title="Red"></span>
+                    <span class="accent-dot" style="background:#ea580c" onclick="setAccent('#ea580c','#f97316','#c2410c')" title="Orange"></span>
+                    <span class="accent-dot" style="background:#059669" onclick="setAccent('#059669','#10b981','#047857')" title="Green"></span>
+                    <span class="accent-dot" style="background:#0891b2" onclick="setAccent('#0891b2','#06b6d4','#0e7490')" title="Teal"></span>
+                    <span class="accent-dot" style="background:#4f46e5" onclick="setAccent('#4f46e5','#6366f1','#4338ca')" title="Indigo"></span>
+                    <span class="accent-dot" style="background:#475569" onclick="setAccent('#475569','#64748b','#334155')" title="Slate"></span>
+                </div>
+            </li>
             <li><a href="#" onclick="toggleShortcutHelp(); return false;" title="Keyboard shortcuts (?)" class="nav-help">?</a></li>
         </ul>
     </nav>
@@ -960,7 +988,10 @@ document.addEventListener('DOMContentLoaded', function() {{
             var si = document.querySelector('.sheet-filters input[type="search"]');
             if (si) {{ e.preventDefault(); si.focus(); si.select(); }}
         }}
-        if (e.key === 'Escape') document.activeElement.blur();
+        if (e.key === 'Escape') {{
+            closeQuickNote();
+            document.activeElement.blur();
+        }}
 
         if (!isEditing(e.target)) {{
             // Keyboard shortcuts
@@ -1026,11 +1057,19 @@ document.addEventListener('DOMContentLoaded', function() {{
     renderNotifications();
     renderSavedFilters();
 
-    // Close notifications panel on outside click
+    // Close popups on outside click
     document.addEventListener('click', function(e) {{
         var panel = document.getElementById('notif-panel');
         if (panel && panel.style.display !== 'none' && !e.target.closest('.notif-nav')) {{
             panel.style.display = 'none';
+        }}
+        var qnote = document.querySelector('.qnote-popover');
+        if (qnote && !e.target.closest('.qnote-popover') && !e.target.closest('.qnote-btn')) {{
+            qnote.remove();
+        }}
+        var ap = document.getElementById('accent-palette');
+        if (ap && ap.classList.contains('visible') && !e.target.closest('.accent-picker-wrap')) {{
+            ap.classList.remove('visible');
         }}
     }});
 
@@ -1640,6 +1679,42 @@ function highlightDeadlines() {{
     }});
 }}
 
+function showQuickNote(id, btn) {{
+    // Remove any existing quick note popover
+    var existing = document.querySelector('.qnote-popover');
+    if (existing) existing.remove();
+
+    var notes = loadSavedNotes();
+    var currentNote = notes[id] || '';
+    var popover = document.createElement('div');
+    popover.className = 'qnote-popover';
+    popover.innerHTML = '<textarea class="qnote-textarea" placeholder="Add a note...">' + currentNote.replace(/</g, '&lt;') + '</textarea>' +
+        '<div class="qnote-actions"><button onclick="saveQuickNote(' + id + ')">Save</button><button onclick="closeQuickNote()">Cancel</button></div>';
+
+    // Position near the button
+    var rect = btn.getBoundingClientRect();
+    popover.style.top = (rect.bottom + window.scrollY + 4) + 'px';
+    popover.style.left = Math.max(8, rect.left + window.scrollX - 100) + 'px';
+    document.body.appendChild(popover);
+    popover.querySelector('textarea').focus();
+}}
+
+function saveQuickNote(id) {{
+    var popover = document.querySelector('.qnote-popover');
+    if (!popover) return;
+    var note = popover.querySelector('textarea').value;
+    saveNote(id, note);
+    logActivity(id, note ? 'Updated notes' : 'Cleared notes');
+    closeQuickNote();
+    markNotesIndicators();
+    showToast('Note saved');
+}}
+
+function closeQuickNote() {{
+    var popover = document.querySelector('.qnote-popover');
+    if (popover) popover.remove();
+}}
+
 function jumpToOpen() {{
     var today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -2176,6 +2251,7 @@ function backupData() {{
         theme: localStorage.getItem('rn_tracker_theme') || 'light',
         density: localStorage.getItem('rn_tracker_density') || 'normal',
         cols: JSON.parse(localStorage.getItem('rn_tracker_cols') || '{{}}'),
+        accent: localStorage.getItem('rn_tracker_accent') || null,
         exported: new Date().toISOString()
     }};
     var blob = new Blob([JSON.stringify(data, null, 2)], {{type: 'application/json'}});
@@ -2203,6 +2279,7 @@ function restoreData(input) {{
             if (data.activityLog) localStorage.setItem('rn_tracker_log', JSON.stringify(data.activityLog));
             if (data.dismissedNotifs) localStorage.setItem('rn_tracker_notif_dismissed', JSON.stringify(data.dismissedNotifs));
             if (data.cols) localStorage.setItem('rn_tracker_cols', JSON.stringify(data.cols));
+            if (data.accent) localStorage.setItem('rn_tracker_accent', data.accent);
             showToast('Data restored! Reloading...');
             setTimeout(function() {{ window.location.reload(); }}, 1000);
         }} catch(ex) {{
@@ -2235,6 +2312,39 @@ function toggleTheme() {{
             document.documentElement.dataset.theme = 'dark';
             var btn = document.getElementById('theme-toggle');
             if (btn) btn.textContent = 'Light';
+        }}
+    }} catch(ex) {{}}
+}})();
+
+// Accent color picker
+function toggleAccentPalette() {{
+    var p = document.getElementById('accent-palette');
+    p.classList.toggle('visible');
+}}
+
+function setAccent(main, light, dark) {{
+    document.documentElement.style.setProperty('--accent', main);
+    document.documentElement.style.setProperty('--accent-light', light);
+    document.documentElement.style.setProperty('--accent-dark', dark);
+    document.getElementById('accent-swatch').style.background = main;
+    localStorage.setItem('rn_tracker_accent', JSON.stringify({{main: main, light: light, dark: dark}}));
+    // Mark active dot
+    document.querySelectorAll('.accent-dot').forEach(function(d) {{
+        d.classList.toggle('active', d.style.background === main || d.style.backgroundColor === main);
+    }});
+    document.getElementById('accent-palette').classList.remove('visible');
+}}
+
+// Restore accent preference
+(function() {{
+    try {{
+        var saved = JSON.parse(localStorage.getItem('rn_tracker_accent'));
+        if (saved) {{
+            document.documentElement.style.setProperty('--accent', saved.main);
+            document.documentElement.style.setProperty('--accent-light', saved.light);
+            document.documentElement.style.setProperty('--accent-dark', saved.dark);
+            var sw = document.getElementById('accent-swatch');
+            if (sw) sw.style.background = saved.main;
         }}
     }} catch(ex) {{}}
 }})();
