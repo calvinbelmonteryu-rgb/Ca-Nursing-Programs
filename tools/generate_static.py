@@ -4349,10 +4349,28 @@ function showDetail(id) {{
     html += '</div>';
     html += '</div>';
 
-    // Progress pipeline
+    // Progress pipeline with journey dates
     var stages = ['Not Started', 'In Progress', 'Submitted', 'Interview', 'Offer'];
     var stageIdx = stages.indexOf(currentStatus);
     if (currentStatus === 'Rejected') stageIdx = -2; // special handling
+    // Build map of earliest date each status was reached
+    var journeyHist = getStatusHistory(p.id);
+    var stageDates = {{}};
+    journeyHist.forEach(function(entry) {{
+        if (!stageDates[entry.status]) {{
+            stageDates[entry.status] = new Date(entry.time);
+        }}
+    }});
+    // Calculate duration between first and latest stage
+    var journeyStart = null;
+    var journeyEnd = null;
+    stages.forEach(function(stage) {{
+        if (stageDates[stage]) {{
+            if (!journeyStart) journeyStart = stageDates[stage];
+            journeyEnd = stageDates[stage];
+        }}
+    }});
+    var journeyDays = journeyStart && journeyEnd && journeyStart !== journeyEnd ? Math.floor((journeyEnd - journeyStart) / 86400000) : 0;
     html += '<div class="progress-pipeline">';
     stages.forEach(function(stage, i) {{
         var cls = 'pp-step';
@@ -4366,6 +4384,12 @@ function showDetail(id) {{
         html += '<div class="' + cls + '">';
         html += '<div class="pp-dot"></div>';
         html += '<span class="pp-label">' + stage + '</span>';
+        // Show date reached if available
+        if (stageDates[stage]) {{
+            var sd = stageDates[stage];
+            var mo = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][sd.getMonth()];
+            html += '<span class="pp-date">' + mo + ' ' + sd.getDate() + '</span>';
+        }}
         html += '</div>';
         if (i < stages.length - 1) {{
             html += '<div class="pp-line' + (i < stageIdx ? ' pp-line-done' : '') + '"></div>';
@@ -4373,9 +4397,19 @@ function showDetail(id) {{
     }});
     if (currentStatus === 'Rejected') {{
         html += '<div class="pp-line pp-line-rejected"></div>';
-        html += '<div class="pp-step pp-rejected-step"><div class="pp-dot"></div><span class="pp-label">Rejected</span></div>';
+        var rejStep = '<div class="pp-step pp-rejected-step"><div class="pp-dot"></div><span class="pp-label">Rejected</span>';
+        if (stageDates['Rejected']) {{
+            var rd = stageDates['Rejected'];
+            var rmo = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][rd.getMonth()];
+            rejStep += '<span class="pp-date">' + rmo + ' ' + rd.getDate() + '</span>';
+        }}
+        rejStep += '</div>';
+        html += rejStep;
     }}
     html += '</div>';
+    if (journeyDays > 0) {{
+        html += '<div class="journey-duration">' + journeyDays + ' day journey so far</div>';
+    }}
 
     // Status history
     var sHistory = getStatusHistory(p.id);

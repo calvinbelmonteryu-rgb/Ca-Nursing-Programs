@@ -1351,6 +1351,8 @@ a.bar-link:hover { background: #f3f4f6; }
     }
     .pp-step { min-width: 48px; }
     .pp-label { font-size: 0.5rem; }
+    .pp-date { font-size: 0.45rem; }
+    .journey-duration { font-size: 0.6rem; }
 
     .digest-grid {
         grid-template-columns: 1fr;
@@ -2742,6 +2744,28 @@ footer small {
 }
 .pp-rejected-step .pp-label { color: #ef4444; font-weight: 600; }
 .pp-line-rejected { background: #ef4444; }
+.pp-date {
+    font-size: 0.55rem;
+    color: #6b7280;
+    margin-top: 1px;
+    font-variant-numeric: tabular-nums;
+}
+.pp-done .pp-date { color: #16a34a; }
+.pp-current .pp-date { color: var(--accent); font-weight: 600; }
+.pp-rejected-step .pp-date { color: #ef4444; }
+.journey-duration {
+    text-align: center;
+    font-size: 0.7rem;
+    color: #6b7280;
+    margin: -6px 0 8px;
+    font-style: italic;
+}
+
+[data-theme="dark"] .pp-date { color: #6b7280; }
+[data-theme="dark"] .pp-done .pp-date { color: #6ee7b7; }
+[data-theme="dark"] .pp-current .pp-date { color: #60a5fa; }
+[data-theme="dark"] .pp-rejected-step .pp-date { color: #fca5a5; }
+[data-theme="dark"] .journey-duration { color: #6b7280; }
 
 [data-theme="dark"] .pp-dot { background: var(--surface); border-color: #4b5563; }
 [data-theme="dark"] .pp-label { color: #6b7280; }

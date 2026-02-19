@@ -1367,6 +1367,8 @@ a.bar-link:hover { background: #f3f4f6; }
     }
     .pp-step { min-width: 48px; }
     .pp-label { font-size: 0.5rem; }
+    .pp-date { font-size: 0.45rem; }
+    .journey-duration { font-size: 0.6rem; }
 
     .digest-grid {
         grid-template-columns: 1fr;
@@ -2758,6 +2760,28 @@ footer small {
 }
 .pp-rejected-step .pp-label { color: #ef4444; font-weight: 600; }
 .pp-line-rejected { background: #ef4444; }
+.pp-date {
+    font-size: 0.55rem;
+    color: #6b7280;
+    margin-top: 1px;
+    font-variant-numeric: tabular-nums;
+}
+.pp-done .pp-date { color: #16a34a; }
+.pp-current .pp-date { color: var(--accent); font-weight: 600; }
+.pp-rejected-step .pp-date { color: #ef4444; }
+.journey-duration {
+    text-align: center;
+    font-size: 0.7rem;
+    color: #6b7280;
+    margin: -6px 0 8px;
+    font-style: italic;
+}
+
+[data-theme="dark"] .pp-date { color: #6b7280; }
+[data-theme="dark"] .pp-done .pp-date { color: #6ee7b7; }
+[data-theme="dark"] .pp-current .pp-date { color: #60a5fa; }
+[data-theme="dark"] .pp-rejected-step .pp-date { color: #fca5a5; }
+[data-theme="dark"] .journey-duration { color: #6b7280; }
 
 [data-theme="dark"] .pp-dot { background: var(--surface); border-color: #4b5563; }
 [data-theme="dark"] .pp-label { color: #6b7280; }
@@ -12886,10 +12910,28 @@ function showDetail(id) {
     html += '</div>';
     html += '</div>';
 
-    // Progress pipeline
+    // Progress pipeline with journey dates
     var stages = ['Not Started', 'In Progress', 'Submitted', 'Interview', 'Offer'];
     var stageIdx = stages.indexOf(currentStatus);
     if (currentStatus === 'Rejected') stageIdx = -2; // special handling
+    // Build map of earliest date each status was reached
+    var journeyHist = getStatusHistory(p.id);
+    var stageDates = {};
+    journeyHist.forEach(function(entry) {
+        if (!stageDates[entry.status]) {
+            stageDates[entry.status] = new Date(entry.time);
+        }
+    });
+    // Calculate duration between first and latest stage
+    var journeyStart = null;
+    var journeyEnd = null;
+    stages.forEach(function(stage) {
+        if (stageDates[stage]) {
+            if (!journeyStart) journeyStart = stageDates[stage];
+            journeyEnd = stageDates[stage];
+        }
+    });
+    var journeyDays = journeyStart && journeyEnd && journeyStart !== journeyEnd ? Math.floor((journeyEnd - journeyStart) / 86400000) : 0;
     html += '<div class="progress-pipeline">';
     stages.forEach(function(stage, i) {
         var cls = 'pp-step';
@@ -12903,6 +12945,12 @@ function showDetail(id) {
         html += '<div class="' + cls + '">';
         html += '<div class="pp-dot"></div>';
         html += '<span class="pp-label">' + stage + '</span>';
+        // Show date reached if available
+        if (stageDates[stage]) {
+            var sd = stageDates[stage];
+            var mo = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][sd.getMonth()];
+            html += '<span class="pp-date">' + mo + ' ' + sd.getDate() + '</span>';
+        }
         html += '</div>';
         if (i < stages.length - 1) {
             html += '<div class="pp-line' + (i < stageIdx ? ' pp-line-done' : '') + '"></div>';
@@ -12910,9 +12958,19 @@ function showDetail(id) {
     });
     if (currentStatus === 'Rejected') {
         html += '<div class="pp-line pp-line-rejected"></div>';
-        html += '<div class="pp-step pp-rejected-step"><div class="pp-dot"></div><span class="pp-label">Rejected</span></div>';
+        var rejStep = '<div class="pp-step pp-rejected-step"><div class="pp-dot"></div><span class="pp-label">Rejected</span>';
+        if (stageDates['Rejected']) {
+            var rd = stageDates['Rejected'];
+            var rmo = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][rd.getMonth()];
+            rejStep += '<span class="pp-date">' + rmo + ' ' + rd.getDate() + '</span>';
+        }
+        rejStep += '</div>';
+        html += rejStep;
     }
     html += '</div>';
+    if (journeyDays > 0) {
+        html += '<div class="journey-duration">' + journeyDays + ' day journey so far</div>';
+    }
 
     // Status history
     var sHistory = getStatusHistory(p.id);
