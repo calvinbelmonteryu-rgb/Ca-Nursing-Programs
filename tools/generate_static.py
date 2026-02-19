@@ -5833,6 +5833,41 @@ function renderStats() {{
     html += '<div class="goal-bar"><div class="goal-fill" data-pct="' + goalPct + '" style="width:' + goalPct + '%"></div></div>';
     html += '<span class="goal-text">' + applied + ' / ' + goalTarget + ' applied (' + goalPct + '%)</span>';
     html += '</div>';
+    // Application pace analysis
+    var allHistory = JSON.parse(localStorage.getItem('rn_tracker_status_history') || '{{}}');
+    var submitDates = [];
+    Object.keys(allHistory).forEach(function(pid) {{
+        allHistory[pid].forEach(function(entry) {{
+            if (entry.status === 'Submitted') {{
+                submitDates.push(new Date(entry.time));
+            }}
+        }});
+    }});
+    if (submitDates.length >= 2) {{
+        submitDates.sort(function(a,b) {{ return a - b; }});
+        var firstSubmit = submitDates[0];
+        var lastSubmit = submitDates[submitDates.length - 1];
+        var daySpan = Math.max(1, Math.floor((lastSubmit - firstSubmit) / 86400000));
+        var appsPerWeek = (submitDates.length / daySpan * 7).toFixed(1);
+        var remaining = goalTarget - applied;
+        if (remaining > 0) {{
+            var weeksNeeded = (remaining / parseFloat(appsPerWeek)).toFixed(1);
+            var projDate = new Date();
+            projDate.setDate(projDate.getDate() + Math.ceil(remaining / parseFloat(appsPerWeek) * 7));
+            var projMo = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][projDate.getMonth()];
+            html += '<div class="pace-tracker">';
+            html += '<span class="pace-rate">' + appsPerWeek + ' apps/week</span>';
+            html += '<span class="pace-proj">Goal by ~' + projMo + ' ' + projDate.getDate() + '</span>';
+            html += '</div>';
+        }} else {{
+            html += '<div class="pace-tracker pace-done">';
+            html += '<span class="pace-rate">' + appsPerWeek + ' apps/week</span>';
+            html += '<span class="pace-proj">Goal reached!</span>';
+            html += '</div>';
+        }}
+    }} else if (submitDates.length === 1) {{
+        html += '<div class="pace-tracker"><span class="pace-rate">1 app submitted</span><span class="pace-proj">Submit more to see pace</span></div>';
+    }}
     html += '</div>';
 
     html += '</div>';
