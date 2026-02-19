@@ -257,7 +257,7 @@ def generate():
 <td class="col-len">{p.get('program_length_months','')}mo</td>
 <td class="col-specialties" title="{esc(specs)}">{esc(specs)}</td>
 <td class="col-status"><select class="status-select" data-id="{p['id']}">{status_options}</select></td>
-<td class="col-notes">{notes_cell}</td>
+<td class="col-notes" data-id="{p['id']}" ondblclick="inlineEditNote(this)" title="Double-click to edit">{notes_cell}</td>
 <td class="col-apply">{apply_cell}</td>
 </tr>"""
         rows_html.append(row)
@@ -493,6 +493,21 @@ def generate():
                 <tbody>
                     {''.join(rows_html)}
                 </tbody>
+                <tfoot id="table-footer">
+                    <tr class="table-summary-row">
+                        <td colspan="7" class="summary-label">Summary</td>
+                        <td class="summary-cell" id="tfoot-open">-</td>
+                        <td class="summary-cell" id="tfoot-close">-</td>
+                        <td class="summary-cell" id="tfoot-cohort">-</td>
+                        <td class="summary-cell" id="tfoot-rep">-</td>
+                        <td class="summary-cell" id="tfoot-pay">-</td>
+                        <td class="summary-cell" id="tfoot-len">-</td>
+                        <td class="summary-cell" id="tfoot-spec">-</td>
+                        <td class="summary-cell" id="tfoot-status">-</td>
+                        <td class="summary-cell" id="tfoot-notes">-</td>
+                        <td class="summary-cell"></td>
+                    </tr>
+                </tfoot>
             </table>
         </div>
         <div class="no-results" id="no-results">No programs match your filters. <a href="#" onclick="clearAllFilters(); return false;">Clear filters</a></div>
@@ -1195,6 +1210,7 @@ document.addEventListener('DOMContentLoaded', function() {{
     initRowPreview();
     renderTableTags();
     applyPins();
+    updateTableFooter();
 
     // Close popups on outside click
     document.addEventListener('click', function(e) {{
@@ -1487,6 +1503,7 @@ function filterTable() {{
     highlightSearch(query);
     restripe();
     applyGrouping();
+    updateTableFooter();
 }}
 
 function applyGrouping() {{
@@ -2014,6 +2031,44 @@ function closeQuickNote() {{
     if (popover) popover.remove();
 }}
 
+function inlineEditNote(td) {{
+    if (td.querySelector('.inline-note-edit')) return;
+    var id = parseInt(td.dataset.id);
+    var notes = loadSavedNotes();
+    var current = notes[id] || '';
+    var originalHTML = td.innerHTML;
+
+    var ta = document.createElement('textarea');
+    ta.className = 'inline-note-edit';
+    ta.value = current;
+    ta.placeholder = 'Add a note...';
+    td.innerHTML = '';
+    td.appendChild(ta);
+    ta.focus();
+    ta.style.height = Math.max(48, ta.scrollHeight) + 'px';
+
+    function save() {{
+        var val = ta.value.trim();
+        saveNote(id, val);
+        logActivity(id, val ? 'Updated notes' : 'Cleared notes');
+        td.innerHTML = val ? val.replace(/</g, '&lt;').replace(/\\n/g, '<br>') : '';
+        markNotesIndicators();
+        showToast('Note saved');
+    }}
+
+    ta.addEventListener('blur', save);
+    ta.addEventListener('keydown', function(e) {{
+        if (e.key === 'Escape') {{
+            td.innerHTML = originalHTML;
+            return;
+        }}
+        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {{
+            e.preventDefault();
+            save();
+        }}
+    }});
+}}
+
 function jumpToOpen() {{
     var today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -2211,6 +2266,67 @@ function restripe() {{
             i++;
         }}
     }});
+}}
+
+function updateTableFooter() {{
+    var rows = document.querySelectorAll('.sheet tbody tr:not(.group-header-row)');
+    var visible = Array.from(rows).filter(function(r) {{ return r.style.display !== 'none'; }});
+    var count = visible.length;
+    if (count === 0) return;
+
+    var statuses = {{}};
+    var payTotal = 0, payCount = 0;
+    var openNow = 0, upcoming = 0;
+    var today = new Date(); today.setHours(0,0,0,0);
+
+    visible.forEach(function(row) {{
+        // Status counts
+        var ss = row.querySelector('.status-select');
+        var st = ss ? ss.value : 'Not Started';
+        statuses[st] = (statuses[st] || 0) + 1;
+
+        // Pay average
+        var payCell = row.cells[11];
+        if (payCell) {{
+            var pm = payCell.textContent.match(/(\\d[\\d.,]+)\\/hr/);
+            if (pm) {{ payTotal += parseFloat(pm[1].replace(',', '')); payCount++; }}
+        }}
+
+        // Open/upcoming
+        var dateCells = row.querySelectorAll('.col-date');
+        if (dateCells.length >= 2) {{
+            var openRaw = dateCells[0].dataset.raw || '';
+            var closeRaw = dateCells[1].dataset.raw || '';
+            var od = parseDate(openRaw), cd = parseDate(closeRaw);
+            if (od && cd) {{
+                if (od <= today && cd >= today) openNow++;
+                else if (od > today) {{ var diff = (od - today) / 86400000; if (diff <= 30) upcoming++; }}
+            }}
+        }}
+    }});
+
+    var el = function(id) {{ return document.getElementById(id); }};
+    var lbl = el('tfoot-open');
+    if (lbl) lbl.textContent = openNow + ' open';
+    var lbl2 = el('tfoot-close');
+    if (lbl2) lbl2.textContent = upcoming + ' soon';
+
+    if (payCount > 0) {{
+        var avg = (payTotal / payCount).toFixed(2);
+        var payEl = el('tfoot-pay');
+        if (payEl) payEl.textContent = 'Avg $' + avg + '/hr';
+    }}
+
+    // Status summary
+    var statusParts = [];
+    ['In Progress', 'Submitted', 'Interview', 'Offer'].forEach(function(s) {{
+        if (statuses[s]) statusParts.push(statuses[s] + ' ' + s.charAt(0));
+    }});
+    var statusEl = el('tfoot-status');
+    if (statusEl) statusEl.textContent = statusParts.join(', ') || count + ' shown';
+
+    var summaryLabel = document.querySelector('.summary-label');
+    if (summaryLabel) summaryLabel.textContent = count + ' of ' + rows.length + ' shown';
 }}
 
 function parseSortDate(str) {{
