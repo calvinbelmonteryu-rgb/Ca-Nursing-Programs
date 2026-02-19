@@ -4902,6 +4902,59 @@ mark.search-highlight {
     font-size: 1rem !important;
 }
 
+/* ===== TABLE GROUPING ===== */
+.group-header-row {
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.group-header-cell {
+    background: #f0f4f8 !important;
+    padding: 8px 12px !important;
+    font-size: 0.85rem;
+    color: #1f2937;
+    border-bottom: 2px solid var(--accent, #2563eb) !important;
+    position: relative;
+}
+
+.group-header-cell:hover {
+    background: #e2e8f0 !important;
+}
+
+.group-toggle {
+    display: inline-block;
+    width: 16px;
+    font-size: 0.7rem;
+    color: #6b7280;
+    transition: transform 0.15s;
+}
+
+.group-count {
+    font-weight: 400;
+    color: #6b7280;
+    font-size: 0.78rem;
+    margin-left: 4px;
+}
+
+[data-theme="dark"] .group-header-cell {
+    background: #1e293b !important;
+    color: #e2e8f0;
+    border-bottom-color: var(--accent, #3b82f6) !important;
+}
+
+[data-theme="dark"] .group-header-cell:hover {
+    background: #263548 !important;
+}
+
+[data-theme="dark"] .group-toggle {
+    color: #9ca3af;
+}
+
+[data-theme="dark"] .group-count {
+    color: #9ca3af;
+}
+
 /* ===== MOBILE BOTTOM NAV ===== */
 .mobile-bottom-nav {
     display: none;

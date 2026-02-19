@@ -408,6 +408,12 @@ def generate():
                     <option value="hospital">Hospital A-Z</option>
                     <option value="smart">Smart Match</option>
                 </select>
+                <select id="group-by" onchange="applyGrouping()" style="height:28px;font-size:0.75rem;padding:4px 8px;margin:0;border:1px solid #d1d5db;border-radius:3px">
+                    <option value="">Group by...</option>
+                    <option value="region">Region</option>
+                    <option value="status">Status</option>
+                    <option value="bsn">BSN Req</option>
+                </select>
                 <button type="button" id="compare-btn" disabled onclick="goCompare()">Compare</button>
                 <div class="more-actions-wrap">
                     <button type="button" onclick="toggleMoreMenu()" title="More actions" id="more-btn">More &darr;</button>
@@ -1480,6 +1486,76 @@ function filterTable() {{
     updateCount(visibleCount, rows.length);
     highlightSearch(query);
     restripe();
+    applyGrouping();
+}}
+
+function applyGrouping() {{
+    var tbody = document.querySelector('.sheet tbody');
+    if (!tbody) return;
+    // Remove existing group headers
+    tbody.querySelectorAll('.group-header-row').forEach(function(r) {{ r.remove(); }});
+
+    var groupBy = (document.getElementById('group-by') || {{}}).value || '';
+    if (!groupBy) return;
+
+    var rows = Array.from(tbody.querySelectorAll('tr:not(.group-header-row)'));
+    var visibleRows = rows.filter(function(r) {{ return r.style.display !== 'none'; }});
+
+    // Get group key for each row
+    function getGroupKey(row) {{
+        if (groupBy === 'region') {{
+            var rc = row.querySelector('.col-region');
+            return rc ? rc.textContent.trim() : 'Unknown';
+        }} else if (groupBy === 'status') {{
+            var ss = row.querySelector('.status-select');
+            return ss ? ss.value : 'Not Started';
+        }} else if (groupBy === 'bsn') {{
+            return row.dataset.bsn === 'Yes' ? 'BSN Required' : 'ADN Accepted';
+        }}
+        return '';
+    }}
+
+    // Sort visible rows by group key
+    var groups = {{}};
+    visibleRows.forEach(function(row) {{
+        var key = getGroupKey(row);
+        if (!groups[key]) groups[key] = [];
+        groups[key].push(row);
+    }});
+
+    // Get sorted group names
+    var groupNames = Object.keys(groups).sort(function(a, b) {{
+        if (groupBy === 'status') {{
+            var order = ['In Progress', 'Submitted', 'Interview', 'Offer', 'Not Started', 'Rejected'];
+            return order.indexOf(a) - order.indexOf(b);
+        }}
+        return a.localeCompare(b);
+    }});
+
+    // Re-order rows and insert headers
+    var colCount = tbody.parentElement.querySelector('thead tr').children.length;
+    groupNames.forEach(function(name) {{
+        var headerRow = document.createElement('tr');
+        headerRow.className = 'group-header-row';
+        headerRow.dataset.group = name;
+        headerRow.dataset.collapsed = 'false';
+        headerRow.innerHTML = '<td colspan="' + colCount + '" class="group-header-cell">' +
+            '<span class="group-toggle">&#9660;</span> ' +
+            '<strong>' + name + '</strong> <span class="group-count">(' + groups[name].length + ')</span></td>';
+        headerRow.onclick = function() {{
+            var collapsed = this.dataset.collapsed === 'true';
+            this.dataset.collapsed = collapsed ? 'false' : 'true';
+            this.querySelector('.group-toggle').innerHTML = collapsed ? '&#9660;' : '&#9654;';
+            var grpName = this.dataset.group;
+            var next = this.nextElementSibling;
+            while (next && !next.classList.contains('group-header-row')) {{
+                next.style.display = collapsed ? '' : 'none';
+                next = next.nextElementSibling;
+            }}
+        }};
+        tbody.appendChild(headerRow);
+        groups[name].forEach(function(row) {{ tbody.appendChild(row); }});
+    }});
 }}
 
 function showSearchSuggestions(query) {{
