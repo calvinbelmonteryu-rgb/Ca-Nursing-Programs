@@ -882,6 +882,40 @@ footer {
     border-color: #3b82f6;
 }
 
+/* ===== SORTABLE COLUMNS ===== */
+.sortable {
+    cursor: pointer;
+    user-select: none;
+}
+
+.sortable:hover {
+    background: #e5e7eb;
+}
+
+.sort-arrow {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    margin-left: 4px;
+    vertical-align: middle;
+    opacity: 0.3;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-bottom: 5px solid #374151;
+}
+
+.sort-asc .sort-arrow {
+    opacity: 1;
+    border-bottom: 5px solid #374151;
+    border-top: none;
+}
+
+.sort-desc .sort-arrow {
+    opacity: 1;
+    border-bottom: none;
+    border-top: 5px solid #374151;
+}
+
 /* ===== PAY CELL ===== */
 .pay-cell { font-size: 0.85rem; white-space: nowrap; }
 
@@ -1110,19 +1144,19 @@ footer {
                 <thead>
                     <tr>
                         <th class="col-check"><input type="checkbox" id="select-all"></th>
-                        <th class="col-hospital frozen-col">Hospital</th>
-                        <th class="col-program">Program</th>
-                        <th class="col-region">Region</th>
-                        <th class="col-city">City</th>
-                        <th class="col-date">App Open</th>
-                        <th class="col-date">App Close</th>
-                        <th class="col-date">Cohort</th>
-                        <th class="col-rep">Rep</th>
-                        <th class="col-pay">Pay</th>
-                        <th class="col-len">Len</th>
-                        <th class="col-specialties">Specialties</th>
-                        <th class="col-status">Status</th>
-                        <th class="col-notes">Notes</th>
+                        <th class="col-hospital frozen-col sortable" data-col="1" data-sort="text">Hospital <span class="sort-arrow"></span></th>
+                        <th class="col-program sortable" data-col="2" data-sort="text">Program <span class="sort-arrow"></span></th>
+                        <th class="col-region sortable" data-col="3" data-sort="text">Region <span class="sort-arrow"></span></th>
+                        <th class="col-city sortable" data-col="4" data-sort="text">City <span class="sort-arrow"></span></th>
+                        <th class="col-date sortable" data-col="5" data-sort="date">App Open <span class="sort-arrow"></span></th>
+                        <th class="col-date sortable" data-col="6" data-sort="date">App Close <span class="sort-arrow"></span></th>
+                        <th class="col-date sortable" data-col="7" data-sort="date">Cohort <span class="sort-arrow"></span></th>
+                        <th class="col-rep sortable" data-col="8" data-sort="stars">Rep <span class="sort-arrow"></span></th>
+                        <th class="col-pay sortable" data-col="9" data-sort="pay">Pay <span class="sort-arrow"></span></th>
+                        <th class="col-len sortable" data-col="10" data-sort="num">Len <span class="sort-arrow"></span></th>
+                        <th class="col-specialties sortable" data-col="11" data-sort="text">Specialties <span class="sort-arrow"></span></th>
+                        <th class="col-status sortable" data-col="12" data-sort="status">Status <span class="sort-arrow"></span></th>
+                        <th class="col-notes sortable" data-col="13" data-sort="text">Notes <span class="sort-arrow"></span></th>
                         <th class="col-apply">Apply</th>
                     </tr>
                 </thead>
@@ -2162,6 +2196,13 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     highlightDeadlines();
+
+    // Sortable column headers
+    document.querySelectorAll('.sortable').forEach(function(th) {
+        th.addEventListener('click', function() {
+            sortTable(this);
+        });
+    });
 });
 
 function debounce(fn, ms) {
@@ -2271,6 +2312,95 @@ function parseDate(str) {
     if (parts) return new Date(parseInt(parts[1]), parseInt(parts[2]) - 1, parseInt(parts[3]));
     parts = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
     if (parts) return new Date(parseInt(parts[3]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+    return null;
+}
+
+var currentSort = { col: null, asc: true };
+
+function sortTable(th) {
+    var colIdx = parseInt(th.dataset.col);
+    var sortType = th.dataset.sort;
+    var tbody = document.querySelector('.sheet tbody');
+    var rows = Array.from(tbody.querySelectorAll('tr'));
+
+    // Toggle direction if same column, otherwise default asc (desc for pay/rep)
+    if (currentSort.col === colIdx) {
+        currentSort.asc = !currentSort.asc;
+    } else {
+        currentSort.col = colIdx;
+        currentSort.asc = (sortType === 'pay' || sortType === 'stars') ? false : true;
+    }
+
+    // Update arrow indicators
+    document.querySelectorAll('.sortable').forEach(function(h) {
+        h.classList.remove('sort-asc', 'sort-desc');
+    });
+    th.classList.add(currentSort.asc ? 'sort-asc' : 'sort-desc');
+
+    rows.sort(function(a, b) {
+        var cellA = a.querySelectorAll('td')[colIdx];
+        var cellB = b.querySelectorAll('td')[colIdx];
+        if (!cellA || !cellB) return 0;
+
+        var valA, valB;
+
+        if (sortType === 'date') {
+            valA = parseSortDate(cellA.textContent.trim());
+            valB = parseSortDate(cellB.textContent.trim());
+            // Push empty/null dates to bottom
+            if (!valA && !valB) return 0;
+            if (!valA) return 1;
+            if (!valB) return -1;
+        } else if (sortType === 'pay') {
+            valA = parsePay(cellA.textContent.trim());
+            valB = parsePay(cellB.textContent.trim());
+            if (!valA && !valB) return 0;
+            if (!valA) return 1;
+            if (!valB) return -1;
+        } else if (sortType === 'stars') {
+            valA = (cellA.textContent.match(/★/g) || []).length;
+            valB = (cellB.textContent.match(/★/g) || []).length;
+        } else if (sortType === 'num') {
+            valA = parseFloat(cellA.textContent) || 0;
+            valB = parseFloat(cellB.textContent) || 0;
+        } else if (sortType === 'status') {
+            var statusSel = cellA.querySelector('select');
+            var statusSelB = cellB.querySelector('select');
+            valA = statusSel ? statusSel.value : cellA.textContent.trim();
+            valB = statusSelB ? statusSelB.value : cellB.textContent.trim();
+            valA = valA.toLowerCase();
+            valB = valB.toLowerCase();
+        } else {
+            valA = cellA.textContent.trim().toLowerCase();
+            valB = cellB.textContent.trim().toLowerCase();
+        }
+
+        var cmp;
+        if (typeof valA === 'number' && typeof valB === 'number') {
+            cmp = valA - valB;
+        } else {
+            cmp = valA < valB ? -1 : valA > valB ? 1 : 0;
+        }
+
+        return currentSort.asc ? cmp : -cmp;
+    });
+
+    rows.forEach(function(row) { tbody.appendChild(row); });
+}
+
+function parseSortDate(str) {
+    if (!str) return null;
+    var m = str.match(/(\d{4})-(\d{2})-(\d{2})/);
+    if (m) return new Date(parseInt(m[1]), parseInt(m[2]) - 1, parseInt(m[3])).getTime();
+    m = str.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+    if (m) return new Date(parseInt(m[3]), parseInt(m[1]) - 1, parseInt(m[2])).getTime();
+    return null;
+}
+
+function parsePay(str) {
+    if (!str || str === '—') return null;
+    var m = str.match(/(\d[\d.,]+)/);
+    if (m) return parseFloat(m[1].replace(',', ''));
     return null;
 }
 

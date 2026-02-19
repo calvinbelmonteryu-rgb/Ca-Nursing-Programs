@@ -873,6 +873,40 @@ footer {
     border-color: #3b82f6;
 }
 
+/* ===== SORTABLE COLUMNS ===== */
+.sortable {
+    cursor: pointer;
+    user-select: none;
+}
+
+.sortable:hover {
+    background: #e5e7eb;
+}
+
+.sort-arrow {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    margin-left: 4px;
+    vertical-align: middle;
+    opacity: 0.3;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-bottom: 5px solid #374151;
+}
+
+.sort-asc .sort-arrow {
+    opacity: 1;
+    border-bottom: 5px solid #374151;
+    border-top: none;
+}
+
+.sort-desc .sort-arrow {
+    opacity: 1;
+    border-bottom: none;
+    border-top: 5px solid #374151;
+}
+
 /* ===== PAY CELL ===== */
 .pay-cell { font-size: 0.85rem; white-space: nowrap; }
 
