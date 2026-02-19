@@ -324,6 +324,12 @@ def generate():
             <li><a href="#" id="nav-calendar" onclick="showView('calendar'); return false;">Calendar</a></li>
             <li><a href="#" id="nav-stats" onclick="showView('stats'); return false;">Stats</a></li>
             <li class="nclex-nav" title="Days until NCLEX ({nclex_date})"><span class="nclex-badge">{nclex_days if nclex_days is not None else '?'}d</span> NCLEX</li>
+            <li class="notif-nav"><a href="#" onclick="toggleNotifications(); return false;" id="notif-toggle" title="Notifications">&#x1F514;<span class="notif-count" id="notif-count" style="display:none">0</span></a>
+                <div class="notif-panel" id="notif-panel" style="display:none">
+                    <div class="notif-header"><strong>Notifications</strong><button onclick="clearNotifications(); return false;" class="notif-clear">Clear all</button></div>
+                    <div class="notif-list" id="notif-list"></div>
+                </div>
+            </li>
             <li><a href="#" onclick="toggleTheme(); return false;" id="theme-toggle" title="Toggle dark mode">Dark</a></li>
             <li><a href="#" onclick="toggleShortcutHelp(); return false;" title="Keyboard shortcuts (?)" class="nav-help">?</a></li>
         </ul>
@@ -381,6 +387,7 @@ def generate():
                         <button type="button" onclick="backupData(); toggleMoreMenu();">Backup</button>
                         <button type="button" onclick="document.getElementById('restore-file').click(); toggleMoreMenu();">Restore</button>
                         <button type="button" onclick="shareUrl(); toggleMoreMenu();">Share URL</button>
+                        <button type="button" onclick="printView(); toggleMoreMenu();">Print / PDF</button>
                     </div>
                     <div id="col-menu" class="col-menu" style="display:none">
                         <label><input type="checkbox" data-toggle-col="col-program" checked> Program</label>
@@ -635,6 +642,7 @@ function saveStatus(id, status) {{
         var all = loadSavedStatuses();
         all[id] = status;
         localStorage.setItem('rn_tracker_statuses', JSON.stringify(all));
+        logActivity(id, 'Status changed to ' + status);
     }} catch(e) {{}}
 }}
 
@@ -677,6 +685,28 @@ function removeChecklistItem(id, idx) {{
     }} catch(e) {{}}
 }}
 
+// Activity log
+function logActivity(progId, action) {{
+    try {{
+        var log = JSON.parse(localStorage.getItem('rn_tracker_log') || '[]');
+        log.unshift({{
+            id: progId,
+            action: action,
+            time: new Date().toISOString()
+        }});
+        if (log.length > 50) log = log.slice(0, 50);
+        localStorage.setItem('rn_tracker_log', JSON.stringify(log));
+    }} catch(e) {{}}
+}}
+
+function getActivityLog(progId) {{
+    try {{
+        var log = JSON.parse(localStorage.getItem('rn_tracker_log') || '[]');
+        if (progId) return log.filter(function(e) {{ return e.id === progId; }});
+        return log;
+    }} catch(e) {{ return []; }}
+}}
+
 // Favorites
 function loadFavorites() {{
     try {{
@@ -695,8 +725,10 @@ function toggleFav(id) {{
     var idx = favs.indexOf(id);
     if (idx !== -1) {{
         favs.splice(idx, 1);
+        logActivity(id, 'Removed from favorites');
     }} else {{
         favs.push(id);
+        logActivity(id, 'Added to favorites');
     }}
     saveFavorites(favs);
     renderFavButtons();
@@ -944,6 +976,15 @@ document.addEventListener('DOMContentLoaded', function() {{
     renderStatusSummary();
     renderRecentViewed();
     renderUrgencyBanner();
+    renderNotifications();
+
+    // Close notifications panel on outside click
+    document.addEventListener('click', function(e) {{
+        var panel = document.getElementById('notif-panel');
+        if (panel && panel.style.display !== 'none' && !e.target.closest('.notif-nav')) {{
+            panel.style.display = 'none';
+        }}
+    }});
 
     // First-time welcome
     if (!localStorage.getItem('rn_tracker_welcomed')) {{
@@ -957,17 +998,25 @@ document.addEventListener('DOMContentLoaded', function() {{
         if (deepId) setTimeout(function() {{ showDetail(deepId); }}, 100);
     }}
 
-    // Back to top button visibility
+    // Back to top button visibility + sticky header shadow
     var topBtn = document.getElementById('back-to-top');
-    if (topBtn) {{
-        window.addEventListener('scroll', function() {{
+    var thead = document.querySelector('.sheet thead');
+    window.addEventListener('scroll', function() {{
+        if (topBtn) {{
             if (window.scrollY > 300) {{
                 topBtn.classList.add('visible');
             }} else {{
                 topBtn.classList.remove('visible');
             }}
-        }});
-    }}
+        }}
+        if (thead) {{
+            if (window.scrollY > 80) {{
+                thead.classList.add('stuck');
+            }} else {{
+                thead.classList.remove('stuck');
+            }}
+        }}
+    }});
 
     // Sortable column headers
     document.querySelectorAll('.sortable').forEach(function(th) {{
@@ -1013,6 +1062,54 @@ document.addEventListener('DOMContentLoaded', function() {{
         if (row && row.dataset.id) {{
             showDetail(parseInt(row.dataset.id));
         }}
+    }});
+
+    // Right-click context menu for table rows
+    var ctxMenu = document.createElement('div');
+    ctxMenu.className = 'ctx-menu';
+    ctxMenu.style.display = 'none';
+    document.body.appendChild(ctxMenu);
+
+    document.querySelector('.sheet tbody').addEventListener('contextmenu', function(e) {{
+        var row = e.target.closest('tr');
+        if (!row || !row.dataset.id) return;
+        e.preventDefault();
+        var id = parseInt(row.dataset.id);
+        var p = PROGRAMS.find(function(prog) {{ return prog.id === id; }});
+        if (!p) return;
+        var favs = loadFavorites();
+        var isFav = favs.indexOf(id) !== -1;
+        var savedStatuses = loadSavedStatuses();
+        var currentStatus = savedStatuses[id] || p.application_status || 'Not Started';
+        var html = '<div class="ctx-header">' + escHtml(p.hospital) + '</div>';
+        html += '<button onclick="showDetail(' + id + '); hideCtxMenu();">View Details</button>';
+        html += '<button onclick="toggleFav(' + id + '); hideCtxMenu();">' + (isFav ? 'Remove from Favorites' : 'Add to Favorites') + '</button>';
+        var statuses = ['Not Started', 'In Progress', 'Submitted', 'Interview', 'Offer', 'Rejected'];
+        html += '<div class="ctx-divider"></div>';
+        html += '<div class="ctx-label">Set Status</div>';
+        statuses.forEach(function(s) {{
+            var cls = s === currentStatus ? ' ctx-active' : '';
+            html += '<button class="ctx-status' + cls + '" onclick="quickSetStatus(' + id + ', \\\'' + s + '\\\')">' + s + '</button>';
+        }});
+        if (p.application_url) {{
+            html += '<div class="ctx-divider"></div>';
+            html += '<button onclick="window.open(\\\'' + escHtml(p.application_url) + '\\\', \\\'_blank\\\'); hideCtxMenu();">Apply Now</button>';
+        }}
+        html += '<div class="ctx-divider"></div>';
+        html += '<button onclick="navigator.clipboard.writeText(\\\'' + escHtml(p.hospital).replace(/'/g, "\\\\'") + '\\\'); hideCtxMenu(); showToast(\\\'Copied!\\\');">Copy Hospital Name</button>';
+        ctxMenu.innerHTML = html;
+        var x = e.clientX, y = e.clientY;
+        ctxMenu.style.display = 'block';
+        // Adjust if overflowing viewport
+        var rect = ctxMenu.getBoundingClientRect();
+        if (x + rect.width > window.innerWidth) x = window.innerWidth - rect.width - 8;
+        if (y + rect.height > window.innerHeight) y = window.innerHeight - rect.height - 8;
+        ctxMenu.style.left = x + 'px';
+        ctxMenu.style.top = y + 'px';
+    }});
+
+    document.addEventListener('click', function(e) {{
+        if (!e.target.closest('.ctx-menu')) hideCtxMenu();
     }});
 
     // Note expand/collapse + hospital detail links
@@ -1881,6 +1978,8 @@ function backupData() {{
         checklists: JSON.parse(localStorage.getItem('rn_tracker_checklists') || '{{}}'),
         favorites: loadFavorites(),
         tags: JSON.parse(localStorage.getItem('rn_tracker_tags') || '{{}}'),
+        activityLog: JSON.parse(localStorage.getItem('rn_tracker_log') || '[]'),
+        dismissedNotifs: JSON.parse(localStorage.getItem('rn_tracker_notif_dismissed') || '[]'),
         theme: localStorage.getItem('rn_tracker_theme') || 'light',
         density: localStorage.getItem('rn_tracker_density') || 'normal',
         cols: JSON.parse(localStorage.getItem('rn_tracker_cols') || '{{}}'),
@@ -1908,6 +2007,8 @@ function restoreData(input) {{
             if (data.density) localStorage.setItem('rn_tracker_density', data.density);
             if (data.favorites) localStorage.setItem('rn_tracker_favorites', JSON.stringify(data.favorites));
             if (data.tags) localStorage.setItem('rn_tracker_tags', JSON.stringify(data.tags));
+            if (data.activityLog) localStorage.setItem('rn_tracker_log', JSON.stringify(data.activityLog));
+            if (data.dismissedNotifs) localStorage.setItem('rn_tracker_notif_dismissed', JSON.stringify(data.dismissedNotifs));
             if (data.cols) localStorage.setItem('rn_tracker_cols', JSON.stringify(data.cols));
             showToast('Data restored! Reloading...');
             setTimeout(function() {{ window.location.reload(); }}, 1000);
@@ -2009,6 +2110,7 @@ function addTagFromSelect(id, sel) {{
     if (tags.indexOf(val) === -1) {{
         tags.push(val);
         saveTags(id, tags);
+        logActivity(id, 'Added tag: ' + val);
     }}
     sel.value = '';
     showDetail(id); // re-render
@@ -2019,6 +2121,7 @@ function removeTag(id, tag) {{
     var tags = loadTags(id);
     tags = tags.filter(function(t) {{ return t !== tag; }});
     saveTags(id, tags);
+    logActivity(id, 'Removed tag: ' + tag);
     showDetail(id); // re-render
     showToast('Tag removed');
 }}
@@ -2205,6 +2308,23 @@ function showDetail(id) {{
         html += '</div></div>';
     }}
 
+    // Activity log
+    var actLog = getActivityLog(id);
+    if (actLog.length > 0) {{
+        html += '<div class="detail-section"><h3>Activity Log</h3>';
+        html += '<div class="activity-log">';
+        actLog.slice(0, 10).forEach(function(entry) {{
+            var d = new Date(entry.time);
+            var timeStr = d.toLocaleDateString('en-US', {{month:'short',day:'numeric'}}) + ' ' + d.toLocaleTimeString('en-US', {{hour:'numeric',minute:'2-digit'}});
+            html += '<div class="activity-entry">';
+            html += '<span class="activity-dot"></span>';
+            html += '<span class="activity-text">' + escHtml(entry.action) + '</span>';
+            html += '<span class="activity-time">' + timeStr + '</span>';
+            html += '</div>';
+        }});
+        html += '</div></div>';
+    }}
+
     if (p.application_url) {{
         html += '<div class="detail-actions"><a href="' + escHtml(p.application_url) + '" target="_blank" class="apply-btn-modal">Apply Now &rarr;</a></div>';
     }}
@@ -2375,6 +2495,136 @@ function renderUrgencyBanner() {{
 
     banner.innerHTML = html;
     banner.style.display = '';
+}}
+
+// Notifications panel
+function buildNotifications() {{
+    var notifs = [];
+    var today = new Date(); today.setHours(0,0,0,0);
+    var savedStatuses = loadSavedStatuses();
+
+    PROGRAMS.forEach(function(p) {{
+        var status = savedStatuses[p.id] || p.application_status || 'Not Started';
+        var openD = parseDate(p.app_open_date);
+        var closeD = parseDate(p.app_close_date);
+        var cohortD = parseDate(p.cohort_start_date);
+
+        // Closing within 7 days
+        if (closeD && status !== 'Submitted' && status !== 'Interview' && status !== 'Offer' && status !== 'Rejected') {{
+            var daysLeft = Math.ceil((closeD - today) / (1000*60*60*24));
+            if (daysLeft >= 0 && daysLeft <= 7) {{
+                notifs.push({{ id: p.id, type: 'urgent', icon: '\\u26A0\\uFE0F', text: escHtml(p.hospital) + ' closes in ' + daysLeft + ' day' + (daysLeft !== 1 ? 's' : ''), sort: daysLeft }});
+            }}
+        }}
+
+        // Opening within 7 days
+        if (openD && status === 'Not Started') {{
+            var daysUntil = Math.ceil((openD - today) / (1000*60*60*24));
+            if (daysUntil > 0 && daysUntil <= 7) {{
+                notifs.push({{ id: p.id, type: 'opening', icon: '\\uD83D\\uDD14', text: escHtml(p.hospital) + ' opens in ' + daysUntil + ' day' + (daysUntil !== 1 ? 's' : ''), sort: 10 + daysUntil }});
+            }}
+        }}
+
+        // Currently open + not started
+        if (openD && closeD && openD <= today && closeD >= today && status === 'Not Started') {{
+            notifs.push({{ id: p.id, type: 'action', icon: '\\uD83D\\uDCCB', text: escHtml(p.hospital) + ' is OPEN — apply now!', sort: 5 }});
+        }}
+
+        // Submitted > 14 days ago — follow up reminder
+        if (status === 'Submitted') {{
+            var log = getActivityLog(p.id);
+            var submitEntry = log.find(function(e) {{ return e.action.indexOf('Submitted') !== -1; }});
+            if (submitEntry) {{
+                var submitDate = new Date(submitEntry.time);
+                var daysSince = Math.ceil((today - submitDate) / (1000*60*60*24));
+                if (daysSince >= 14) {{
+                    notifs.push({{ id: p.id, type: 'followup', icon: '\\uD83D\\uDCE7', text: escHtml(p.hospital) + ' — submitted ' + daysSince + ' days ago, follow up?', sort: 20 }});
+                }}
+            }}
+        }}
+
+        // Interview scheduled — get ready
+        if (status === 'Interview') {{
+            notifs.push({{ id: p.id, type: 'interview', icon: '\\uD83C\\uDFAF', text: escHtml(p.hospital) + ' — interview prep!', sort: 3 }});
+        }}
+
+        // Cohort starts within 60 days
+        if (cohortD) {{
+            var daysToCohort = Math.ceil((cohortD - today) / (1000*60*60*24));
+            if (daysToCohort > 0 && daysToCohort <= 60 && (status === 'Offer')) {{
+                notifs.push({{ id: p.id, type: 'cohort', icon: '\\uD83C\\uDF93', text: escHtml(p.hospital) + ' cohort starts in ' + daysToCohort + ' days', sort: 30 }});
+            }}
+        }}
+    }});
+
+    notifs.sort(function(a, b) {{ return a.sort - b.sort; }});
+    return notifs;
+}}
+
+function renderNotifications() {{
+    var notifs = buildNotifications();
+    var dismissed = [];
+    try {{ dismissed = JSON.parse(localStorage.getItem('rn_tracker_notif_dismissed') || '[]'); }} catch(e) {{}}
+    notifs = notifs.filter(function(n) {{ return dismissed.indexOf(n.id + ':' + n.type) === -1; }});
+
+    var countEl = document.getElementById('notif-count');
+    if (countEl) {{
+        if (notifs.length > 0) {{
+            countEl.textContent = notifs.length;
+            countEl.style.display = '';
+        }} else {{
+            countEl.style.display = 'none';
+        }}
+    }}
+
+    var list = document.getElementById('notif-list');
+    if (!list) return;
+    if (notifs.length === 0) {{
+        list.innerHTML = '<div class="notif-empty">All clear! No notifications.</div>';
+        return;
+    }}
+    var html = '';
+    notifs.forEach(function(n) {{
+        html += '<div class="notif-item notif-' + n.type + '">';
+        html += '<span class="notif-icon">' + n.icon + '</span>';
+        html += '<a href="#" class="notif-text" onclick="showDetail(' + n.id + '); toggleNotifications(); return false;">' + n.text + '</a>';
+        html += '<button class="notif-dismiss" onclick="dismissNotification(' + n.id + ', \\\'' + n.type + '\\\')" title="Dismiss">&times;</button>';
+        html += '</div>';
+    }});
+    list.innerHTML = html;
+}}
+
+function toggleNotifications() {{
+    var panel = document.getElementById('notif-panel');
+    if (!panel) return;
+    if (panel.style.display === 'none') {{
+        renderNotifications();
+        panel.style.display = '';
+    }} else {{
+        panel.style.display = 'none';
+    }}
+}}
+
+function dismissNotification(id, type) {{
+    try {{
+        var dismissed = JSON.parse(localStorage.getItem('rn_tracker_notif_dismissed') || '[]');
+        var key = id + ':' + type;
+        if (dismissed.indexOf(key) === -1) dismissed.push(key);
+        localStorage.setItem('rn_tracker_notif_dismissed', JSON.stringify(dismissed));
+        renderNotifications();
+    }} catch(e) {{}}
+}}
+
+function clearNotifications() {{
+    var notifs = buildNotifications();
+    var dismissed = [];
+    try {{ dismissed = JSON.parse(localStorage.getItem('rn_tracker_notif_dismissed') || '[]'); }} catch(e) {{}}
+    notifs.forEach(function(n) {{
+        var key = n.id + ':' + n.type;
+        if (dismissed.indexOf(key) === -1) dismissed.push(key);
+    }});
+    localStorage.setItem('rn_tracker_notif_dismissed', JSON.stringify(dismissed));
+    renderNotifications();
 }}
 
 // Recently viewed
@@ -2805,6 +3055,30 @@ function launchConfetti() {{
         requestAnimationFrame(animate);
     }}
     animate();
+}}
+
+function printView() {{
+    window.print();
+}}
+
+function hideCtxMenu() {{
+    var m = document.querySelector('.ctx-menu');
+    if (m) m.style.display = 'none';
+}}
+
+function quickSetStatus(id, status) {{
+    saveStatus(id, status);
+    var row = document.querySelector('tr[data-id="' + id + '"]');
+    if (row) {{
+        applyRowStatus(row, status);
+        row.dataset.status = status;
+        var sel = row.querySelector('.status-select');
+        if (sel) sel.value = status;
+    }}
+    renderStatusSummary();
+    renderNotifications();
+    hideCtxMenu();
+    showToast('Status: ' + status);
 }}
 
 function showToast(message) {{

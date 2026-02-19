@@ -84,6 +84,127 @@ nav a.active {
     font-size: 0.75rem;
 }
 
+/* Notifications */
+.notif-nav {
+    position: relative;
+}
+.notif-nav > a {
+    font-size: 1.1rem !important;
+    text-decoration: none !important;
+    position: relative;
+}
+.notif-count {
+    position: absolute;
+    top: -6px;
+    right: -8px;
+    background: #ef4444;
+    color: white;
+    font-size: 0.6rem;
+    font-weight: 700;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    line-height: 1;
+}
+.notif-panel {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    width: 340px;
+    max-height: 420px;
+    overflow-y: auto;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.18);
+    z-index: 100;
+    border: 1px solid #e5e7eb;
+}
+.notif-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 0.82rem;
+}
+.notif-clear {
+    background: none;
+    border: none;
+    color: #6b7280;
+    font-size: 0.72rem;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+.notif-clear:hover { background: #f3f4f6; }
+.notif-list { padding: 4px 0; }
+.notif-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-bottom: 1px solid #f3f4f6;
+    transition: background 0.15s;
+}
+.notif-item:last-child { border-bottom: none; }
+.notif-item:hover { background: #f9fafb; }
+.notif-icon { font-size: 1rem; flex-shrink: 0; }
+.notif-text {
+    flex: 1;
+    font-size: 0.78rem;
+    color: #1f2937;
+    text-decoration: none;
+    line-height: 1.3;
+}
+.notif-text:hover { text-decoration: underline; }
+.notif-dismiss {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+.notif-dismiss:hover { color: #ef4444; }
+.notif-empty {
+    padding: 24px 14px;
+    text-align: center;
+    color: #9ca3af;
+    font-size: 0.82rem;
+}
+.notif-urgent .notif-text { color: #dc2626; font-weight: 600; }
+.notif-action .notif-text { color: #059669; font-weight: 600; }
+.notif-interview .notif-text { color: #7c3aed; font-weight: 600; }
+
+[data-theme="dark"] .notif-panel {
+    background: #1e293b;
+    border-color: #334155;
+}
+[data-theme="dark"] .notif-header {
+    border-color: #334155;
+}
+[data-theme="dark"] .notif-item {
+    border-color: #1e293b;
+}
+[data-theme="dark"] .notif-item:hover {
+    background: #334155;
+}
+[data-theme="dark"] .notif-text {
+    color: #e2e8f0;
+}
+[data-theme="dark"] .notif-clear:hover {
+    background: #334155;
+}
+[data-theme="dark"] .notif-empty {
+    color: #64748b;
+}
+
 .filter-spacer {
     flex: 1;
 }
@@ -207,6 +328,10 @@ nav a.active {
     z-index: 10;
 }
 
+.sheet thead.stuck th {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
 .sheet th {
     background: #f3f4f6;
     border: 1px solid #d1d5db;
@@ -220,6 +345,7 @@ nav a.active {
     text-align: left;
     position: sticky;
     top: 0;
+    transition: box-shadow 0.2s;
 }
 
 .sheet th a {
@@ -996,6 +1122,78 @@ a.bar-link:hover { background: #f3f4f6; }
     border-color: var(--border);
     color: var(--text);
 }
+
+/* Context menu */
+.ctx-menu {
+    position: fixed;
+    min-width: 200px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.18);
+    z-index: 200;
+    border: 1px solid #e5e7eb;
+    padding: 4px 0;
+    font-size: 0.8rem;
+}
+.ctx-header {
+    padding: 8px 14px;
+    font-weight: 700;
+    font-size: 0.78rem;
+    color: #374151;
+    border-bottom: 1px solid #e5e7eb;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 250px;
+}
+.ctx-menu button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    padding: 6px 14px;
+    cursor: pointer;
+    color: #374151;
+    font-size: 0.78rem;
+    white-space: nowrap;
+}
+.ctx-menu button:hover { background: #f3f4f6; }
+.ctx-divider {
+    height: 1px;
+    background: #e5e7eb;
+    margin: 4px 0;
+}
+.ctx-label {
+    padding: 4px 14px 2px;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #9ca3af;
+    font-weight: 600;
+}
+.ctx-active { color: #3b82f6 !important; font-weight: 600; }
+.ctx-status::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    margin-right: 6px;
+    background: #9ca3af;
+    vertical-align: middle;
+}
+.ctx-menu button.ctx-active::before { background: #3b82f6; }
+
+[data-theme="dark"] .ctx-menu {
+    background: #1e293b;
+    border-color: #334155;
+}
+[data-theme="dark"] .ctx-header { color: #e2e8f0; border-color: #334155; }
+[data-theme="dark"] .ctx-menu button { color: #d1d5db; }
+[data-theme="dark"] .ctx-menu button:hover { background: #334155; }
+[data-theme="dark"] .ctx-divider { background: #334155; }
+[data-theme="dark"] .ctx-label { color: #64748b; }
 
 /* ===== OVERFLOW ===== */
 .overflow-auto { overflow-x: auto; }
@@ -1985,6 +2183,61 @@ footer small {
 
 [data-theme="dark"] .similar-card strong {
     color: #60a5fa;
+}
+
+/* Activity log */
+.activity-log {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
+    padding-left: 16px;
+}
+.activity-log::before {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 8px;
+    bottom: 8px;
+    width: 2px;
+    background: #e5e7eb;
+    border-radius: 1px;
+}
+.activity-entry {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+    font-size: 0.78rem;
+    position: relative;
+}
+.activity-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #3b82f6;
+    flex-shrink: 0;
+    position: absolute;
+    left: -14px;
+    z-index: 1;
+}
+.activity-text {
+    color: #374151;
+    flex: 1;
+}
+.activity-time {
+    color: #9ca3af;
+    font-size: 0.7rem;
+    white-space: nowrap;
+}
+[data-theme="dark"] .activity-log::before {
+    background: #374151;
+}
+[data-theme="dark"] .activity-text {
+    color: #d1d5db;
+}
+[data-theme="dark"] .activity-time {
+    color: #6b7280;
 }
 
 /* Compare modal */
@@ -3301,18 +3554,62 @@ mark.search-highlight {
 
 /* ===== PRINT STYLES ===== */
 @media print {
-    nav, .sheet-toolbar, .col-check, .col-apply, footer, .modal-overlay, .toast, .back-to-top, .quick-chips {
+    nav, .sheet-toolbar, .col-check, .col-fav, .col-apply, footer, .modal-overlay,
+    .toast, .back-to-top, .quick-chips, .urgency-banner, .recent-viewed,
+    .summary-pills, .bulk-bar, .pipeline-page, .calendar-page, .stats-page,
+    .ctx-menu, .row-preview, .notif-panel, .skip-link, #back-to-top {
         display: none !important;
     }
 
-    .sheet-page { padding: 0 !important; }
-    .sheet-wrapper { overflow: visible; max-height: none; border: none; }
-    .sheet { font-size: 0.65rem; }
-    .sheet th, .sheet td { padding: 2px 4px; border: 1px solid #999; }
-    .frozen-col { position: static; box-shadow: none; }
-    .col-check { display: none; }
+    body {
+        font-size: 9pt;
+        color: #000 !important;
+        background: white !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
 
-    body { font-size: 10pt; }
+    .sheet-page { padding: 0 !important; }
+    .sheet-wrapper { overflow: visible; max-height: none; border: none; box-shadow: none; }
+    .sheet { font-size: 0.65rem; }
+    .sheet th {
+        background: #e5e7eb !important;
+        padding: 3px 5px;
+        border: 1px solid #999;
+        position: static;
+    }
+    .sheet td {
+        padding: 2px 5px;
+        border: 1px solid #ccc;
+    }
+    .sheet thead { position: static; }
+    .frozen-col { position: static !important; box-shadow: none !important; }
+    .status-select { border: none; background: none; font-size: 0.65rem; padding: 0; }
+
+    /* Print header */
+    .sheet-page::before {
+        content: 'CA New Grad RN Residency Programs';
+        display: block;
+        font-size: 14pt;
+        font-weight: 700;
+        text-align: center;
+        padding: 8px 0;
+        border-bottom: 2px solid #000;
+        margin-bottom: 8px;
+    }
+
+    /* Row status colors for print */
+    tr[data-status="Submitted"] td { background: #ecfdf5 !important; }
+    tr[data-status="Interview"] td { background: #eff6ff !important; }
+    tr[data-status="Offer"] td { background: #fefce8 !important; }
+    tr[data-status="Rejected"] td { background: #fef2f2 !important; }
+    tr[data-status="In Progress"] td { background: #f5f3ff !important; }
+
+    /* Page breaks */
+    .sheet tr { page-break-inside: avoid; }
+
+    a { text-decoration: none !important; color: #000 !important; }
+    a[href]::after { content: none !important; }
 }
 
     </style>
@@ -3328,7 +3625,13 @@ mark.search-highlight {
             <li><a href="#" id="nav-pipeline" onclick="showView('pipeline'); return false;">Pipeline</a></li>
             <li><a href="#" id="nav-calendar" onclick="showView('calendar'); return false;">Calendar</a></li>
             <li><a href="#" id="nav-stats" onclick="showView('stats'); return false;">Stats</a></li>
-            <li class="nclex-nav" title="Days until NCLEX (2026-05)"><span class="nclex-badge">72d</span> NCLEX</li>
+            <li class="nclex-nav" title="Days until NCLEX (2026-05)"><span class="nclex-badge">71d</span> NCLEX</li>
+            <li class="notif-nav"><a href="#" onclick="toggleNotifications(); return false;" id="notif-toggle" title="Notifications">&#x1F514;<span class="notif-count" id="notif-count" style="display:none">0</span></a>
+                <div class="notif-panel" id="notif-panel" style="display:none">
+                    <div class="notif-header"><strong>Notifications</strong><button onclick="clearNotifications(); return false;" class="notif-clear">Clear all</button></div>
+                    <div class="notif-list" id="notif-list"></div>
+                </div>
+            </li>
             <li><a href="#" onclick="toggleTheme(); return false;" id="theme-toggle" title="Toggle dark mode">Dark</a></li>
             <li><a href="#" onclick="toggleShortcutHelp(); return false;" title="Keyboard shortcuts (?)" class="nav-help">?</a></li>
         </ul>
@@ -3386,6 +3689,7 @@ mark.search-highlight {
                         <button type="button" onclick="backupData(); toggleMoreMenu();">Backup</button>
                         <button type="button" onclick="document.getElementById('restore-file').click(); toggleMoreMenu();">Restore</button>
                         <button type="button" onclick="shareUrl(); toggleMoreMenu();">Share URL</button>
+                        <button type="button" onclick="printView(); toggleMoreMenu();">Print / PDF</button>
                     </div>
                     <div id="col-menu" class="col-menu" style="display:none">
                         <label><input type="checkbox" data-toggle-col="col-program" checked> Program</label>
@@ -3452,7 +3756,7 @@ mark.search-highlight {
 <td class="col-region"><span class="region-badge region-sacr"></span>NorCal</td>
 <td class="col-city" title="Multiple (Sacramento, Oakland, San Jose, Santa Rosa, etc.)">Sac, Oak, etc</td>
 <td class="col-bsn bsn-pref">Preferred</td>
-<td class="col-date" data-raw="2026-03-29" title="Opens in 39 days (2026-03-29)">Mar 29</td>
+<td class="col-date" data-raw="2026-03-29" title="Opens in 38 days (2026-03-29)">Mar 29</td>
 <td class="col-date" data-raw="2026-03-31">Mar 31</td>
 <td class="col-date" data-raw="2026-07-27">Jul 27</td>
 <td class="col-rep stars">★★★★★</td>
@@ -3480,7 +3784,7 @@ Both Cohort 2 and 3 viable for May 2026 NCLEX taker. Apply via kaiserpermanentej
 <td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
 <td class="col-city" title="Los Angeles">LA</td>
 <td class="col-bsn bsn-req">Yes</td>
-<td class="col-date" data-raw="2026-03-02" title="Opens in 12 days (2026-03-02)">Mar 2</td>
+<td class="col-date" data-raw="2026-03-02" title="Opens in 11 days (2026-03-02)">Mar 2</td>
 <td class="col-date" data-raw="2026-03-09">Mar 9</td>
 <td class="col-date" data-raw="2026-07-01">Jul 1</td>
 <td class="col-rep stars">★★★★★</td>
@@ -3498,7 +3802,7 @@ Both Cohort 2 and 3 viable for May 2026 NCLEX taker. Apply via kaiserpermanentej
 <td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
 <td class="col-city" title="Los Angeles">LA</td>
 <td class="col-bsn bsn-no">No</td>
-<td class="col-date" data-raw="2026-06-15" title="Opens in 117 days (2026-06-15)">Jun 15</td>
+<td class="col-date" data-raw="2026-06-15" title="Opens in 116 days (2026-06-15)">Jun 15</td>
 <td class="col-date" data-raw="2026-06-28">Jun 28</td>
 <td class="col-date" data-raw="2026-08-24">Aug 24</td>
 <td class="col-rep stars">★★★★★</td>
@@ -3712,7 +4016,7 @@ ADN accepted (BSN preferred). NCLEX not required at app time but valid license n
 <td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
 <td class="col-city" title="San Diego">SD</td>
 <td class="col-bsn bsn-pref">Preferred</td>
-<td class="col-date" data-raw="2026-03-10" title="Opens in 20 days (2026-03-10)">Mar 10</td>
+<td class="col-date" data-raw="2026-03-10" title="Opens in 19 days (2026-03-10)">Mar 10</td>
 <td class="col-date" data-raw="2026-03-17">Mar 17</td>
 <td class="col-date" data-raw="2026-07-01">Jul 1</td>
 <td class="col-rep stars">★★★★☆</td>
@@ -3741,7 +4045,7 @@ ADN accepted (BSN preferred). NCLEX not required at app time but valid license n
 <td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
 <td class="col-city" title="San Diego">SD</td>
 <td class="col-bsn bsn-pref">Preferred</td>
-<td class="col-date" data-raw="2026-06-21" title="Opens in 123 days (2026-06-21)">Jun 21</td>
+<td class="col-date" data-raw="2026-06-21" title="Opens in 122 days (2026-06-21)">Jun 21</td>
 <td class="col-date" data-raw="2026-06-23">Jun 23</td>
 <td class="col-date" data-raw="2026-10-01">Oct 1</td>
 <td class="col-rep stars">★★★★☆</td>
@@ -3769,7 +4073,7 @@ HireVue video interview required (72-hr expiration, 10 questions, self-paced). 4
 <td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
 <td class="col-city" title="Loma Linda">Loma Linda</td>
 <td class="col-bsn bsn-req">Yes</td>
-<td class="col-date" data-raw="2026-02-23" title="Opens in 5 days (2026-02-23)">Feb 23</td>
+<td class="col-date" data-raw="2026-02-23" title="Opens in 4 days (2026-02-23)">Feb 23</td>
 <td class="col-date" data-raw="2026-03-06">Mar 6</td>
 <td class="col-date" data-raw="2026-06-08">Jun 8</td>
 <td class="col-rep stars">★★★★☆</td>
@@ -3796,7 +4100,7 @@ BSN required. &lt;12 months RN experience. 1-year program + 2-year employment co
 <td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
 <td class="col-city" title="Los Angeles">LA</td>
 <td class="col-bsn bsn-req">Yes</td>
-<td class="col-date" data-raw="2026-06-02" title="Opens in 104 days (2026-06-02)">Jun 2</td>
+<td class="col-date" data-raw="2026-06-02" title="Opens in 103 days (2026-06-02)">Jun 2</td>
 <td class="col-date" data-raw="2026-06-16">Jun 16</td>
 <td class="col-date" data-raw="2026-09-01">Sep 1</td>
 <td class="col-rep stars">★★★★☆</td>
@@ -3924,7 +4228,7 @@ Contact: LAC_USC_NursingRecruitment@dhs.lacounty.gov or (323) 409-4663. Also che
 <td class="col-region"><span class="region-badge region-bay"></span>Bay Area</td>
 <td class="col-city" title="Mountain View / Los Gatos">Mtn View / Los Gatos</td>
 <td class="col-bsn bsn-pref">Preferred</td>
-<td class="col-date" data-raw="2026-06-01" title="Opens in 103 days (2026-06-01)">Jun 1</td>
+<td class="col-date" data-raw="2026-06-01" title="Opens in 102 days (2026-06-01)">Jun 1</td>
 <td class="col-date" data-raw="2026-06-15">Jun 15</td>
 <td class="col-date" data-raw="2026-09-28">Sep 28</td>
 <td class="col-rep stars">★★★★☆</td>
@@ -4080,7 +4384,7 @@ Contact: LAC_USC_NursingRecruitment@dhs.lacounty.gov or (323) 409-4663. Also che
 <td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
 <td class="col-city" title="Multiple (Los Angeles, Orange County, San Diego, Inland Empire)">LA, OC, etc</td>
 <td class="col-bsn bsn-pref">Preferred</td>
-<td class="col-date" data-raw="2026-04-24" title="Opens in 65 days (2026-04-24)">Apr 24</td>
+<td class="col-date" data-raw="2026-04-24" title="Opens in 64 days (2026-04-24)">Apr 24</td>
 <td class="col-date" data-raw="2026-04-26">Apr 26</td>
 <td class="col-date" data-raw="2026-08-17">Aug 17</td>
 <td class="col-rep stars">★★★★★</td>
@@ -4126,7 +4430,7 @@ Both Cohort 2 and 3 viable for May 2026 NCLEX taker. Apply via kaiserpermanentej
 <td class="col-region"><span class="region-badge region-bay"></span>Bay Area</td>
 <td class="col-city" title="Palo Alto">Palo Alto</td>
 <td class="col-bsn bsn-req">Yes</td>
-<td class="col-date" data-raw="2026-03-06" title="Opens in 16 days (2026-03-06)">Mar 6</td>
+<td class="col-date" data-raw="2026-03-06" title="Opens in 15 days (2026-03-06)">Mar 6</td>
 <td class="col-date" data-raw="2026-03-13">Mar 13</td>
 <td class="col-date" data-raw="2026-08-17">Aug 17</td>
 <td class="col-rep stars">★★★★★</td>
@@ -4144,7 +4448,7 @@ Both Cohort 2 and 3 viable for May 2026 NCLEX taker. Apply via kaiserpermanentej
 <td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
 <td class="col-city" title="Orange">Orange</td>
 <td class="col-bsn bsn-no">No</td>
-<td class="col-date" data-raw="2026-05-16" title="Opens in 87 days (2026-05-16)">May 16</td>
+<td class="col-date" data-raw="2026-05-16" title="Opens in 86 days (2026-05-16)">May 16</td>
 <td class="col-date" data-raw="2026-05-19">May 19</td>
 <td class="col-date" data-raw="2026-08-01">Aug 1</td>
 <td class="col-rep stars">★★★★★</td>
@@ -4162,7 +4466,7 @@ Both Cohort 2 and 3 viable for May 2026 NCLEX taker. Apply via kaiserpermanentej
 <td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
 <td class="col-city" title="Whittier">Whittier</td>
 <td class="col-bsn bsn-no">No</td>
-<td class="col-date" data-raw="2026-03-09" title="Opens in 19 days (2026-03-09)">Mar 9</td>
+<td class="col-date" data-raw="2026-03-09" title="Opens in 18 days (2026-03-09)">Mar 9</td>
 <td class="col-date" data-raw="2026-03-27">Mar 27</td>
 <td class="col-date" data-raw="2026-05-18">May 18</td>
 <td class="col-rep stars">★★★☆☆</td>
@@ -4226,7 +4530,7 @@ Current cohort started 2/23/2026. ~25-30 nurses per cohort. Apply via jobs.pihhe
 <td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
 <td class="col-city" title="Duarte">Duarte</td>
 <td class="col-bsn bsn-req">Yes</td>
-<td class="col-date" data-raw="2026-08-01" title="Opens in 164 days (2026-08-01)">Aug 1</td>
+<td class="col-date" data-raw="2026-08-01" title="Opens in 163 days (2026-08-01)">Aug 1</td>
 <td class="col-date" data-raw="2026-08-28">Aug 28</td>
 <td class="col-date" data-raw="2026-09-01">Sep 1</td>
 <td class="col-rep stars">★★★★☆</td>
@@ -4244,7 +4548,7 @@ Current cohort started 2/23/2026. ~25-30 nurses per cohort. Apply via jobs.pihhe
 <td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
 <td class="col-city" title="Los Angeles (West LA)">LA (West LA)</td>
 <td class="col-bsn bsn-req">Yes</td>
-<td class="col-date" data-raw="2026-04-01" title="Opens in 42 days (2026-04-01)">Apr 1</td>
+<td class="col-date" data-raw="2026-04-01" title="Opens in 41 days (2026-04-01)">Apr 1</td>
 <td class="col-date" data-raw="2026-04-07">Apr 7</td>
 <td class="col-date" data-raw="2026-09-01">Sep 1</td>
 <td class="col-rep stars">★★★★☆</td>
@@ -4444,7 +4748,7 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
 <td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
 <td class="col-city" title="Fountain Valley">Fountain Valley</td>
 <td class="col-bsn bsn-pref">Preferred</td>
-<td class="col-date" data-raw="2026-06-01" title="Opens in 103 days (2026-06-01)">Jun 1</td>
+<td class="col-date" data-raw="2026-06-01" title="Opens in 102 days (2026-06-01)">Jun 1</td>
 <td class="col-date" data-raw="2026-06-05">Jun 5</td>
 <td class="col-date" data-raw="2026-08-01">Aug 1</td>
 <td class="col-rep stars">★★★★☆</td>
@@ -4462,7 +4766,7 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
 <td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
 <td class="col-city" title="Laguna Hills">Laguna Hills</td>
 <td class="col-bsn bsn-pref">Preferred</td>
-<td class="col-date" data-raw="2026-06-01" title="Opens in 103 days (2026-06-01)">Jun 1</td>
+<td class="col-date" data-raw="2026-06-01" title="Opens in 102 days (2026-06-01)">Jun 1</td>
 <td class="col-date" data-raw="2026-06-05">Jun 5</td>
 <td class="col-date" data-raw="2026-08-01">Aug 1</td>
 <td class="col-rep stars">★★★★☆</td>
@@ -4705,7 +5009,7 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
     </div>
 
     <footer class="container">
-        <small>57 programs across 5 regions &bull; Data updated 2026-02-18 &bull; Generated Feb 18, 2026</small>
+        <small>57 programs across 5 regions &bull; Data updated 2026-02-18 &bull; Generated Feb 19, 2026</small>
         <small class="shortcuts-hint"><kbd>/</kbd> Search &bull; <kbd>j</kbd><kbd>k</kbd> Navigate &bull; <kbd>Enter</kbd> Details &bull; <kbd>f</kbd> Favorite &bull; <kbd>1</kbd>-<kbd>4</kbd> Views &bull; <kbd>d</kbd> Dark &bull; <kbd>?</kbd> Help</small>
     </footer>
 
@@ -4758,6 +5062,7 @@ function saveStatus(id, status) {
         var all = loadSavedStatuses();
         all[id] = status;
         localStorage.setItem('rn_tracker_statuses', JSON.stringify(all));
+        logActivity(id, 'Status changed to ' + status);
     } catch(e) {}
 }
 
@@ -4800,6 +5105,28 @@ function removeChecklistItem(id, idx) {
     } catch(e) {}
 }
 
+// Activity log
+function logActivity(progId, action) {
+    try {
+        var log = JSON.parse(localStorage.getItem('rn_tracker_log') || '[]');
+        log.unshift({
+            id: progId,
+            action: action,
+            time: new Date().toISOString()
+        });
+        if (log.length > 50) log = log.slice(0, 50);
+        localStorage.setItem('rn_tracker_log', JSON.stringify(log));
+    } catch(e) {}
+}
+
+function getActivityLog(progId) {
+    try {
+        var log = JSON.parse(localStorage.getItem('rn_tracker_log') || '[]');
+        if (progId) return log.filter(function(e) { return e.id === progId; });
+        return log;
+    } catch(e) { return []; }
+}
+
 // Favorites
 function loadFavorites() {
     try {
@@ -4818,8 +5145,10 @@ function toggleFav(id) {
     var idx = favs.indexOf(id);
     if (idx !== -1) {
         favs.splice(idx, 1);
+        logActivity(id, 'Removed from favorites');
     } else {
         favs.push(id);
+        logActivity(id, 'Added to favorites');
     }
     saveFavorites(favs);
     renderFavButtons();
@@ -5067,6 +5396,15 @@ document.addEventListener('DOMContentLoaded', function() {
     renderStatusSummary();
     renderRecentViewed();
     renderUrgencyBanner();
+    renderNotifications();
+
+    // Close notifications panel on outside click
+    document.addEventListener('click', function(e) {
+        var panel = document.getElementById('notif-panel');
+        if (panel && panel.style.display !== 'none' && !e.target.closest('.notif-nav')) {
+            panel.style.display = 'none';
+        }
+    });
 
     // First-time welcome
     if (!localStorage.getItem('rn_tracker_welcomed')) {
@@ -5080,17 +5418,25 @@ document.addEventListener('DOMContentLoaded', function() {
         if (deepId) setTimeout(function() { showDetail(deepId); }, 100);
     }
 
-    // Back to top button visibility
+    // Back to top button visibility + sticky header shadow
     var topBtn = document.getElementById('back-to-top');
-    if (topBtn) {
-        window.addEventListener('scroll', function() {
+    var thead = document.querySelector('.sheet thead');
+    window.addEventListener('scroll', function() {
+        if (topBtn) {
             if (window.scrollY > 300) {
                 topBtn.classList.add('visible');
             } else {
                 topBtn.classList.remove('visible');
             }
-        });
-    }
+        }
+        if (thead) {
+            if (window.scrollY > 80) {
+                thead.classList.add('stuck');
+            } else {
+                thead.classList.remove('stuck');
+            }
+        }
+    });
 
     // Sortable column headers
     document.querySelectorAll('.sortable').forEach(function(th) {
@@ -5136,6 +5482,54 @@ document.addEventListener('DOMContentLoaded', function() {
         if (row && row.dataset.id) {
             showDetail(parseInt(row.dataset.id));
         }
+    });
+
+    // Right-click context menu for table rows
+    var ctxMenu = document.createElement('div');
+    ctxMenu.className = 'ctx-menu';
+    ctxMenu.style.display = 'none';
+    document.body.appendChild(ctxMenu);
+
+    document.querySelector('.sheet tbody').addEventListener('contextmenu', function(e) {
+        var row = e.target.closest('tr');
+        if (!row || !row.dataset.id) return;
+        e.preventDefault();
+        var id = parseInt(row.dataset.id);
+        var p = PROGRAMS.find(function(prog) { return prog.id === id; });
+        if (!p) return;
+        var favs = loadFavorites();
+        var isFav = favs.indexOf(id) !== -1;
+        var savedStatuses = loadSavedStatuses();
+        var currentStatus = savedStatuses[id] || p.application_status || 'Not Started';
+        var html = '<div class="ctx-header">' + escHtml(p.hospital) + '</div>';
+        html += '<button onclick="showDetail(' + id + '); hideCtxMenu();">View Details</button>';
+        html += '<button onclick="toggleFav(' + id + '); hideCtxMenu();">' + (isFav ? 'Remove from Favorites' : 'Add to Favorites') + '</button>';
+        var statuses = ['Not Started', 'In Progress', 'Submitted', 'Interview', 'Offer', 'Rejected'];
+        html += '<div class="ctx-divider"></div>';
+        html += '<div class="ctx-label">Set Status</div>';
+        statuses.forEach(function(s) {
+            var cls = s === currentStatus ? ' ctx-active' : '';
+            html += '<button class="ctx-status' + cls + '" onclick="quickSetStatus(' + id + ', \'' + s + '\')">' + s + '</button>';
+        });
+        if (p.application_url) {
+            html += '<div class="ctx-divider"></div>';
+            html += '<button onclick="window.open(\'' + escHtml(p.application_url) + '\', \'_blank\'); hideCtxMenu();">Apply Now</button>';
+        }
+        html += '<div class="ctx-divider"></div>';
+        html += '<button onclick="navigator.clipboard.writeText(\'' + escHtml(p.hospital).replace(/'/g, "\\'") + '\'); hideCtxMenu(); showToast(\'Copied!\');">Copy Hospital Name</button>';
+        ctxMenu.innerHTML = html;
+        var x = e.clientX, y = e.clientY;
+        ctxMenu.style.display = 'block';
+        // Adjust if overflowing viewport
+        var rect = ctxMenu.getBoundingClientRect();
+        if (x + rect.width > window.innerWidth) x = window.innerWidth - rect.width - 8;
+        if (y + rect.height > window.innerHeight) y = window.innerHeight - rect.height - 8;
+        ctxMenu.style.left = x + 'px';
+        ctxMenu.style.top = y + 'px';
+    });
+
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.ctx-menu')) hideCtxMenu();
     });
 
     // Note expand/collapse + hospital detail links
@@ -6004,6 +6398,8 @@ function backupData() {
         checklists: JSON.parse(localStorage.getItem('rn_tracker_checklists') || '{}'),
         favorites: loadFavorites(),
         tags: JSON.parse(localStorage.getItem('rn_tracker_tags') || '{}'),
+        activityLog: JSON.parse(localStorage.getItem('rn_tracker_log') || '[]'),
+        dismissedNotifs: JSON.parse(localStorage.getItem('rn_tracker_notif_dismissed') || '[]'),
         theme: localStorage.getItem('rn_tracker_theme') || 'light',
         density: localStorage.getItem('rn_tracker_density') || 'normal',
         cols: JSON.parse(localStorage.getItem('rn_tracker_cols') || '{}'),
@@ -6031,6 +6427,8 @@ function restoreData(input) {
             if (data.density) localStorage.setItem('rn_tracker_density', data.density);
             if (data.favorites) localStorage.setItem('rn_tracker_favorites', JSON.stringify(data.favorites));
             if (data.tags) localStorage.setItem('rn_tracker_tags', JSON.stringify(data.tags));
+            if (data.activityLog) localStorage.setItem('rn_tracker_log', JSON.stringify(data.activityLog));
+            if (data.dismissedNotifs) localStorage.setItem('rn_tracker_notif_dismissed', JSON.stringify(data.dismissedNotifs));
             if (data.cols) localStorage.setItem('rn_tracker_cols', JSON.stringify(data.cols));
             showToast('Data restored! Reloading...');
             setTimeout(function() { window.location.reload(); }, 1000);
@@ -6132,6 +6530,7 @@ function addTagFromSelect(id, sel) {
     if (tags.indexOf(val) === -1) {
         tags.push(val);
         saveTags(id, tags);
+        logActivity(id, 'Added tag: ' + val);
     }
     sel.value = '';
     showDetail(id); // re-render
@@ -6142,6 +6541,7 @@ function removeTag(id, tag) {
     var tags = loadTags(id);
     tags = tags.filter(function(t) { return t !== tag; });
     saveTags(id, tags);
+    logActivity(id, 'Removed tag: ' + tag);
     showDetail(id); // re-render
     showToast('Tag removed');
 }
@@ -6328,6 +6728,23 @@ function showDetail(id) {
         html += '</div></div>';
     }
 
+    // Activity log
+    var actLog = getActivityLog(id);
+    if (actLog.length > 0) {
+        html += '<div class="detail-section"><h3>Activity Log</h3>';
+        html += '<div class="activity-log">';
+        actLog.slice(0, 10).forEach(function(entry) {
+            var d = new Date(entry.time);
+            var timeStr = d.toLocaleDateString('en-US', {month:'short',day:'numeric'}) + ' ' + d.toLocaleTimeString('en-US', {hour:'numeric',minute:'2-digit'});
+            html += '<div class="activity-entry">';
+            html += '<span class="activity-dot"></span>';
+            html += '<span class="activity-text">' + escHtml(entry.action) + '</span>';
+            html += '<span class="activity-time">' + timeStr + '</span>';
+            html += '</div>';
+        });
+        html += '</div></div>';
+    }
+
     if (p.application_url) {
         html += '<div class="detail-actions"><a href="' + escHtml(p.application_url) + '" target="_blank" class="apply-btn-modal">Apply Now &rarr;</a></div>';
     }
@@ -6498,6 +6915,136 @@ function renderUrgencyBanner() {
 
     banner.innerHTML = html;
     banner.style.display = '';
+}
+
+// Notifications panel
+function buildNotifications() {
+    var notifs = [];
+    var today = new Date(); today.setHours(0,0,0,0);
+    var savedStatuses = loadSavedStatuses();
+
+    PROGRAMS.forEach(function(p) {
+        var status = savedStatuses[p.id] || p.application_status || 'Not Started';
+        var openD = parseDate(p.app_open_date);
+        var closeD = parseDate(p.app_close_date);
+        var cohortD = parseDate(p.cohort_start_date);
+
+        // Closing within 7 days
+        if (closeD && status !== 'Submitted' && status !== 'Interview' && status !== 'Offer' && status !== 'Rejected') {
+            var daysLeft = Math.ceil((closeD - today) / (1000*60*60*24));
+            if (daysLeft >= 0 && daysLeft <= 7) {
+                notifs.push({ id: p.id, type: 'urgent', icon: '\u26A0\uFE0F', text: escHtml(p.hospital) + ' closes in ' + daysLeft + ' day' + (daysLeft !== 1 ? 's' : ''), sort: daysLeft });
+            }
+        }
+
+        // Opening within 7 days
+        if (openD && status === 'Not Started') {
+            var daysUntil = Math.ceil((openD - today) / (1000*60*60*24));
+            if (daysUntil > 0 && daysUntil <= 7) {
+                notifs.push({ id: p.id, type: 'opening', icon: '\uD83D\uDD14', text: escHtml(p.hospital) + ' opens in ' + daysUntil + ' day' + (daysUntil !== 1 ? 's' : ''), sort: 10 + daysUntil });
+            }
+        }
+
+        // Currently open + not started
+        if (openD && closeD && openD <= today && closeD >= today && status === 'Not Started') {
+            notifs.push({ id: p.id, type: 'action', icon: '\uD83D\uDCCB', text: escHtml(p.hospital) + ' is OPEN — apply now!', sort: 5 });
+        }
+
+        // Submitted > 14 days ago — follow up reminder
+        if (status === 'Submitted') {
+            var log = getActivityLog(p.id);
+            var submitEntry = log.find(function(e) { return e.action.indexOf('Submitted') !== -1; });
+            if (submitEntry) {
+                var submitDate = new Date(submitEntry.time);
+                var daysSince = Math.ceil((today - submitDate) / (1000*60*60*24));
+                if (daysSince >= 14) {
+                    notifs.push({ id: p.id, type: 'followup', icon: '\uD83D\uDCE7', text: escHtml(p.hospital) + ' — submitted ' + daysSince + ' days ago, follow up?', sort: 20 });
+                }
+            }
+        }
+
+        // Interview scheduled — get ready
+        if (status === 'Interview') {
+            notifs.push({ id: p.id, type: 'interview', icon: '\uD83C\uDFAF', text: escHtml(p.hospital) + ' — interview prep!', sort: 3 });
+        }
+
+        // Cohort starts within 60 days
+        if (cohortD) {
+            var daysToCohort = Math.ceil((cohortD - today) / (1000*60*60*24));
+            if (daysToCohort > 0 && daysToCohort <= 60 && (status === 'Offer')) {
+                notifs.push({ id: p.id, type: 'cohort', icon: '\uD83C\uDF93', text: escHtml(p.hospital) + ' cohort starts in ' + daysToCohort + ' days', sort: 30 });
+            }
+        }
+    });
+
+    notifs.sort(function(a, b) { return a.sort - b.sort; });
+    return notifs;
+}
+
+function renderNotifications() {
+    var notifs = buildNotifications();
+    var dismissed = [];
+    try { dismissed = JSON.parse(localStorage.getItem('rn_tracker_notif_dismissed') || '[]'); } catch(e) {}
+    notifs = notifs.filter(function(n) { return dismissed.indexOf(n.id + ':' + n.type) === -1; });
+
+    var countEl = document.getElementById('notif-count');
+    if (countEl) {
+        if (notifs.length > 0) {
+            countEl.textContent = notifs.length;
+            countEl.style.display = '';
+        } else {
+            countEl.style.display = 'none';
+        }
+    }
+
+    var list = document.getElementById('notif-list');
+    if (!list) return;
+    if (notifs.length === 0) {
+        list.innerHTML = '<div class="notif-empty">All clear! No notifications.</div>';
+        return;
+    }
+    var html = '';
+    notifs.forEach(function(n) {
+        html += '<div class="notif-item notif-' + n.type + '">';
+        html += '<span class="notif-icon">' + n.icon + '</span>';
+        html += '<a href="#" class="notif-text" onclick="showDetail(' + n.id + '); toggleNotifications(); return false;">' + n.text + '</a>';
+        html += '<button class="notif-dismiss" onclick="dismissNotification(' + n.id + ', \'' + n.type + '\')" title="Dismiss">&times;</button>';
+        html += '</div>';
+    });
+    list.innerHTML = html;
+}
+
+function toggleNotifications() {
+    var panel = document.getElementById('notif-panel');
+    if (!panel) return;
+    if (panel.style.display === 'none') {
+        renderNotifications();
+        panel.style.display = '';
+    } else {
+        panel.style.display = 'none';
+    }
+}
+
+function dismissNotification(id, type) {
+    try {
+        var dismissed = JSON.parse(localStorage.getItem('rn_tracker_notif_dismissed') || '[]');
+        var key = id + ':' + type;
+        if (dismissed.indexOf(key) === -1) dismissed.push(key);
+        localStorage.setItem('rn_tracker_notif_dismissed', JSON.stringify(dismissed));
+        renderNotifications();
+    } catch(e) {}
+}
+
+function clearNotifications() {
+    var notifs = buildNotifications();
+    var dismissed = [];
+    try { dismissed = JSON.parse(localStorage.getItem('rn_tracker_notif_dismissed') || '[]'); } catch(e) {}
+    notifs.forEach(function(n) {
+        var key = n.id + ':' + n.type;
+        if (dismissed.indexOf(key) === -1) dismissed.push(key);
+    });
+    localStorage.setItem('rn_tracker_notif_dismissed', JSON.stringify(dismissed));
+    renderNotifications();
 }
 
 // Recently viewed
@@ -6928,6 +7475,30 @@ function launchConfetti() {
         requestAnimationFrame(animate);
     }
     animate();
+}
+
+function printView() {
+    window.print();
+}
+
+function hideCtxMenu() {
+    var m = document.querySelector('.ctx-menu');
+    if (m) m.style.display = 'none';
+}
+
+function quickSetStatus(id, status) {
+    saveStatus(id, status);
+    var row = document.querySelector('tr[data-id="' + id + '"]');
+    if (row) {
+        applyRowStatus(row, status);
+        row.dataset.status = status;
+        var sel = row.querySelector('.status-select');
+        if (sel) sel.value = status;
+    }
+    renderStatusSummary();
+    renderNotifications();
+    hideCtxMenu();
+    showToast('Status: ' + status);
 }
 
 function showToast(message) {
