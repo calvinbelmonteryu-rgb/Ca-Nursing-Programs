@@ -716,7 +716,10 @@ def generate():
         <small class="shortcuts-hint"><kbd>/</kbd> Search &bull; <kbd>j</kbd><kbd>k</kbd> Navigate &bull; <kbd>Enter</kbd> Details &bull; <kbd>f</kbd> Favorite &bull; <kbd>n</kbd> Notify &bull; <kbd>1</kbd>-<kbd>6</kbd> Views &bull; <kbd>d</kbd> Dark &bull; <kbd>?</kbd> Help</small>
     </footer>
 
-    <button class="back-to-top" id="back-to-top" onclick="window.scrollTo({{top:0,behavior:'smooth'}})" title="Back to top">&uarr;</button>
+    <button class="back-to-top" id="back-to-top" onclick="window.scrollTo({{top:0,behavior:'smooth'}})" title="Back to top">
+        <svg class="scroll-progress-ring" viewBox="0 0 36 36"><circle class="scroll-ring-bg" cx="18" cy="18" r="15.5"/><circle class="scroll-ring-fill" id="scroll-ring-fill" cx="18" cy="18" r="15.5"/></svg>
+        <span class="btt-arrow">&uarr;</span>
+    </button>
 
     <!-- Floating Action Button -->
     <div class="fab-wrap" id="fab-wrap">
@@ -1325,6 +1328,14 @@ document.addEventListener('DOMContentLoaded', function() {{
             }} else {{
                 thead.classList.remove('stuck');
             }}
+        }}
+        // Scroll progress ring
+        var ringFill = document.getElementById('scroll-ring-fill');
+        if (ringFill) {{
+            var scrollPct = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight);
+            var circumference = 2 * Math.PI * 15.5;
+            var offset = circumference * (1 - Math.min(scrollPct, 1));
+            ringFill.style.strokeDashoffset = offset;
         }}
     }});
 
@@ -4142,7 +4153,7 @@ function renderCards() {{
             deadlineInfo = '<span class="card-badge card-badge-open">OPEN NOW</span>';
         }}
 
-        html += '<div class="prog-card prog-card-' + stCls + '" onclick="showDetail(' + p.id + ')">';
+        html += '<div class="prog-card prog-card-' + stCls + '" tabindex="0" role="button" aria-label="' + escHtml(p.hospital) + '" onclick="showDetail(' + p.id + ')" onkeydown="if(event.key===\'Enter\')showDetail(' + p.id + ')">';
         html += '<div class="prog-card-header">';
         html += '<select class="card-status-select card-st-' + stCls + '" data-id="' + p.id + '" onchange="updateCardStatus(this); event.stopPropagation();" onclick="event.stopPropagation()">';
         ['Not Started','In Progress','Submitted','Interview','Offer','Rejected'].forEach(function(opt) {{

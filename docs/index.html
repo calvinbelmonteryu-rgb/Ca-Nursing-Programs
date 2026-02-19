@@ -3323,13 +3323,13 @@ mark.search-highlight {
     position: fixed;
     bottom: 20px;
     left: 20px;
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     background: #1e293b;
     color: white;
     border: none;
-    font-size: 1.1rem;
+    font-size: 1rem;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -3340,6 +3340,36 @@ mark.search-highlight {
     pointer-events: none;
     z-index: 50;
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    padding: 0;
+}
+
+.scroll-progress-ring {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    transform: rotate(-90deg);
+}
+
+.scroll-ring-bg {
+    fill: none;
+    stroke: rgba(255,255,255,0.15);
+    stroke-width: 2;
+}
+
+.scroll-ring-fill {
+    fill: none;
+    stroke: var(--accent-light, #3b82f6);
+    stroke-width: 2;
+    stroke-dasharray: 97.4;
+    stroke-dashoffset: 97.4;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.1s;
+}
+
+.btt-arrow {
+    position: relative;
+    z-index: 1;
+    font-size: 1rem;
 }
 
 .back-to-top.visible {
@@ -7439,7 +7469,10 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
         <small class="shortcuts-hint"><kbd>/</kbd> Search &bull; <kbd>j</kbd><kbd>k</kbd> Navigate &bull; <kbd>Enter</kbd> Details &bull; <kbd>f</kbd> Favorite &bull; <kbd>n</kbd> Notify &bull; <kbd>1</kbd>-<kbd>6</kbd> Views &bull; <kbd>d</kbd> Dark &bull; <kbd>?</kbd> Help</small>
     </footer>
 
-    <button class="back-to-top" id="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Back to top">&uarr;</button>
+    <button class="back-to-top" id="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Back to top">
+        <svg class="scroll-progress-ring" viewBox="0 0 36 36"><circle class="scroll-ring-bg" cx="18" cy="18" r="15.5"/><circle class="scroll-ring-fill" id="scroll-ring-fill" cx="18" cy="18" r="15.5"/></svg>
+        <span class="btt-arrow">&uarr;</span>
+    </button>
 
     <!-- Floating Action Button -->
     <div class="fab-wrap" id="fab-wrap">
@@ -8048,6 +8081,14 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 thead.classList.remove('stuck');
             }
+        }
+        // Scroll progress ring
+        var ringFill = document.getElementById('scroll-ring-fill');
+        if (ringFill) {
+            var scrollPct = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight);
+            var circumference = 2 * Math.PI * 15.5;
+            var offset = circumference * (1 - Math.min(scrollPct, 1));
+            ringFill.style.strokeDashoffset = offset;
         }
     });
 
@@ -10865,7 +10906,7 @@ function renderCards() {
             deadlineInfo = '<span class="card-badge card-badge-open">OPEN NOW</span>';
         }
 
-        html += '<div class="prog-card prog-card-' + stCls + '" onclick="showDetail(' + p.id + ')">';
+        html += '<div class="prog-card prog-card-' + stCls + '" tabindex="0" role="button" aria-label="' + escHtml(p.hospital) + '" onclick="showDetail(' + p.id + ')" onkeydown="if(event.key==='Enter')showDetail(' + p.id + ')">';
         html += '<div class="prog-card-header">';
         html += '<select class="card-status-select card-st-' + stCls + '" data-id="' + p.id + '" onchange="updateCardStatus(this); event.stopPropagation();" onclick="event.stopPropagation()">';
         ['Not Started','In Progress','Submitted','Interview','Offer','Rejected'].forEach(function(opt) {

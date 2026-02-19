@@ -3307,13 +3307,13 @@ mark.search-highlight {
     position: fixed;
     bottom: 20px;
     left: 20px;
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     background: #1e293b;
     color: white;
     border: none;
-    font-size: 1.1rem;
+    font-size: 1rem;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -3324,6 +3324,36 @@ mark.search-highlight {
     pointer-events: none;
     z-index: 50;
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    padding: 0;
+}
+
+.scroll-progress-ring {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    transform: rotate(-90deg);
+}
+
+.scroll-ring-bg {
+    fill: none;
+    stroke: rgba(255,255,255,0.15);
+    stroke-width: 2;
+}
+
+.scroll-ring-fill {
+    fill: none;
+    stroke: var(--accent-light, #3b82f6);
+    stroke-width: 2;
+    stroke-dasharray: 97.4;
+    stroke-dashoffset: 97.4;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.1s;
+}
+
+.btt-arrow {
+    position: relative;
+    z-index: 1;
+    font-size: 1rem;
 }
 
 .back-to-top.visible {
