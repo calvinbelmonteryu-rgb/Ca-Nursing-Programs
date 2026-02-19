@@ -4602,6 +4602,42 @@ function showDetail(id) {{
         html += '<div class="journey-duration">' + journeyDays + ' day journey so far</div>';
     }}
 
+    // Response time insights — compute transition durations from history
+    if (journeyHist.length >= 2) {{
+        var transitions = [];
+        var transitionPairs = [
+            ['In Progress', 'Submitted', 'Prep to Submit'],
+            ['Submitted', 'Interview', 'Submitted to Interview'],
+            ['Interview', 'Offer', 'Interview to Offer']
+        ];
+        transitionPairs.forEach(function(pair) {{
+            var fromDate = stageDates[pair[0]];
+            var toDate = stageDates[pair[1]];
+            if (fromDate && toDate) {{
+                var days = Math.floor((toDate - fromDate) / 86400000);
+                if (days >= 0) transitions.push({{ label: pair[2], days: days }});
+            }}
+        }});
+        // Show wait estimate for current stage
+        if (currentStatus === 'Submitted' && stageDates['Submitted'] && !stageDates['Interview']) {{
+            var waitSoFar = Math.floor((new Date() - stageDates['Submitted']) / 86400000);
+            transitions.push({{ label: 'Waiting for response', days: waitSoFar, waiting: true }});
+        }}
+        if (currentStatus === 'Interview' && stageDates['Interview'] && !stageDates['Offer']) {{
+            var waitSoFar2 = Math.floor((new Date() - stageDates['Interview']) / 86400000);
+            transitions.push({{ label: 'Awaiting decision', days: waitSoFar2, waiting: true }});
+        }}
+        if (transitions.length > 0) {{
+            html += '<div class="response-times">';
+            transitions.forEach(function(t) {{
+                var cls = t.waiting ? 'rt-waiting' : 'rt-complete';
+                if (t.waiting && t.days > 21) cls += ' rt-long';
+                html += '<span class="rt-chip ' + cls + '">' + t.label + ': <strong>' + t.days + 'd</strong></span>';
+            }});
+            html += '</div>';
+        }}
+    }}
+
     // Status history
     var sHistory = getStatusHistory(p.id);
     if (sHistory.length > 0) {{

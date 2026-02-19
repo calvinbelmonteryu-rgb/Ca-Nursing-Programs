@@ -2781,6 +2781,27 @@ footer small {
 [data-theme="dark"] .pp-rejected-step .pp-date { color: #fca5a5; }
 [data-theme="dark"] .journey-duration { color: #6b7280; }
 
+/* Response time chips */
+.response-times {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+.rt-chip {
+    font-size: 0.65rem;
+    padding: 2px 8px;
+    border-radius: 10px;
+    white-space: nowrap;
+}
+.rt-complete { background: #dcfce7; color: #166534; }
+.rt-waiting { background: #fef3c7; color: #92400e; }
+.rt-waiting.rt-long { background: #fee2e2; color: #991b1b; }
+[data-theme="dark"] .rt-complete { background: #064e3b; color: #6ee7b7; }
+[data-theme="dark"] .rt-waiting { background: #78350f; color: #fcd34d; }
+[data-theme="dark"] .rt-waiting.rt-long { background: #7f1d1d; color: #fca5a5; }
+
 [data-theme="dark"] .pp-dot { background: var(--surface); border-color: #4b5563; }
 [data-theme="dark"] .pp-label { color: #6b7280; }
 [data-theme="dark"] .pp-line { background: #4b5563; }

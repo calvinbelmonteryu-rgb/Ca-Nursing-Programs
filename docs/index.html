@@ -2797,6 +2797,27 @@ footer small {
 [data-theme="dark"] .pp-rejected-step .pp-date { color: #fca5a5; }
 [data-theme="dark"] .journey-duration { color: #6b7280; }
 
+/* Response time chips */
+.response-times {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+.rt-chip {
+    font-size: 0.65rem;
+    padding: 2px 8px;
+    border-radius: 10px;
+    white-space: nowrap;
+}
+.rt-complete { background: #dcfce7; color: #166534; }
+.rt-waiting { background: #fef3c7; color: #92400e; }
+.rt-waiting.rt-long { background: #fee2e2; color: #991b1b; }
+[data-theme="dark"] .rt-complete { background: #064e3b; color: #6ee7b7; }
+[data-theme="dark"] .rt-waiting { background: #78350f; color: #fcd34d; }
+[data-theme="dark"] .rt-waiting.rt-long { background: #7f1d1d; color: #fca5a5; }
+
 [data-theme="dark"] .pp-dot { background: var(--surface); border-color: #4b5563; }
 [data-theme="dark"] .pp-label { color: #6b7280; }
 [data-theme="dark"] .pp-line { background: #4b5563; }
@@ -13344,6 +13365,42 @@ function showDetail(id) {
     html += '</div>';
     if (journeyDays > 0) {
         html += '<div class="journey-duration">' + journeyDays + ' day journey so far</div>';
+    }
+
+    // Response time insights — compute transition durations from history
+    if (journeyHist.length >= 2) {
+        var transitions = [];
+        var transitionPairs = [
+            ['In Progress', 'Submitted', 'Prep to Submit'],
+            ['Submitted', 'Interview', 'Submitted to Interview'],
+            ['Interview', 'Offer', 'Interview to Offer']
+        ];
+        transitionPairs.forEach(function(pair) {
+            var fromDate = stageDates[pair[0]];
+            var toDate = stageDates[pair[1]];
+            if (fromDate && toDate) {
+                var days = Math.floor((toDate - fromDate) / 86400000);
+                if (days >= 0) transitions.push({ label: pair[2], days: days });
+            }
+        });
+        // Show wait estimate for current stage
+        if (currentStatus === 'Submitted' && stageDates['Submitted'] && !stageDates['Interview']) {
+            var waitSoFar = Math.floor((new Date() - stageDates['Submitted']) / 86400000);
+            transitions.push({ label: 'Waiting for response', days: waitSoFar, waiting: true });
+        }
+        if (currentStatus === 'Interview' && stageDates['Interview'] && !stageDates['Offer']) {
+            var waitSoFar2 = Math.floor((new Date() - stageDates['Interview']) / 86400000);
+            transitions.push({ label: 'Awaiting decision', days: waitSoFar2, waiting: true });
+        }
+        if (transitions.length > 0) {
+            html += '<div class="response-times">';
+            transitions.forEach(function(t) {
+                var cls = t.waiting ? 'rt-waiting' : 'rt-complete';
+                if (t.waiting && t.days > 21) cls += ' rt-long';
+                html += '<span class="rt-chip ' + cls + '">' + t.label + ': <strong>' + t.days + 'd</strong></span>';
+            });
+            html += '</div>';
+        }
     }
 
     // Status history
