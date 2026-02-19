@@ -381,6 +381,7 @@ def generate():
     <div class="urgency-banner" id="urgency-banner" style="display:none"></div>
     <div class="deadline-ticker" id="deadline-ticker" style="display:none"></div>
     <div class="next-action-card" id="next-action" style="display:none"></div>
+    <div class="stale-data-alerts" id="stale-alerts" style="display:none"></div>
 
     <main class="container-fluid sheet-page" role="main" id="main-table">
         <div class="sheet-toolbar">
@@ -1366,6 +1367,52 @@ function renderDeadlineTicker() {{
     ticker.style.display = '';
 }}
 
+function renderStaleDataAlerts() {{
+    var container = document.getElementById('stale-alerts');
+    if (!container) return;
+    var savedStatuses = loadSavedStatuses();
+    var favs = loadFavorites();
+    var today = new Date();
+    var staleThreshold = 14; // days
+    var staleProgs = [];
+    PROGRAMS.forEach(function(p) {{
+        var st = savedStatuses[p.id] || p.application_status || 'Not Started';
+        var isActive = st === 'In Progress' || st === 'Submitted' || st === 'Interview';
+        var isFav = favs.indexOf(p.id) !== -1;
+        if (!isActive && !isFav) return;
+        if (!p.last_updated) {{
+            staleProgs.push({{ prog: p, age: 999, reason: isFav ? 'Favorited' : st }});
+            return;
+        }}
+        var parts = p.last_updated.split('-');
+        if (parts.length !== 3) return;
+        var updDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+        var ageDays = Math.floor((today - updDate) / 86400000);
+        if (ageDays >= staleThreshold) {{
+            staleProgs.push({{ prog: p, age: ageDays, reason: isFav ? 'Favorited' : st }});
+        }}
+    }});
+    if (staleProgs.length === 0) return;
+    staleProgs.sort(function(a, b) {{ return b.age - a.age; }});
+    var html = '<div class="stale-header">\\uD83D\\uDCCB Data may be outdated for ' + staleProgs.length + ' program' + (staleProgs.length > 1 ? 's' : '') + '</div>';
+    html += '<div class="stale-list">';
+    staleProgs.slice(0, 5).forEach(function(item) {{
+        var ageText = item.age >= 999 ? 'no date' : item.age + 'd old';
+        html += '<div class="stale-item" onclick="showDetail(' + item.prog.id + ')">';
+        html += '<span class="stale-name">' + escHtml(item.prog.hospital) + '</span>';
+        html += '<span class="stale-meta"><span class="stale-age">' + ageText + '</span>';
+        html += '<span class="stale-reason">' + item.reason + '</span></span>';
+        html += '</div>';
+    }});
+    if (staleProgs.length > 5) {{
+        html += '<div class="stale-more">' + (staleProgs.length - 5) + ' more...</div>';
+    }}
+    html += '</div>';
+    html += '<button class="stale-dismiss" onclick="this.parentElement.style.display=\'none\'" title="Dismiss">\\u2715</button>';
+    container.innerHTML = html;
+    container.style.display = 'block';
+}}
+
 function renderNextAction() {{
     var card = document.getElementById('next-action');
     if (!card) return;
@@ -1887,6 +1934,7 @@ document.addEventListener('DOMContentLoaded', function() {{
     updateTableFooter();
     updatePageTitle();
     setInterval(updatePageTitle, 60000);
+    renderStaleDataAlerts();
 
     // Close popups on outside click
     document.addEventListener('click', function(e) {{
