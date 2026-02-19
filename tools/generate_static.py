@@ -299,6 +299,7 @@ def generate():
         </ul>
         <ul>
             <li><a href="#" class="active">Programs</a></li>
+            <li><a href="#" onclick="toggleTheme(); return false;" id="theme-toggle" title="Toggle dark mode">Dark</a></li>
         </ul>
     </nav>
 
@@ -1135,11 +1136,15 @@ function closeCompareModal() {{
 }}
 
 function exportCSV() {{
-    // Build CSV from PROGRAMS data (more complete than table)
-    var csv = 'Hospital,Program,Region,City,BSN Required,App Open,App Close,Cohort,Reputation,Pay,Length (mo),Specialties,Requirements,Status,Notes,URL\\n';
+    var checklistLabels = ['Review requirements', 'Prepare resume/CV', 'Write cover letter', 'Gather references', 'Submit application', 'Follow up'];
+    var csv = 'Hospital,Program,Region,City,BSN Required,App Open,App Close,Cohort,Reputation,Pay,Length (mo),Specialties,Requirements,Status,Checklist Progress,Notes,URL\\n';
     var savedStatuses = loadSavedStatuses();
+    var savedNotes = loadSavedNotes();
     PROGRAMS.forEach(function(p) {{
         var status = savedStatuses[p.id] || p.application_status || 'Not Started';
+        var cl = loadChecklist(p.id);
+        var clText = cl.length + '/' + checklistLabels.length;
+        var notes = savedNotes[p.id] !== undefined ? savedNotes[p.id] : (p.personal_notes || '');
         var vals = [
             p.hospital,
             p.program_name,
@@ -1155,7 +1160,8 @@ function exportCSV() {{
             (p.specialty_units || []).join('; '),
             p.requirements,
             status,
-            (p.personal_notes || '').replace(/\\n/g, ' '),
+            clText,
+            notes.replace(/\\n/g, ' '),
             p.application_url
         ];
         csv += vals.map(function(v) {{ return '"' + String(v || '').replace(/"/g, '""') + '"'; }}).join(',') + '\\n';
@@ -1237,6 +1243,32 @@ document.addEventListener('change', function(e) {{
                 if (cb) cb.checked = false;
             }}
         }});
+    }} catch(ex) {{}}
+}})();
+
+function toggleTheme() {{
+    var html = document.documentElement;
+    var btn = document.getElementById('theme-toggle');
+    if (html.dataset.theme === 'dark') {{
+        html.dataset.theme = 'light';
+        btn.textContent = 'Dark';
+        localStorage.setItem('rn_tracker_theme', 'light');
+    }} else {{
+        html.dataset.theme = 'dark';
+        btn.textContent = 'Light';
+        localStorage.setItem('rn_tracker_theme', 'dark');
+    }}
+}}
+
+// Restore theme preference
+(function() {{
+    try {{
+        var theme = localStorage.getItem('rn_tracker_theme');
+        if (theme === 'dark') {{
+            document.documentElement.dataset.theme = 'dark';
+            var btn = document.getElementById('theme-toggle');
+            if (btn) btn.textContent = 'Light';
+        }}
     }} catch(ex) {{}}
 }})();
 

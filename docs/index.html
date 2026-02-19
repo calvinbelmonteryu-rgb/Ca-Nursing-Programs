@@ -1700,6 +1700,218 @@ footer small {
     background: #3b82f6;
 }
 
+/* ===== DARK MODE ===== */
+[data-theme="dark"] {
+    --bg: #0f172a;
+    --surface: #1e293b;
+    --border: #334155;
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --hover: #334155;
+}
+
+[data-theme="dark"] body {
+    background: var(--bg);
+    color: var(--text);
+}
+
+[data-theme="dark"] .sheet-toolbar {
+    background: var(--surface);
+    border-color: var(--border);
+}
+
+[data-theme="dark"] .sheet-wrapper {
+    background: var(--surface);
+    border-color: var(--border);
+}
+
+[data-theme="dark"] .sheet th {
+    background: #1e293b;
+    border-color: var(--border);
+    color: var(--text-muted);
+}
+
+[data-theme="dark"] .sheet td {
+    border-color: var(--border);
+    color: var(--text);
+}
+
+[data-theme="dark"] .sheet tbody tr:nth-child(even) {
+    background: #1a2332;
+}
+
+[data-theme="dark"] .sheet tbody tr:nth-child(odd) {
+    background: var(--surface);
+}
+
+[data-theme="dark"] .sheet tbody tr:hover {
+    background: #334155;
+}
+
+[data-theme="dark"] .sheet tbody tr.even-row {
+    background: #1a2332;
+}
+
+[data-theme="dark"] .sheet tbody tr.odd-row {
+    background: var(--surface);
+}
+
+[data-theme="dark"] .sheet tbody tr.even-row .frozen-col,
+[data-theme="dark"] .sheet tbody tr.even-row .col-check {
+    background: #1a2332;
+}
+
+[data-theme="dark"] .sheet tbody tr.odd-row .frozen-col,
+[data-theme="dark"] .sheet tbody tr.odd-row .col-check {
+    background: var(--surface);
+}
+
+[data-theme="dark"] .sheet tbody tr:hover .frozen-col,
+[data-theme="dark"] .sheet tbody tr:hover .col-check {
+    background: #334155;
+}
+
+[data-theme="dark"] thead .frozen-col,
+[data-theme="dark"] thead .col-check {
+    background: #1e293b;
+}
+
+[data-theme="dark"] .frozen-col {
+    box-shadow: 2px 0 4px rgba(0,0,0,0.3);
+}
+
+[data-theme="dark"] .sheet-filters input[type="search"],
+[data-theme="dark"] .sheet-filters select {
+    background: var(--surface);
+    border-color: var(--border);
+    color: var(--text);
+}
+
+[data-theme="dark"] .sheet-filters button {
+    background: var(--surface);
+    border-color: var(--border);
+    color: var(--text);
+}
+
+[data-theme="dark"] .sheet-filters button:hover {
+    background: #334155;
+}
+
+[data-theme="dark"] .sheet .status-select {
+    color: var(--text);
+}
+
+[data-theme="dark"] .sheet .status-select:hover,
+[data-theme="dark"] .sheet .status-select:focus {
+    border-color: var(--border);
+    background: var(--surface);
+}
+
+[data-theme="dark"] .modal-content {
+    background: var(--surface);
+    color: var(--text);
+}
+
+[data-theme="dark"] .modal-close {
+    color: var(--text-muted);
+}
+
+[data-theme="dark"] .detail-meta {
+    border-color: var(--border);
+}
+
+[data-theme="dark"] .detail-section h3 {
+    color: var(--text-muted);
+}
+
+[data-theme="dark"] .detail-section p,
+[data-theme="dark"] .detail-section dd {
+    color: var(--text);
+}
+
+[data-theme="dark"] .modal-notes-input {
+    background: var(--bg);
+    border-color: var(--border);
+    color: var(--text);
+}
+
+[data-theme="dark"] .col-menu {
+    background: var(--surface);
+    border-color: var(--border);
+}
+
+[data-theme="dark"] .col-menu label:hover {
+    background: #334155;
+}
+
+[data-theme="dark"] .chip {
+    background: var(--surface);
+    border-color: var(--border);
+    color: var(--text-muted);
+}
+
+[data-theme="dark"] .chip:hover {
+    background: #334155;
+}
+
+[data-theme="dark"] .quick-chips {
+    border-color: var(--border);
+}
+
+[data-theme="dark"] footer {
+    border-color: var(--border);
+}
+
+[data-theme="dark"] .sortable:hover {
+    background: #334155 !important;
+}
+
+[data-theme="dark"] .sort-asc,
+[data-theme="dark"] .sort-desc {
+    background: #1e3a5f !important;
+}
+
+[data-theme="dark"] .compare-table th {
+    background: #1e293b;
+    border-color: var(--border);
+}
+
+[data-theme="dark"] .compare-table td {
+    border-color: var(--border);
+}
+
+[data-theme="dark"] .compare-table .compare-label {
+    background: #1a2332;
+    color: var(--text-muted);
+}
+
+[data-theme="dark"] .no-results {
+    color: var(--text-muted);
+}
+
+[data-theme="dark"] .col-hospital a {
+    color: #60a5fa;
+}
+
+[data-theme="dark"] .apply-link {
+    color: #60a5fa;
+}
+
+[data-theme="dark"] .pay-bar {
+    background: #334155;
+}
+
+[data-theme="dark"] .app-checklist li {
+    border-color: var(--border);
+}
+
+[data-theme="dark"] .shortcuts-hint kbd {
+    background: var(--surface);
+    border-color: var(--border);
+    color: var(--text-muted);
+    box-shadow: 0 1px 0 var(--border);
+}
+
 /* ===== PRINT STYLES ===== */
 @media print {
     nav, .sheet-toolbar, .col-check, .col-apply, footer, .modal-overlay, .toast, .back-to-top, .quick-chips {
@@ -1725,6 +1937,7 @@ footer small {
         </ul>
         <ul>
             <li><a href="#" class="active">Programs</a></li>
+            <li><a href="#" onclick="toggleTheme(); return false;" id="theme-toggle" title="Toggle dark mode">Dark</a></li>
         </ul>
     </nav>
 
@@ -3622,11 +3835,15 @@ function closeCompareModal() {
 }
 
 function exportCSV() {
-    // Build CSV from PROGRAMS data (more complete than table)
-    var csv = 'Hospital,Program,Region,City,BSN Required,App Open,App Close,Cohort,Reputation,Pay,Length (mo),Specialties,Requirements,Status,Notes,URL\n';
+    var checklistLabels = ['Review requirements', 'Prepare resume/CV', 'Write cover letter', 'Gather references', 'Submit application', 'Follow up'];
+    var csv = 'Hospital,Program,Region,City,BSN Required,App Open,App Close,Cohort,Reputation,Pay,Length (mo),Specialties,Requirements,Status,Checklist Progress,Notes,URL\n';
     var savedStatuses = loadSavedStatuses();
+    var savedNotes = loadSavedNotes();
     PROGRAMS.forEach(function(p) {
         var status = savedStatuses[p.id] || p.application_status || 'Not Started';
+        var cl = loadChecklist(p.id);
+        var clText = cl.length + '/' + checklistLabels.length;
+        var notes = savedNotes[p.id] !== undefined ? savedNotes[p.id] : (p.personal_notes || '');
         var vals = [
             p.hospital,
             p.program_name,
@@ -3642,7 +3859,8 @@ function exportCSV() {
             (p.specialty_units || []).join('; '),
             p.requirements,
             status,
-            (p.personal_notes || '').replace(/\n/g, ' '),
+            clText,
+            notes.replace(/\n/g, ' '),
             p.application_url
         ];
         csv += vals.map(function(v) { return '"' + String(v || '').replace(/"/g, '""') + '"'; }).join(',') + '\n';
@@ -3724,6 +3942,32 @@ document.addEventListener('change', function(e) {
                 if (cb) cb.checked = false;
             }
         });
+    } catch(ex) {}
+})();
+
+function toggleTheme() {
+    var html = document.documentElement;
+    var btn = document.getElementById('theme-toggle');
+    if (html.dataset.theme === 'dark') {
+        html.dataset.theme = 'light';
+        btn.textContent = 'Dark';
+        localStorage.setItem('rn_tracker_theme', 'light');
+    } else {
+        html.dataset.theme = 'dark';
+        btn.textContent = 'Light';
+        localStorage.setItem('rn_tracker_theme', 'dark');
+    }
+}
+
+// Restore theme preference
+(function() {
+    try {
+        var theme = localStorage.getItem('rn_tracker_theme');
+        if (theme === 'dark') {
+            document.documentElement.dataset.theme = 'dark';
+            var btn = document.getElementById('theme-toggle');
+            if (btn) btn.textContent = 'Light';
+        }
     } catch(ex) {}
 })();
 
