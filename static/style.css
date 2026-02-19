@@ -6455,3 +6455,122 @@ mark.search-highlight {
 @media (max-width: 768px) {
     .leaderboard-section { grid-template-columns: 1fr; }
 }
+
+/* ===== FAVORITES DASHBOARD ===== */
+.fav-dashboard {
+    margin: 8px 0;
+    padding: 12px 16px;
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: 12px;
+}
+
+.fav-dash-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #92400e;
+}
+
+.fav-dash-header small {
+    font-weight: 400;
+    color: #b45309;
+}
+
+.fav-dash-grid {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+}
+
+.fav-dash-card {
+    flex: 0 0 auto;
+    min-width: 160px;
+    max-width: 220px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.fav-dash-card:hover {
+    border-color: var(--accent, #2563eb);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.fav-dash-name {
+    font-weight: 600;
+    font-size: 0.82rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 4px;
+}
+
+.fav-dash-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    font-size: 0.72rem;
+}
+
+.fav-dash-status {
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 0.68rem;
+}
+
+.fav-dash-submitted .fav-dash-status { background: #dcfce7; color: #166534; }
+.fav-dash-interview .fav-dash-status { background: #ede9fe; color: #5b21b6; }
+.fav-dash-offer .fav-dash-status { background: #fef9c3; color: #854d0e; }
+.fav-dash-in-progress .fav-dash-status { background: #fef3c7; color: #92400e; }
+.fav-dash-not-started .fav-dash-status { background: #f3f4f6; color: #6b7280; }
+.fav-dash-rejected .fav-dash-status { background: #fef2f2; color: #991b1b; }
+
+.fav-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 1px 4px;
+    border-radius: 3px;
+}
+
+.fav-badge-open { background: #dcfce7; color: #166534; }
+.fav-badge-soon { background: #fef3c7; color: #92400e; }
+.fav-badge-closed { background: #f3f4f6; color: #9ca3af; }
+
+.fav-dash-pay {
+    color: #059669;
+    font-weight: 600;
+}
+
+[data-theme="dark"] .fav-dashboard {
+    background: #422006;
+    border-color: #78350f;
+}
+
+[data-theme="dark"] .fav-dash-header { color: #fbbf24; }
+[data-theme="dark"] .fav-dash-header small { color: #f59e0b; }
+
+[data-theme="dark"] .fav-dash-card {
+    background: #1f2937;
+    border-color: #374151;
+}
+
+[data-theme="dark"] .fav-dash-card:hover {
+    border-color: var(--accent, #3b82f6);
+}
+
+[data-theme="dark"] .fav-dash-name { color: #f3f4f6; }
+[data-theme="dark"] .fav-dash-pay { color: #34d399; }
+
+@media (max-width: 640px) {
+    .fav-dash-card { min-width: 140px; }
+}

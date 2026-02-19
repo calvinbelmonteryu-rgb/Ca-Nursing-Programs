@@ -457,6 +457,7 @@ def generate():
 
         <div class="recent-viewed" id="recent-viewed" style="display:none"></div>
         <div class="status-summary" id="status-summary"></div>
+        <div class="fav-dashboard" id="fav-dashboard" style="display:none"></div>
 
         <div class="quick-chips">
             <button class="chip chip-red" onclick="filterFavorites(this)" id="fav-chip">&#9733; Favorites <span class="chip-count" id="fav-count">0</span></button>
@@ -1009,6 +1010,58 @@ function renderStatusSummary() {{
     if (text) text.textContent = progressed + '/' + total;
 }}
 
+function renderFavDashboard() {{
+    var container = document.getElementById('fav-dashboard');
+    if (!container) return;
+    var favs = loadFavorites();
+    if (favs.length === 0) {{
+        container.style.display = 'none';
+        return;
+    }}
+    var savedStatuses = loadSavedStatuses();
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    var favProgs = favs.map(function(id) {{
+        return PROGRAMS.find(function(p) {{ return p.id === id; }});
+    }}).filter(Boolean);
+
+    var html = '<div class="fav-dash-header"><span>&#9733; Your Favorites</span><small>' + favProgs.length + ' programs</small></div>';
+    html += '<div class="fav-dash-grid">';
+    favProgs.forEach(function(p) {{
+        var st = savedStatuses[p.id] || p.application_status || 'Not Started';
+        var stCls = st.toLowerCase().replace(/\\s+/g, '-');
+        var closeD = parseDate(p.app_close_date);
+        var openD = parseDate(p.app_open_date);
+        var deadline = '';
+        if (openD && closeD && openD <= today && closeD >= today) {{
+            var dLeft = Math.ceil((closeD - today) / 86400000);
+            deadline = '<span class="fav-badge fav-badge-open">OPEN ' + dLeft + 'd</span>';
+        }} else if (closeD && closeD > today) {{
+            var daysUntil = Math.ceil((closeD - today) / 86400000);
+            if (daysUntil <= 14) deadline = '<span class="fav-badge fav-badge-soon">' + daysUntil + 'd</span>';
+        }} else if (closeD && closeD < today) {{
+            deadline = '<span class="fav-badge fav-badge-closed">closed</span>';
+        }}
+        var pay = '';
+        if (p.pay_range) {{
+            var pm = p.pay_range.match(/(\\$[\\d.,]+\\/hr)/);
+            if (pm) pay = pm[1];
+        }}
+        html += '<div class="fav-dash-card fav-dash-' + stCls + '" onclick="showDetail(' + p.id + ')">';
+        html += '<div class="fav-dash-name">' + escHtml(p.hospital) + '</div>';
+        html += '<div class="fav-dash-meta">';
+        html += '<span class="fav-dash-status">' + st + '</span>';
+        if (deadline) html += ' ' + deadline;
+        if (pay) html += ' <span class="fav-dash-pay">' + pay + '</span>';
+        html += '</div>';
+        html += '</div>';
+    }});
+    html += '</div>';
+    container.innerHTML = html;
+    container.style.display = '';
+}}
+
 function renderDeadlineTicker() {{
     var ticker = document.getElementById('deadline-ticker');
     if (!ticker) return;
@@ -1383,6 +1436,7 @@ document.addEventListener('DOMContentLoaded', function() {{
     renderFavButtons();
     updateFavCount();
     renderStatusSummary();
+    renderFavDashboard();
     renderRecentViewed();
     renderUrgencyBanner();
     renderNotifications();
