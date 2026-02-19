@@ -683,6 +683,15 @@ def generate():
         <button class="fab-btn" id="fab-btn" onclick="toggleFab()" title="Quick actions">+</button>
     </div>
 
+    <!-- Command Palette -->
+    <div class="cmd-overlay" id="cmd-overlay" style="display:none" onclick="closeCmdPalette()">
+        <div class="cmd-palette" onclick="event.stopPropagation()">
+            <input type="text" class="cmd-input" id="cmd-input" placeholder="Search programs, actions, views..." autocomplete="off">
+            <div class="cmd-results" id="cmd-results"></div>
+            <div class="cmd-footer"><kbd>Enter</kbd> Select &bull; <kbd>Esc</kbd> Close &bull; <kbd>&uarr;&darr;</kbd> Navigate</div>
+        </div>
+    </div>
+
     <script>
 var PROGRAMS = {programs_json};
 // ===== Static site JS (no backend) =====
@@ -1089,11 +1098,17 @@ document.addEventListener('DOMContentLoaded', function() {{
     // Keyboard: / to search, j/k to navigate rows, Enter to open detail
     var selectedRowIdx = -1;
     document.addEventListener('keydown', function(e) {{
+        if ((e.key === 'k' || e.key === 'K') && (e.metaKey || e.ctrlKey)) {{
+            e.preventDefault();
+            toggleCommandPalette();
+            return;
+        }}
         if (e.key === '/' && !isEditing(e.target)) {{
             var si = document.querySelector('.sheet-filters input[type="search"]');
             if (si) {{ e.preventDefault(); si.focus(); si.select(); }}
         }}
         if (e.key === 'Escape') {{
+            closeCmdPalette();
             closeQuickNote();
             document.activeElement.blur();
         }}
@@ -2272,6 +2287,119 @@ function clearSelection() {{
     if (selectAll) selectAll.checked = false;
     updateCompareBtn();
 }}
+
+// Command palette
+var cmdSelectedIdx = 0;
+function toggleCommandPalette() {{
+    var overlay = document.getElementById('cmd-overlay');
+    if (overlay.style.display === 'none') {{
+        overlay.style.display = 'flex';
+        var input = document.getElementById('cmd-input');
+        input.value = '';
+        input.focus();
+        renderCmdResults('');
+    }} else {{
+        closeCmdPalette();
+    }}
+}}
+
+function closeCmdPalette() {{
+    document.getElementById('cmd-overlay').style.display = 'none';
+}}
+
+function renderCmdResults(query) {{
+    var results = [];
+    var q = query.toLowerCase().trim();
+
+    // Actions (always available)
+    var actions = [
+        {{ label: 'Switch to Table View', action: function() {{ showView('table'); }}, icon: '\\u2637' }},
+        {{ label: 'Switch to Cards View', action: function() {{ showView('cards'); }}, icon: '\\u2637' }},
+        {{ label: 'Switch to Pipeline View', action: function() {{ showView('pipeline'); }}, icon: '\\u2637' }},
+        {{ label: 'Switch to Calendar View', action: function() {{ showView('calendar'); }}, icon: '\\u2637' }},
+        {{ label: 'Switch to Stats View', action: function() {{ showView('stats'); }}, icon: '\\u2637' }},
+        {{ label: 'Toggle Dark Mode', action: function() {{ toggleTheme(); }}, icon: '\\u263E' }},
+        {{ label: 'Toggle Focus Mode', action: function() {{ toggleFocusMode(); }}, icon: '\\u25C9' }},
+        {{ label: 'Export CSV', action: function() {{ exportCSV(); }}, icon: '\\u21E9' }},
+        {{ label: 'Copy Summary', action: function() {{ exportSummary(); }}, icon: '\\u270E' }},
+        {{ label: 'Activity Feed', action: function() {{ showActivityFeed(); }}, icon: '\\u2630' }},
+        {{ label: 'Backup Data', action: function() {{ backupData(); }}, icon: '\\u2B07' }},
+        {{ label: 'Smart Sort', action: function() {{ smartSort(); }}, icon: '\\u2B50' }},
+        {{ label: 'Jump to Open Programs', action: function() {{ jumpToOpen(); }}, icon: '\\u2193' }}
+    ];
+
+    // Programs
+    PROGRAMS.forEach(function(p) {{
+        results.push({{ label: p.hospital, desc: p.region + ' — ' + (p.pay_range || 'No pay info'), action: function() {{ showDetail(p.id); }}, icon: '\\u2B24', type: 'program' }});
+    }});
+
+    // Add actions
+    actions.forEach(function(a) {{ a.type = 'action'; results.push(a); }});
+
+    // Filter
+    if (q) {{
+        results = results.filter(function(r) {{ return r.label.toLowerCase().indexOf(q) !== -1 || (r.desc || '').toLowerCase().indexOf(q) !== -1; }});
+    }} else {{
+        // Show top actions first, then programs
+        results = actions.concat(PROGRAMS.slice(0, 10).map(function(p) {{
+            return {{ label: p.hospital, desc: p.region, action: function() {{ showDetail(p.id); }}, icon: '\\u2B24', type: 'program' }};
+        }}));
+    }}
+
+    results = results.slice(0, 15);
+    cmdSelectedIdx = 0;
+
+    var container = document.getElementById('cmd-results');
+    var html = '';
+    results.forEach(function(r, i) {{
+        html += '<div class="cmd-item' + (i === 0 ? ' cmd-active' : '') + '" data-idx="' + i + '" onmousedown="executeCmdItem(' + i + ')" onmouseover="setCmdActive(' + i + ')">';
+        html += '<span class="cmd-icon">' + (r.icon || '') + '</span>';
+        html += '<span class="cmd-label">' + r.label + '</span>';
+        if (r.desc) html += '<span class="cmd-desc">' + r.desc + '</span>';
+        html += '<span class="cmd-type">' + (r.type === 'program' ? 'Program' : 'Action') + '</span>';
+        html += '</div>';
+    }});
+    if (results.length === 0) html = '<div class="cmd-empty">No results found</div>';
+    container.innerHTML = html;
+    window._cmdResults = results;
+}}
+
+function setCmdActive(idx) {{
+    cmdSelectedIdx = idx;
+    document.querySelectorAll('.cmd-item').forEach(function(el, i) {{
+        el.classList.toggle('cmd-active', i === idx);
+    }});
+}}
+
+function executeCmdItem(idx) {{
+    var results = window._cmdResults || [];
+    if (results[idx] && results[idx].action) {{
+        closeCmdPalette();
+        results[idx].action();
+    }}
+}}
+
+// Command palette keyboard nav
+(function() {{
+    var input = document.getElementById('cmd-input');
+    if (!input) return;
+    input.addEventListener('input', function() {{ renderCmdResults(this.value); }});
+    input.addEventListener('keydown', function(e) {{
+        var items = document.querySelectorAll('.cmd-item');
+        if (e.key === 'ArrowDown') {{
+            e.preventDefault();
+            cmdSelectedIdx = Math.min(cmdSelectedIdx + 1, items.length - 1);
+            setCmdActive(cmdSelectedIdx);
+        }} else if (e.key === 'ArrowUp') {{
+            e.preventDefault();
+            cmdSelectedIdx = Math.max(cmdSelectedIdx - 1, 0);
+            setCmdActive(cmdSelectedIdx);
+        }} else if (e.key === 'Enter') {{
+            e.preventDefault();
+            executeCmdItem(cmdSelectedIdx);
+        }}
+    }});
+}})();
 
 function loadPins() {{
     try {{ return JSON.parse(localStorage.getItem('rn_tracker_pins') || '[]'); }} catch(e) {{ return []; }}
