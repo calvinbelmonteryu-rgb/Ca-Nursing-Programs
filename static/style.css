@@ -6091,3 +6091,81 @@ mark.search-highlight {
 #progress-card-container canvas {
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
+
+/* ===== MILESTONE POPUP ===== */
+.milestone-popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    z-index: 10010;
+    background: linear-gradient(135deg, #1e1b4b, #312e81);
+    border: 2px solid #6366f1;
+    border-radius: 20px;
+    padding: 36px 48px;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none;
+    box-shadow: 0 20px 60px rgba(99, 102, 241, 0.4);
+}
+
+.milestone-visible {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.milestone-icon {
+    font-size: 3rem;
+    margin-bottom: 12px;
+}
+
+.milestone-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #e0e7ff;
+    margin-bottom: 8px;
+}
+
+.milestone-msg {
+    font-size: 0.95rem;
+    color: #a5b4fc;
+    max-width: 320px;
+    line-height: 1.4;
+}
+
+/* ===== EMPTY STATES ===== */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    grid-column: 1 / -1;
+}
+
+.empty-icon {
+    font-size: 3rem;
+    margin-bottom: 12px;
+    opacity: 0.5;
+}
+
+.empty-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #6b7280;
+    margin-bottom: 6px;
+}
+
+.empty-msg {
+    font-size: 0.9rem;
+    color: #9ca3af;
+}
+
+[data-theme="dark"] .empty-title { color: #9ca3af; }
+[data-theme="dark"] .empty-msg { color: #6b7280; }
+
+@media (max-width: 640px) {
+    .milestone-popup {
+        width: 90%;
+        padding: 28px 24px;
+    }
+    .milestone-title { font-size: 1.2rem; }
+}

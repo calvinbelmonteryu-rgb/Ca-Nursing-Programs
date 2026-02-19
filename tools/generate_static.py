@@ -823,7 +823,37 @@ function saveStatus(id, status) {{
         if (!history[id]) history[id] = [];
         history[id].push({{ status: status, time: new Date().toISOString() }});
         localStorage.setItem('rn_tracker_status_history', JSON.stringify(history));
+        // Check milestones
+        checkMilestones(all);
     }} catch(e) {{}}
+}}
+
+function checkMilestones(allStatuses) {{
+    var achieved = JSON.parse(localStorage.getItem('rn_tracker_milestones') || '[]');
+    var counts = {{ 'Submitted': 0, 'Interview': 0, 'Offer': 0, 'In Progress': 0 }};
+    Object.keys(allStatuses).forEach(function(id) {{
+        var s = allStatuses[id];
+        if (counts[s] !== undefined) counts[s]++;
+    }});
+    var applied = counts['Submitted'] + counts['Interview'] + counts['Offer'];
+
+    var milestones = [
+        {{ id: 'first_progress', check: counts['In Progress'] >= 1, title: 'Getting Started!', msg: 'You started your first application. Keep the momentum going!' }},
+        {{ id: 'first_submit', check: applied >= 1, title: 'First Submission!', msg: 'Your first application is submitted. Great work!' }},
+        {{ id: 'submit_3', check: applied >= 3, title: 'On a Roll!', msg: '3 applications submitted. You\\'re building a strong pipeline!' }},
+        {{ id: 'submit_5', check: applied >= 5, title: 'High Five!', msg: '5 applications submitted. Excellent progress!' }},
+        {{ id: 'submit_10', check: applied >= 10, title: 'Double Digits!', msg: '10 applications out there. You\\'re a powerhouse!' }},
+        {{ id: 'first_interview', check: counts['Interview'] >= 1, title: 'Interview Time!', msg: 'You got your first interview! Time to shine!' }},
+        {{ id: 'first_offer', check: counts['Offer'] >= 1, title: 'You Got an Offer!', msg: 'Congratulations on your first offer! All that hard work paid off!' }}
+    ];
+
+    milestones.forEach(function(m) {{
+        if (m.check && achieved.indexOf(m.id) === -1) {{
+            achieved.push(m.id);
+            localStorage.setItem('rn_tracker_milestones', JSON.stringify(achieved));
+            showMilestone(m.title, m.msg);
+        }}
+    }});
 }}
 
 function getStatusHistory(id) {{
@@ -3228,6 +3258,7 @@ function backupData() {{
         recentSearches: JSON.parse(localStorage.getItem('rn_tracker_recent_searches') || '[]'),
         pins: JSON.parse(localStorage.getItem('rn_tracker_pins') || '[]'),
         statusHistory: JSON.parse(localStorage.getItem('rn_tracker_status_history') || '{{}}'),
+        milestones: JSON.parse(localStorage.getItem('rn_tracker_milestones') || '[]'),
         exported: new Date().toISOString()
     }};
     var blob = new Blob([JSON.stringify(data, null, 2)], {{type: 'application/json'}});
@@ -3259,6 +3290,7 @@ function restoreData(input) {{
             if (data.recentSearches) localStorage.setItem('rn_tracker_recent_searches', JSON.stringify(data.recentSearches));
             if (data.pins) localStorage.setItem('rn_tracker_pins', JSON.stringify(data.pins));
             if (data.statusHistory) localStorage.setItem('rn_tracker_status_history', JSON.stringify(data.statusHistory));
+            if (data.milestones) localStorage.setItem('rn_tracker_milestones', JSON.stringify(data.milestones));
             showToast('Data restored! Reloading...');
             setTimeout(function() {{ window.location.reload(); }}, 1000);
         }} catch(ex) {{
@@ -4261,6 +4293,9 @@ function renderCards() {{
         html += '</div>';
     }});
 
+    if (progs.length === 0) {{
+        html = '<div class="empty-state"><div class="empty-icon">&#128269;</div><div class="empty-title">No programs match</div><div class="empty-msg">Try adjusting your search or filters</div></div>';
+    }}
     grid.innerHTML = html;
 }}
 
@@ -5045,6 +5080,20 @@ function closeModal() {{
     if (window.location.hash.startsWith('#program-')) {{
         history.replaceState(null, '', window.location.pathname + window.location.search);
     }}
+}}
+
+function showMilestone(title, msg) {{
+    launchConfetti();
+    var el = document.createElement('div');
+    el.className = 'milestone-popup';
+    el.innerHTML = '<div class="milestone-icon">&#127942;</div><div class="milestone-title">' + title + '</div><div class="milestone-msg">' + msg + '</div>';
+    document.body.appendChild(el);
+    requestAnimationFrame(function() {{ el.classList.add('milestone-visible'); }});
+    setTimeout(function() {{
+        el.classList.remove('milestone-visible');
+        setTimeout(function() {{ el.remove(); }}, 400);
+    }}, 4000);
+    announce('Milestone achieved: ' + title);
 }}
 
 function launchConfetti() {{
