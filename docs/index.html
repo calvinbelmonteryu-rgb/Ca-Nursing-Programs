@@ -4991,6 +4991,104 @@ mark.search-highlight {
     font-size: 1rem !important;
 }
 
+/* ===== NOTE TEMPLATES ===== */
+.note-templates {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 6px;
+}
+
+.note-tpl-btn {
+    font-size: 0.65rem;
+    padding: 2px 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    background: #f9fafb;
+    color: #4b5563;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.note-tpl-btn:hover {
+    background: var(--accent, #2563eb);
+    color: #fff;
+    border-color: var(--accent, #2563eb);
+}
+
+[data-theme="dark"] .note-tpl-btn {
+    background: #1f2937;
+    border-color: #374151;
+    color: #9ca3af;
+}
+
+[data-theme="dark"] .note-tpl-btn:hover {
+    background: var(--accent, #3b82f6);
+    color: #fff;
+    border-color: var(--accent, #3b82f6);
+}
+
+/* ===== MINI TIMELINE IN DETAIL MODAL ===== */
+.mini-timeline {
+    margin: 12px 0 16px;
+}
+
+.mini-tl-track {
+    position: relative;
+    height: 32px;
+    background: #f3f4f6;
+    border-radius: 4px;
+    border: 1px solid #e5e7eb;
+    overflow: visible;
+}
+
+.mini-tl-month {
+    position: absolute;
+    top: 0;
+    font-size: 0.55rem;
+    color: #9ca3af;
+    transform: translateX(-50%);
+    padding-top: 1px;
+}
+
+.mini-tl-today {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #ef4444;
+    z-index: 3;
+}
+
+.mini-tl-bar {
+    position: absolute;
+    top: 14px;
+    height: 12px;
+    background: var(--accent, #3b82f6);
+    border-radius: 3px;
+    opacity: 0.8;
+    z-index: 2;
+}
+
+.mini-tl-cohort {
+    position: absolute;
+    top: 12px;
+    width: 3px;
+    height: 16px;
+    background: #22c55e;
+    border-radius: 2px;
+    z-index: 2;
+}
+
+[data-theme="dark"] .mini-tl-track {
+    background: #1e293b;
+    border-color: #374151;
+}
+
+[data-theme="dark"] .mini-tl-month {
+    color: #6b7280;
+}
+
 /* ===== SESSION BANNER ===== */
 .session-banner {
     background: linear-gradient(135deg, #dbeafe, #ede9fe);
@@ -8743,6 +8841,15 @@ function saveQuickNote(id) {
     showToast('Note saved');
 }
 
+function insertNoteTemplate(text) {
+    var ta = document.getElementById('modal-notes');
+    if (!ta) return;
+    var current = ta.value.trim();
+    ta.value = current ? current + '\n' + text : text;
+    ta.dispatchEvent(new Event('input'));
+    ta.focus();
+}
+
 function closeQuickNote() {
     var popover = document.querySelector('.qnote-popover');
     if (popover) popover.remove();
@@ -10143,6 +10250,36 @@ function showDetail(id) {
 
     html += '</div>';
 
+    // Mini timeline bar
+    var tlStart = new Date(2026, 1, 1);
+    var tlEnd = new Date(2027, 0, 31);
+    var tlTotal = tlEnd - tlStart;
+    function tlPct(d) { return Math.max(0, Math.min(100, ((d - tlStart) / tlTotal) * 100)); }
+    html += '<div class="mini-timeline"><div class="mini-tl-track">';
+    // Month markers
+    var tlMonths = ['F','M','A','M','J','J','A','S','O','N','D','J'];
+    for (var mi = 0; mi < 12; mi++) {
+        var mDate = new Date(2026, mi + 1, 1);
+        html += '<span class="mini-tl-month" style="left:' + tlPct(mDate) + '%">' + tlMonths[mi] + '</span>';
+    }
+    // Today marker
+    var todayPct = tlPct(today);
+    html += '<div class="mini-tl-today" style="left:' + todayPct + '%"></div>';
+    // App window bar
+    var oD = parseDate(p.app_open_date);
+    var cD = parseDate(p.app_close_date);
+    if (oD && cD) {
+        var barL = tlPct(oD);
+        var barW = Math.max(tlPct(cD) - barL, 1);
+        html += '<div class="mini-tl-bar" style="left:' + barL + '%;width:' + barW + '%" title="App window"></div>';
+    }
+    // Cohort marker
+    var coD = parseDate(p.cohort_start);
+    if (coD) {
+        html += '<div class="mini-tl-cohort" style="left:' + tlPct(coD) + '%" title="Cohort start"></div>';
+    }
+    html += '</div></div>';
+
     html += '<div class="detail-section"><h3>Specialties</h3><p>' + escHtml(specs) + '</p></div>';
     html += '<div class="detail-section"><h3>Requirements</h3><p>' + escHtml(p.requirements || 'N/A').replace(/\n/g, '<br>') + '</p></div>';
 
@@ -10154,6 +10291,12 @@ function showDetail(id) {
     var savedNotes = loadSavedNotes();
     var currentNotes = savedNotes[p.id] !== undefined ? savedNotes[p.id] : (p.personal_notes || '');
     html += '<div class="detail-section"><h3>Your Notes</h3>';
+    html += '<div class="note-templates">';
+    var noteTemplates = ['Need references', 'Resume updated', 'Cover letter drafted', 'Waiting for response', 'Interview scheduled', 'Strong match', 'Backup option'];
+    noteTemplates.forEach(function(t) {
+        html += '<button class="note-tpl-btn" onclick="insertNoteTemplate('' + t + '')">' + t + '</button>';
+    });
+    html += '</div>';
     html += '<textarea id="modal-notes" class="modal-notes-input" rows="4" placeholder="Add your notes here...">' + escHtml(currentNotes) + '</textarea>';
     html += '<small class="notes-hint">Notes are saved to your browser automatically.</small>';
     html += '</div>';

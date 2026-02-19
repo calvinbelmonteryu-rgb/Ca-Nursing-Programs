@@ -2118,6 +2118,15 @@ function saveQuickNote(id) {{
     showToast('Note saved');
 }}
 
+function insertNoteTemplate(text) {{
+    var ta = document.getElementById('modal-notes');
+    if (!ta) return;
+    var current = ta.value.trim();
+    ta.value = current ? current + '\\n' + text : text;
+    ta.dispatchEvent(new Event('input'));
+    ta.focus();
+}}
+
 function closeQuickNote() {{
     var popover = document.querySelector('.qnote-popover');
     if (popover) popover.remove();
@@ -3518,6 +3527,36 @@ function showDetail(id) {{
 
     html += '</div>';
 
+    // Mini timeline bar
+    var tlStart = new Date(2026, 1, 1);
+    var tlEnd = new Date(2027, 0, 31);
+    var tlTotal = tlEnd - tlStart;
+    function tlPct(d) {{ return Math.max(0, Math.min(100, ((d - tlStart) / tlTotal) * 100)); }}
+    html += '<div class="mini-timeline"><div class="mini-tl-track">';
+    // Month markers
+    var tlMonths = ['F','M','A','M','J','J','A','S','O','N','D','J'];
+    for (var mi = 0; mi < 12; mi++) {{
+        var mDate = new Date(2026, mi + 1, 1);
+        html += '<span class="mini-tl-month" style="left:' + tlPct(mDate) + '%">' + tlMonths[mi] + '</span>';
+    }}
+    // Today marker
+    var todayPct = tlPct(today);
+    html += '<div class="mini-tl-today" style="left:' + todayPct + '%"></div>';
+    // App window bar
+    var oD = parseDate(p.app_open_date);
+    var cD = parseDate(p.app_close_date);
+    if (oD && cD) {{
+        var barL = tlPct(oD);
+        var barW = Math.max(tlPct(cD) - barL, 1);
+        html += '<div class="mini-tl-bar" style="left:' + barL + '%;width:' + barW + '%" title="App window"></div>';
+    }}
+    // Cohort marker
+    var coD = parseDate(p.cohort_start);
+    if (coD) {{
+        html += '<div class="mini-tl-cohort" style="left:' + tlPct(coD) + '%" title="Cohort start"></div>';
+    }}
+    html += '</div></div>';
+
     html += '<div class="detail-section"><h3>Specialties</h3><p>' + escHtml(specs) + '</p></div>';
     html += '<div class="detail-section"><h3>Requirements</h3><p>' + escHtml(p.requirements || 'N/A').replace(/\\n/g, '<br>') + '</p></div>';
 
@@ -3529,6 +3568,12 @@ function showDetail(id) {{
     var savedNotes = loadSavedNotes();
     var currentNotes = savedNotes[p.id] !== undefined ? savedNotes[p.id] : (p.personal_notes || '');
     html += '<div class="detail-section"><h3>Your Notes</h3>';
+    html += '<div class="note-templates">';
+    var noteTemplates = ['Need references', 'Resume updated', 'Cover letter drafted', 'Waiting for response', 'Interview scheduled', 'Strong match', 'Backup option'];
+    noteTemplates.forEach(function(t) {{
+        html += '<button class="note-tpl-btn" onclick="insertNoteTemplate(\'' + t + '\')">' + t + '</button>';
+    }});
+    html += '</div>';
     html += '<textarea id="modal-notes" class="modal-notes-input" rows="4" placeholder="Add your notes here...">' + escHtml(currentNotes) + '</textarea>';
     html += '<small class="notes-hint">Notes are saved to your browser automatically.</small>';
     html += '</div>';
