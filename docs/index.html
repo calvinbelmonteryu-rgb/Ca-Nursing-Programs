@@ -2518,6 +2518,20 @@ footer small {
     color: #9ca3af;
     margin-left: auto;
 }
+.data-freshness {
+    font-size: 0.65rem;
+    padding: 1px 6px;
+    border-radius: 8px;
+    font-weight: 600;
+    margin-left: auto;
+    cursor: help;
+}
+.fresh-green { background: #dcfce7; color: #166534; }
+.fresh-amber { background: #fef3c7; color: #92400e; }
+.fresh-red { background: #fee2e2; color: #991b1b; }
+[data-theme="dark"] .fresh-green { background: #064e3b; color: #6ee7b7; }
+[data-theme="dark"] .fresh-amber { background: #78350f; color: #fcd34d; }
+[data-theme="dark"] .fresh-red { background: #7f1d1d; color: #fca5a5; }
 
 .detail-grid {
     display: grid;
@@ -12944,7 +12958,18 @@ function showDetail(id) {
         }
     }
     if (p.last_updated) {
-        html += ' <span class="detail-updated">Updated: ' + escHtml(p.last_updated) + '</span>';
+        var updParts = p.last_updated.split('-');
+        if (updParts.length === 3) {
+            var updDate = new Date(parseInt(updParts[0]), parseInt(updParts[1]) - 1, parseInt(updParts[2]));
+            var ageDays = Math.floor((new Date() - updDate) / 86400000);
+            var freshCls = ageDays <= 7 ? 'fresh-green' : ageDays <= 30 ? 'fresh-amber' : 'fresh-red';
+            var freshLabel = ageDays === 0 ? 'today' : ageDays === 1 ? 'yesterday' : ageDays + 'd ago';
+            html += ' <span class="data-freshness ' + freshCls + '" title="Data last verified ' + escHtml(p.last_updated) + '">' + freshLabel + '</span>';
+        } else {
+            html += ' <span class="detail-updated">Updated: ' + escHtml(p.last_updated) + '</span>';
+        }
+    } else {
+        html += ' <span class="data-freshness fresh-red" title="No update date recorded">no date</span>';
     }
     html += '</div>';
     html += '</div>';

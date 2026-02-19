@@ -2502,6 +2502,20 @@ footer small {
     color: #9ca3af;
     margin-left: auto;
 }
+.data-freshness {
+    font-size: 0.65rem;
+    padding: 1px 6px;
+    border-radius: 8px;
+    font-weight: 600;
+    margin-left: auto;
+    cursor: help;
+}
+.fresh-green { background: #dcfce7; color: #166534; }
+.fresh-amber { background: #fef3c7; color: #92400e; }
+.fresh-red { background: #fee2e2; color: #991b1b; }
+[data-theme="dark"] .fresh-green { background: #064e3b; color: #6ee7b7; }
+[data-theme="dark"] .fresh-amber { background: #78350f; color: #fcd34d; }
+[data-theme="dark"] .fresh-red { background: #7f1d1d; color: #fca5a5; }
 
 .detail-grid {
     display: grid;

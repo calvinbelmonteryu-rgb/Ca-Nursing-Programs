@@ -4383,7 +4383,18 @@ function showDetail(id) {{
         }}
     }}
     if (p.last_updated) {{
-        html += ' <span class="detail-updated">Updated: ' + escHtml(p.last_updated) + '</span>';
+        var updParts = p.last_updated.split('-');
+        if (updParts.length === 3) {{
+            var updDate = new Date(parseInt(updParts[0]), parseInt(updParts[1]) - 1, parseInt(updParts[2]));
+            var ageDays = Math.floor((new Date() - updDate) / 86400000);
+            var freshCls = ageDays <= 7 ? 'fresh-green' : ageDays <= 30 ? 'fresh-amber' : 'fresh-red';
+            var freshLabel = ageDays === 0 ? 'today' : ageDays === 1 ? 'yesterday' : ageDays + 'd ago';
+            html += ' <span class="data-freshness ' + freshCls + '" title="Data last verified ' + escHtml(p.last_updated) + '">' + freshLabel + '</span>';
+        }} else {{
+            html += ' <span class="detail-updated">Updated: ' + escHtml(p.last_updated) + '</span>';
+        }}
+    }} else {{
+        html += ' <span class="data-freshness fresh-red" title="No update date recorded">no date</span>';
     }}
     html += '</div>';
     html += '</div>';
