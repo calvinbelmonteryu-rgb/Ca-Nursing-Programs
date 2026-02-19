@@ -651,6 +651,17 @@ def generate():
 
     <button class="back-to-top" id="back-to-top" onclick="window.scrollTo({{top:0,behavior:'smooth'}})" title="Back to top">&uarr;</button>
 
+    <!-- Floating Action Button -->
+    <div class="fab-wrap" id="fab-wrap">
+        <div class="fab-options" id="fab-options">
+            <button class="fab-option" onclick="jumpToOpen(); closeFab();" title="Jump to open"><span class="fab-icon">&darr;</span> Open Apps</button>
+            <button class="fab-option" onclick="toggleFocusMode(); closeFab();" title="Focus mode"><span class="fab-icon">&#9673;</span> Focus</button>
+            <button class="fab-option" onclick="showActivityFeed(); closeFab();" title="Activity feed"><span class="fab-icon">&#9776;</span> Activity</button>
+            <button class="fab-option" onclick="exportSummary(); closeFab();" title="Copy summary"><span class="fab-icon">&#9998;</span> Summary</button>
+        </div>
+        <button class="fab-btn" id="fab-btn" onclick="toggleFab()" title="Quick actions">+</button>
+    </div>
+
     <script>
 var PROGRAMS = {programs_json};
 // ===== Static site JS (no backend) =====
@@ -1056,6 +1067,7 @@ document.addEventListener('DOMContentLoaded', function() {{
     renderUrgencyBanner();
     renderNotifications();
     renderSavedFilters();
+    initRowPreview();
 
     // Close popups on outside click
     document.addEventListener('click', function(e) {{
@@ -1070,6 +1082,10 @@ document.addEventListener('DOMContentLoaded', function() {{
         var ap = document.getElementById('accent-palette');
         if (ap && ap.classList.contains('visible') && !e.target.closest('.accent-picker-wrap')) {{
             ap.classList.remove('visible');
+        }}
+        var fab = document.getElementById('fab-wrap');
+        if (fab && fab.classList.contains('open') && !e.target.closest('.fab-wrap')) {{
+            fab.classList.remove('open');
         }}
     }});
 
@@ -1673,8 +1689,40 @@ function highlightDeadlines() {{
                 var closeDate2 = parseDate(closeRaw);
                 if (openDate && closeDate2 && openDate <= today && closeDate2 >= today) {{
                     openCell.innerHTML = openDisplay + ' <span class="badge-open">OPEN</span>';
+                }} else if (openDate) {{
+                    var daysToOpen = Math.ceil((openDate - today) / (1000 * 60 * 60 * 24));
+                    if (daysToOpen > 0 && daysToOpen <= 7) {{
+                        openCell.innerHTML = openDisplay + ' <span class="countdown-badge" data-target="' + openRaw + '"></span>';
+                    }}
                 }}
             }}
+        }}
+    }});
+    // Start live countdown timers
+    updateCountdowns();
+    setInterval(updateCountdowns, 60000);
+}}
+
+function updateCountdowns() {{
+    document.querySelectorAll('.countdown-badge').forEach(function(badge) {{
+        var target = badge.dataset.target;
+        if (!target) return;
+        var d = parseDate(target);
+        if (!d) return;
+        var now = new Date();
+        var diff = d.getTime() - now.getTime();
+        if (diff <= 0) {{
+            badge.textContent = 'NOW';
+            badge.className = 'badge-open';
+            return;
+        }}
+        var days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        var hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        var mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        if (days > 0) {{
+            badge.textContent = days + 'd ' + hours + 'h';
+        }} else {{
+            badge.textContent = hours + 'h ' + mins + 'm';
         }}
     }});
 }}
@@ -1753,6 +1801,61 @@ function markNotesIndicators() {{
                 hospCell.appendChild(dot);
             }}
         }}
+    }});
+}}
+
+// Row hover preview
+var hoverTimer = null;
+var hoverCard = null;
+
+function showRowPreview(row, e) {{
+    hideRowPreview();
+    var id = parseInt(row.dataset.id);
+    var prog = window.PROGRAMS.find(function(p) {{ return p.id === id; }});
+    if (!prog) return;
+
+    var st = (loadSavedStatuses()[id] || prog.application_status || 'Not Started');
+    var stars = '';
+    for (var i = 0; i < 5; i++) stars += i < (prog.reputation || 0) ? '\\u2605' : '\\u2606';
+    var notes = loadSavedNotes()[id] || '';
+
+    var card = document.createElement('div');
+    card.className = 'row-preview-card';
+    card.innerHTML = '<div class="rpc-header"><strong>' + prog.hospital + '</strong><span class="rpc-status rpc-status-' + st.toLowerCase().replace(/\\s+/g, '-') + '">' + st + '</span></div>' +
+        '<div class="rpc-body">' +
+        '<div class="rpc-row"><span class="rpc-label">Rep</span><span class="rpc-stars">' + stars + '</span></div>' +
+        (prog.pay_range ? '<div class="rpc-row"><span class="rpc-label">Pay</span><span>' + prog.pay_range + '</span></div>' : '') +
+        (prog.app_open_date ? '<div class="rpc-row"><span class="rpc-label">Opens</span><span>' + prog.app_open_date + '</span></div>' : '') +
+        (prog.app_close_date ? '<div class="rpc-row"><span class="rpc-label">Closes</span><span>' + prog.app_close_date + '</span></div>' : '') +
+        (prog.cohort_start ? '<div class="rpc-row"><span class="rpc-label">Cohort</span><span>' + prog.cohort_start + '</span></div>' : '') +
+        (notes ? '<div class="rpc-notes">' + notes.substring(0, 100) + (notes.length > 100 ? '...' : '') + '</div>' : '') +
+        '</div>';
+
+    var rect = row.getBoundingClientRect();
+    card.style.top = (rect.bottom + window.scrollY + 4) + 'px';
+    card.style.left = Math.max(8, rect.left + window.scrollX + 56) + 'px';
+    document.body.appendChild(card);
+    hoverCard = card;
+    requestAnimationFrame(function() {{ card.classList.add('visible'); }});
+}}
+
+function hideRowPreview() {{
+    if (hoverTimer) {{ clearTimeout(hoverTimer); hoverTimer = null; }}
+    if (hoverCard) {{ hoverCard.remove(); hoverCard = null; }}
+}}
+
+function initRowPreview() {{
+    var tbody = document.querySelector('.sheet tbody');
+    if (!tbody) return;
+    tbody.addEventListener('mouseover', function(e) {{
+        var row = e.target.closest('tr');
+        if (!row || row === hoverCard) return;
+        hideRowPreview();
+        hoverTimer = setTimeout(function() {{ showRowPreview(row, e); }}, 600);
+    }});
+    tbody.addEventListener('mouseout', function(e) {{
+        var row = e.target.closest('tr');
+        if (row) hideRowPreview();
     }});
 }}
 
@@ -1957,6 +2060,15 @@ function clearSelection() {{
     var selectAll = document.getElementById('select-all');
     if (selectAll) selectAll.checked = false;
     updateCompareBtn();
+}}
+
+function toggleFab() {{
+    var wrap = document.getElementById('fab-wrap');
+    wrap.classList.toggle('open');
+}}
+
+function closeFab() {{
+    document.getElementById('fab-wrap').classList.remove('open');
 }}
 
 function goCompare() {{
