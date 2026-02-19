@@ -328,6 +328,7 @@ def generate():
     </style>
 </head>
 <body>
+    <div class="reading-progress" id="reading-progress"></div>
     <a href="#main-table" class="skip-link">Skip to programs table</a>
     <div id="live-region" class="live-region" aria-live="polite" aria-atomic="true"></div>
     <nav class="container-fluid" role="navigation" aria-label="Main navigation">
@@ -1340,6 +1341,12 @@ document.addEventListener('DOMContentLoaded', function() {{
             }} else {{
                 thead.classList.remove('stuck');
             }}
+        }}
+        // Reading progress bar
+        var rpBar = document.getElementById('reading-progress');
+        if (rpBar) {{
+            var scrollPctRP = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+            rpBar.style.width = Math.min(scrollPctRP, 100) + '%';
         }}
         // Scroll progress ring
         var ringFill = document.getElementById('scroll-ring-fill');
@@ -3249,26 +3256,41 @@ function restoreData(input) {{
 function toggleTheme() {{
     var html = document.documentElement;
     var btn = document.getElementById('theme-toggle');
-    if (html.dataset.theme === 'dark') {{
-        html.dataset.theme = 'light';
-        btn.textContent = 'Dark';
-        localStorage.setItem('rn_tracker_theme', 'light');
-    }} else {{
-        html.dataset.theme = 'dark';
-        btn.textContent = 'Light';
-        localStorage.setItem('rn_tracker_theme', 'dark');
+    var current = localStorage.getItem('rn_tracker_theme') || 'light';
+    var next;
+    if (current === 'light') {{ next = 'dark'; }}
+    else if (current === 'dark') {{ next = 'auto'; }}
+    else {{ next = 'light'; }}
+    localStorage.setItem('rn_tracker_theme', next);
+    applyTheme(next);
+}}
+
+function applyTheme(theme) {{
+    var html = document.documentElement;
+    var btn = document.getElementById('theme-toggle');
+    var resolved = theme;
+    if (theme === 'auto') {{
+        resolved = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }}
+    html.dataset.theme = resolved;
+    if (btn) {{
+        if (theme === 'light') btn.textContent = 'Dark';
+        else if (theme === 'dark') btn.textContent = 'Auto';
+        else btn.textContent = 'Light';
     }}
 }}
 
 // Restore theme preference
 (function() {{
     try {{
-        var theme = localStorage.getItem('rn_tracker_theme');
-        if (theme === 'dark') {{
-            document.documentElement.dataset.theme = 'dark';
-            var btn = document.getElementById('theme-toggle');
-            if (btn) btn.textContent = 'Light';
-        }}
+        var theme = localStorage.getItem('rn_tracker_theme') || 'light';
+        applyTheme(theme);
+        // Listen for system preference changes in auto mode
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function() {{
+            if (localStorage.getItem('rn_tracker_theme') === 'auto') {{
+                applyTheme('auto');
+            }}
+        }});
     }} catch(ex) {{}}
 }})();
 

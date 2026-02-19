@@ -10,6 +10,19 @@ html {
     scroll-behavior: smooth;
 }
 
+/* ===== READING PROGRESS ===== */
+.reading-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    width: 0;
+    background: var(--accent, #2563eb);
+    z-index: 10001;
+    transition: width 0.05s;
+    pointer-events: none;
+}
+
 /* ===== ACCESSIBILITY ===== */
 /* Screen reader only */
 .sr-only {
