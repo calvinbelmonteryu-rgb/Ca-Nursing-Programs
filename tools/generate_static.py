@@ -1900,6 +1900,8 @@ function showSearchSuggestions(query) {{
     if (!sg) return;
     if (!query || query.length < 1) {{ sg.style.display = 'none'; return; }}
     var q = query.toLowerCase();
+    var savedStatuses = loadSavedStatuses();
+    var today = new Date(); today.setHours(0,0,0,0);
     var matches = PROGRAMS.filter(function(p) {{
         return p.hospital.toLowerCase().indexOf(q) !== -1 ||
                (p.program_name || '').toLowerCase().indexOf(q) !== -1 ||
@@ -1908,8 +1910,23 @@ function showSearchSuggestions(query) {{
     if (matches.length === 0) {{ sg.style.display = 'none'; return; }}
     var html = '';
     matches.forEach(function(p) {{
-        html += '<div class="suggest-item" onmousedown="selectSuggestion(\'' + p.hospital.replace(/'/g, "\\\\'") + '\')">';
-        html += '<strong>' + p.hospital + '</strong> <span class="suggest-region">' + p.region + '</span>';
+        var st = savedStatuses[p.id] || p.application_status || 'Not Started';
+        var stCls = st.toLowerCase().replace(/\\s+/g, '-');
+        var openD = parseDate(p.app_open_date);
+        var closeD = parseDate(p.app_close_date);
+        var badge = '';
+        if (openD && closeD && openD <= today && closeD >= today) {{
+            badge = '<span class="suggest-badge suggest-badge-open">OPEN</span>';
+        }} else if (closeD && closeD < today) {{
+            badge = '<span class="suggest-badge suggest-badge-closed">closed</span>';
+        }}
+        var stars = '\u2605'.repeat(p.reputation) + '\u2606'.repeat(5 - p.reputation);
+        html += '<div class="suggest-item" onmousedown="showDetail(' + p.id + ')">';
+        html += '<div class="suggest-main"><strong>' + escHtml(p.hospital) + '</strong> ' + badge + '</div>';
+        html += '<div class="suggest-meta"><span class="suggest-st suggest-st-' + stCls + '">' + st + '</span>';
+        html += ' <span class="suggest-region">' + escHtml(p.region) + '</span>';
+        html += ' <span class="suggest-stars">' + stars + '</span>';
+        html += '</div>';
         html += '</div>';
     }});
     sg.innerHTML = html;

@@ -448,18 +448,50 @@ nav a.active {
     letter-spacing: 0.5px;
 }
 .suggest-item {
-    padding: 6px 10px;
+    padding: 8px 12px;
     cursor: pointer;
     font-size: 0.78rem;
     transition: background 0.1s;
+    border-bottom: 1px solid #f3f4f6;
 }
+.suggest-item:last-child { border-bottom: none; }
 .suggest-item:hover { background: #f3f4f6; }
 .suggest-item strong { font-weight: 600; }
-.suggest-region { color: #9ca3af; font-size: 0.68rem; margin-left: 6px; }
+.suggest-main { display: flex; align-items: center; gap: 6px; }
+.suggest-meta { display: flex; align-items: center; gap: 6px; margin-top: 2px; }
+.suggest-region { color: #9ca3af; font-size: 0.68rem; }
+.suggest-stars { font-size: 0.6rem; color: #d97706; }
+.suggest-st {
+    font-size: 0.62rem;
+    font-weight: 600;
+    padding: 1px 5px;
+    border-radius: 3px;
+}
+.suggest-st-not-started { background: #f3f4f6; color: #6b7280; }
+.suggest-st-in-progress { background: #fef3c7; color: #92400e; }
+.suggest-st-submitted { background: #dcfce7; color: #166534; }
+.suggest-st-interview { background: #ede9fe; color: #5b21b6; }
+.suggest-st-offer { background: #fef9c3; color: #854d0e; }
+.suggest-st-rejected { background: #fef2f2; color: #991b1b; }
+.suggest-badge {
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 1px 4px;
+    border-radius: 3px;
+}
+.suggest-badge-open { background: #dcfce7; color: #166534; }
+.suggest-badge-closed { background: #f3f4f6; color: #9ca3af; }
 .suggest-recent { color: #6b7280; }
 [data-theme="dark"] .search-suggest { background: #1e293b; border-color: #334155; }
+[data-theme="dark"] .suggest-item { border-bottom-color: #334155; }
 [data-theme="dark"] .suggest-item:hover { background: #334155; }
 [data-theme="dark"] .suggest-region { color: #64748b; }
+[data-theme="dark"] .suggest-st-not-started { background: #374151; color: #9ca3af; }
+[data-theme="dark"] .suggest-st-in-progress { background: #451a03; color: #fbbf24; }
+[data-theme="dark"] .suggest-st-submitted { background: #052e16; color: #4ade80; }
+[data-theme="dark"] .suggest-st-interview { background: #2e1065; color: #a78bfa; }
+[data-theme="dark"] .suggest-badge-open { background: #052e16; color: #4ade80; }
+[data-theme="dark"] .suggest-badge-closed { background: #374151; color: #6b7280; }
 
 .sheet-filters input[type="search"],
 .sheet-filters select {
@@ -9409,6 +9441,8 @@ function showSearchSuggestions(query) {
     if (!sg) return;
     if (!query || query.length < 1) { sg.style.display = 'none'; return; }
     var q = query.toLowerCase();
+    var savedStatuses = loadSavedStatuses();
+    var today = new Date(); today.setHours(0,0,0,0);
     var matches = PROGRAMS.filter(function(p) {
         return p.hospital.toLowerCase().indexOf(q) !== -1 ||
                (p.program_name || '').toLowerCase().indexOf(q) !== -1 ||
@@ -9417,8 +9451,23 @@ function showSearchSuggestions(query) {
     if (matches.length === 0) { sg.style.display = 'none'; return; }
     var html = '';
     matches.forEach(function(p) {
-        html += '<div class="suggest-item" onmousedown="selectSuggestion('' + p.hospital.replace(/'/g, "\\'") + '')">';
-        html += '<strong>' + p.hospital + '</strong> <span class="suggest-region">' + p.region + '</span>';
+        var st = savedStatuses[p.id] || p.application_status || 'Not Started';
+        var stCls = st.toLowerCase().replace(/\s+/g, '-');
+        var openD = parseDate(p.app_open_date);
+        var closeD = parseDate(p.app_close_date);
+        var badge = '';
+        if (openD && closeD && openD <= today && closeD >= today) {
+            badge = '<span class="suggest-badge suggest-badge-open">OPEN</span>';
+        } else if (closeD && closeD < today) {
+            badge = '<span class="suggest-badge suggest-badge-closed">closed</span>';
+        }
+        var stars = '★'.repeat(p.reputation) + '☆'.repeat(5 - p.reputation);
+        html += '<div class="suggest-item" onmousedown="showDetail(' + p.id + ')">';
+        html += '<div class="suggest-main"><strong>' + escHtml(p.hospital) + '</strong> ' + badge + '</div>';
+        html += '<div class="suggest-meta"><span class="suggest-st suggest-st-' + stCls + '">' + st + '</span>';
+        html += ' <span class="suggest-region">' + escHtml(p.region) + '</span>';
+        html += ' <span class="suggest-stars">' + stars + '</span>';
+        html += '</div>';
         html += '</div>';
     });
     sg.innerHTML = html;
