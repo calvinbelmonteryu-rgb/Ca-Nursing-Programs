@@ -30,38 +30,6 @@ nav a.active {
     font-weight: 600;
 }
 
-/* ===== STATS BAR ===== */
-.stats-bar {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 12px;
-    background: #1e293b;
-    color: #e2e8f0;
-    font-size: 0.8rem;
-    flex-wrap: wrap;
-}
-
-.stats-bar strong {
-    color: white;
-}
-
-.stats-sep {
-    color: #475569;
-}
-
-.stat-highlight-green strong {
-    color: #4ade80;
-}
-
-.stat-highlight-red {
-    color: #fca5a5;
-}
-
-.stat-highlight-red strong {
-    color: #f87171;
-}
-
 .filter-spacer {
     flex: 1;
 }
@@ -1163,6 +1131,14 @@ footer small {
     align-items: center;
     justify-content: center;
     padding: 20px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+}
+
+.modal-overlay.modal-visible {
+    opacity: 1;
+    pointer-events: auto;
 }
 
 .modal-content {
@@ -1175,6 +1151,12 @@ footer small {
     padding: 24px;
     position: relative;
     box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    transform: translateY(10px) scale(0.98);
+    transition: transform 0.2s ease;
+}
+
+.modal-visible .modal-content {
+    transform: translateY(0) scale(1);
 }
 
 .modal-wide {
@@ -1533,9 +1515,43 @@ footer small {
     background: #fef2f2 !important;
 }
 
+/* ===== BACK TO TOP ===== */
+.back-to-top {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #1e293b;
+    color: white;
+    border: none;
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.3s, transform 0.3s, background 0.15s;
+    pointer-events: none;
+    z-index: 50;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.back-to-top.visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.back-to-top:hover {
+    background: #3b82f6;
+}
+
 /* ===== PRINT STYLES ===== */
 @media print {
-    nav, .sheet-toolbar, .col-check, .col-apply, footer, .modal-overlay, .toast {
+    nav, .sheet-toolbar, .col-check, .col-apply, footer, .modal-overlay, .toast, .back-to-top, .quick-chips {
         display: none !important;
     }
 

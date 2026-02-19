@@ -295,10 +295,10 @@ def generate():
         </div>
 
         <div class="quick-chips">
-            <button class="chip chip-green" onclick="filterOpen()">Open Now <span class="chip-count">{open_now}</span></button>
-            <button class="chip chip-amber" onclick="filterUpcoming()">Upcoming <span class="chip-count">{upcoming}</span></button>
-            <button class="chip" onclick="filterBsn('No')">ADN OK</button>
-            <button class="chip" onclick="filterBsn('Preferred')">BSN Preferred</button>
+            <button class="chip chip-green" onclick="filterOpen(this)">Open Now <span class="chip-count">{open_now}</span></button>
+            <button class="chip chip-amber" onclick="filterUpcoming(this)">Upcoming <span class="chip-count">{upcoming}</span></button>
+            <button class="chip" onclick="filterBsn('No', this)">ADN OK</button>
+            <button class="chip" onclick="filterBsn('Preferred', this)">BSN Preferred</button>
         </div>
 
         <div class="sheet-wrapper">
@@ -350,6 +350,8 @@ def generate():
         <small>CA New Grad RN Program Tracker &bull; Updated {today.strftime("%b %d, %Y")}</small>
         <small class="shortcuts-hint"><kbd>/</kbd> Search &bull; <kbd>j</kbd><kbd>k</kbd> Navigate &bull; <kbd>Enter</kbd> Details &bull; <kbd>Esc</kbd> Close</small>
     </footer>
+
+    <button class="back-to-top" id="back-to-top" onclick="window.scrollTo({{top:0,behavior:'smooth'}})" title="Back to top">&uarr;</button>
 
     <script>
 var PROGRAMS = {programs_json};
@@ -521,6 +523,18 @@ document.addEventListener('DOMContentLoaded', function() {{
 
     highlightDeadlines();
 
+    // Back to top button visibility
+    var topBtn = document.getElementById('back-to-top');
+    if (topBtn) {{
+        window.addEventListener('scroll', function() {{
+            if (window.scrollY > 300) {{
+                topBtn.classList.add('visible');
+            }} else {{
+                topBtn.classList.remove('visible');
+            }}
+        }});
+    }}
+
     // Sortable column headers
     document.querySelectorAll('.sortable').forEach(function(th) {{
         th.addEventListener('click', function() {{
@@ -561,19 +575,13 @@ document.addEventListener('DOMContentLoaded', function() {{
     // Close modals on overlay click or Escape
     document.querySelectorAll('.modal-overlay').forEach(function(overlay) {{
         overlay.addEventListener('click', function(e) {{
-            if (e.target === overlay) {{
-                overlay.style.display = 'none';
-                document.body.style.overflow = '';
-            }}
+            if (e.target === overlay) closeModalEl(overlay);
         }});
     }});
     document.addEventListener('keydown', function(e) {{
         if (e.key === 'Escape') {{
-            document.querySelectorAll('.modal-overlay').forEach(function(m) {{
-                if (m.style.display !== 'none') {{
-                    m.style.display = 'none';
-                    document.body.style.overflow = '';
-                }}
+            document.querySelectorAll('.modal-overlay.modal-visible').forEach(function(m) {{
+                closeModalEl(m);
             }});
         }}
     }});
@@ -650,15 +658,18 @@ function filterTable() {{
     restripe();
 }}
 
-function clearAllFilters() {{
+function resetFilters() {{
     var searchInput = document.querySelector('.sheet-filters input[type="search"]');
     if (searchInput) searchInput.value = '';
     document.querySelectorAll('.sheet-filters select[data-instant]').forEach(function(sel) {{
         sel.value = '';
     }});
-    // Clear special filters and chip highlights
     window._specialFilter = null;
     clearChipActive();
+}}
+
+function clearAllFilters() {{
+    resetFilters();
     filterTable();
     updateUrlParams();
     showToast('Filters cleared');
@@ -668,32 +679,29 @@ function clearChipActive() {{
     document.querySelectorAll('.chip').forEach(function(c) {{ c.classList.remove('chip-active'); }});
 }}
 
-function filterOpen() {{
-    clearAllFilters();
-    clearChipActive();
+function filterOpen(btn) {{
+    resetFilters();
     window._specialFilter = 'open';
     filterTableSpecial();
-    event.target.closest('.chip').classList.add('chip-active');
+    btn.classList.add('chip-active');
     showToast('Showing open programs');
 }}
 
-function filterUpcoming() {{
-    clearAllFilters();
-    clearChipActive();
+function filterUpcoming(btn) {{
+    resetFilters();
     window._specialFilter = 'upcoming';
     filterTableSpecial();
-    event.target.closest('.chip').classList.add('chip-active');
+    btn.classList.add('chip-active');
     showToast('Showing upcoming programs');
 }}
 
-function filterBsn(val) {{
-    clearAllFilters();
-    clearChipActive();
+function filterBsn(val, btn) {{
+    resetFilters();
     var bsnSelect = document.querySelector('[data-instant="bsn"]');
     if (bsnSelect) bsnSelect.value = val;
     filterTable();
     updateUrlParams();
-    event.target.closest('.chip').classList.add('chip-active');
+    btn.classList.add('chip-active');
     showToast('Showing ' + val + ' BSN programs');
 }}
 
@@ -956,13 +964,11 @@ function goCompare() {{
 
     html += '</tbody></table></div>';
     document.getElementById('compare-body').innerHTML = html;
-    document.getElementById('compare-modal').style.display = 'flex';
-    document.body.style.overflow = 'hidden';
+    openModal('compare-modal');
 }}
 
 function closeCompareModal() {{
-    document.getElementById('compare-modal').style.display = 'none';
-    document.body.style.overflow = '';
+    closeModalEl(document.getElementById('compare-modal'));
 }}
 
 function exportCSV() {{
@@ -1100,9 +1106,27 @@ function showDetail(id) {{
     html += '</div>';
     html += '</div>';
 
+    // Compute deadline status for modal
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+    var modalOpenDate = parseDate(p.app_open_date);
+    var modalCloseDate = parseDate(p.app_close_date);
+    var deadlineHtml = '';
+    if (modalOpenDate && modalCloseDate) {{
+        if (modalCloseDate < today) {{
+            deadlineHtml = ' <span class="deadline-past">closed</span>';
+        }} else if (modalOpenDate <= today && modalCloseDate >= today) {{
+            var dLeft = Math.ceil((modalCloseDate - today) / (1000*60*60*24));
+            deadlineHtml = ' <span class="badge-open">OPEN</span> <span class="deadline-soon">' + dLeft + 'd left</span>';
+        }} else if (modalOpenDate > today) {{
+            var dUntil = Math.ceil((modalOpenDate - today) / (1000*60*60*24));
+            deadlineHtml = ' <span class="deadline-soon">opens in ' + dUntil + 'd</span>';
+        }}
+    }}
+
     html += '<div class="detail-grid">';
 
-    html += '<div class="detail-section"><h3>Dates</h3><dl>';
+    html += '<div class="detail-section"><h3>Dates' + deadlineHtml + '</h3><dl>';
     html += '<dt>App Open</dt><dd>' + escHtml(p.app_open_date || 'TBD') + '</dd>';
     html += '<dt>App Close</dt><dd>' + escHtml(p.app_close_date || 'TBD') + '</dd>';
     html += '<dt>Cohort Start</dt><dd>' + escHtml(p.cohort_start || 'TBD') + '</dd>';
@@ -1138,8 +1162,7 @@ function showDetail(id) {{
     }}
 
     document.getElementById('modal-body').innerHTML = html;
-    document.getElementById('detail-modal').style.display = 'flex';
-    document.body.style.overflow = 'hidden';
+    openModal('detail-modal');
 
     // Auto-save notes on input
     var notesArea = document.getElementById('modal-notes');
@@ -1154,9 +1177,23 @@ function showDetail(id) {{
     }}
 }}
 
-function closeModal() {{
-    document.getElementById('detail-modal').style.display = 'none';
+function openModal(id) {{
+    var el = document.getElementById(id);
+    el.style.display = 'flex';
+    // Force reflow then add class for animation
+    el.offsetHeight;
+    el.classList.add('modal-visible');
+    document.body.style.overflow = 'hidden';
+}}
+
+function closeModalEl(el) {{
+    el.classList.remove('modal-visible');
     document.body.style.overflow = '';
+    setTimeout(function() {{ el.style.display = 'none'; }}, 200);
+}}
+
+function closeModal() {{
+    closeModalEl(document.getElementById('detail-modal'));
 }}
 
 function showToast(message) {{
