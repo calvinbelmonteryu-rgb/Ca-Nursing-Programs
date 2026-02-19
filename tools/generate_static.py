@@ -299,7 +299,9 @@ def generate():
             <li><strong>CA New Grad RN Tracker</strong></li>
         </ul>
         <ul>
-            <li><a href="#" class="active">Programs</a></li>
+            <li><a href="#" class="active" id="nav-table" onclick="showView('table'); return false;">Table</a></li>
+            <li><a href="#" id="nav-pipeline" onclick="showView('pipeline'); return false;">Pipeline</a></li>
+            <li class="nclex-nav" title="Days until NCLEX ({nclex_date})"><span class="nclex-badge">{nclex_days if nclex_days is not None else '?'}d</span> NCLEX</li>
             <li><a href="#" onclick="toggleTheme(); return false;" id="theme-toggle" title="Toggle dark mode">Dark</a></li>
             <li><a href="#" onclick="toggleShortcutHelp(); return false;" title="Keyboard shortcuts (?)" class="nav-help">?</a></li>
         </ul>
@@ -362,6 +364,7 @@ def generate():
             </div>
         </div>
 
+        <div class="recent-viewed" id="recent-viewed" style="display:none"></div>
         <div class="status-summary" id="status-summary"></div>
 
         <div class="quick-chips">
@@ -405,7 +408,28 @@ def generate():
             </table>
         </div>
         <div class="no-results" id="no-results">No programs match your filters. <a href="#" onclick="clearAllFilters(); return false;">Clear filters</a></div>
+
+        <div class="bulk-bar" id="bulk-bar" style="display:none">
+            <span class="bulk-count">0 selected</span>
+            <select id="bulk-status-select" class="bulk-status-select">
+                <option value="">Set Status...</option>
+                <option value="Not Started">Not Started</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Submitted">Submitted</option>
+                <option value="Interview">Interview</option>
+                <option value="Offer">Offer</option>
+                <option value="Rejected">Rejected</option>
+            </select>
+            <button type="button" onclick="bulkSetStatus()">Apply</button>
+            <button type="button" onclick="bulkToggleFavorite()">&#9733; Fav</button>
+            <button type="button" class="bulk-clear" onclick="clearSelection()">Clear</button>
+        </div>
     </main>
+
+    <!-- Pipeline View -->
+    <div id="pipeline-view" class="container-fluid" style="display:none">
+        <div class="pipeline-container" id="pipeline-container"></div>
+    </div>
 
     <!-- Detail Modal -->
     <div id="detail-modal" class="modal-overlay" style="display:none" role="dialog" aria-modal="true" aria-label="Program Details">
@@ -807,6 +831,7 @@ document.addEventListener('DOMContentLoaded', function() {{
     renderFavButtons();
     updateFavCount();
     renderStatusSummary();
+    renderRecentViewed();
 
     // Deep link: #program-5 opens detail modal for program 5
     var hash = window.location.hash;
@@ -1320,6 +1345,59 @@ function updateCompareBtn() {{
     var checked = document.querySelectorAll('.compare-check:checked');
     btn.disabled = checked.length < 2;
     btn.textContent = checked.length >= 2 ? 'Compare ' + checked.length : 'Compare';
+    // Show/hide bulk action bar
+    var bulkBar = document.getElementById('bulk-bar');
+    if (bulkBar) {{
+        if (checked.length > 0) {{
+            bulkBar.style.display = 'flex';
+            bulkBar.querySelector('.bulk-count').textContent = checked.length + ' selected';
+        }} else {{
+            bulkBar.style.display = 'none';
+        }}
+    }}
+}}
+
+function bulkSetStatus() {{
+    var sel = document.getElementById('bulk-status-select');
+    var status = sel.value;
+    if (!status) return;
+    var checked = document.querySelectorAll('.compare-check:checked');
+    checked.forEach(function(cb) {{
+        var id = parseInt(cb.value);
+        saveStatus(id, status);
+        var row = cb.closest('tr');
+        if (row) {{
+            applyRowStatus(row, status);
+            row.dataset.status = status;
+            var tableSel = row.querySelector('.status-select');
+            if (tableSel) tableSel.value = status;
+        }}
+    }});
+    renderStatusSummary();
+    sel.value = '';
+    showToast(checked.length + ' programs set to ' + status);
+}}
+
+function bulkToggleFavorite() {{
+    var checked = document.querySelectorAll('.compare-check:checked');
+    var favs = loadFavorites();
+    checked.forEach(function(cb) {{
+        var id = parseInt(cb.value);
+        if (favs.indexOf(id) === -1) favs.push(id);
+    }});
+    saveFavorites(favs);
+    renderFavButtons();
+    updateFavCount();
+    showToast(checked.length + ' programs added to favorites');
+}}
+
+function clearSelection() {{
+    document.querySelectorAll('.compare-check:checked').forEach(function(cb) {{
+        cb.checked = false;
+    }});
+    var selectAll = document.getElementById('select-all');
+    if (selectAll) selectAll.checked = false;
+    updateCompareBtn();
 }}
 
 function goCompare() {{
@@ -1739,6 +1817,7 @@ function showDetail(id) {{
     document.getElementById('modal-body').innerHTML = html;
     openModal('detail-modal');
     history.replaceState(null, '', '#program-' + id);
+    trackRecentView(id);
 
     // Auto-save notes on input
     var notesArea = document.getElementById('modal-notes');
@@ -1812,6 +1891,124 @@ function closeModalEl(el) {{
     el.classList.remove('modal-visible');
     document.body.style.overflow = '';
     setTimeout(function() {{ el.style.display = 'none'; }}, 200);
+}}
+
+// Recently viewed
+function trackRecentView(id) {{
+    try {{
+        var recent = JSON.parse(localStorage.getItem('rn_tracker_recent') || '[]');
+        recent = recent.filter(function(r) {{ return r !== id; }});
+        recent.unshift(id);
+        if (recent.length > 5) recent = recent.slice(0, 5);
+        localStorage.setItem('rn_tracker_recent', JSON.stringify(recent));
+        renderRecentViewed();
+    }} catch(e) {{}}
+}}
+
+function renderRecentViewed() {{
+    var container = document.getElementById('recent-viewed');
+    if (!container) return;
+    try {{
+        var recent = JSON.parse(localStorage.getItem('rn_tracker_recent') || '[]');
+        if (recent.length === 0) {{
+            container.style.display = 'none';
+            return;
+        }}
+        container.style.display = '';
+        var html = '<span class="recent-label">Recent:</span>';
+        recent.forEach(function(id) {{
+            var p = PROGRAMS.find(function(prog) {{ return prog.id === id; }});
+            if (p) {{
+                html += '<a href="#" class="recent-item" onclick="showDetail(' + p.id + '); return false;">' + escHtml(p.hospital) + '</a>';
+            }}
+        }});
+        container.innerHTML = html;
+    }} catch(e) {{}}
+}}
+
+// View toggle
+function showView(view) {{
+    var tableView = document.querySelector('.sheet-page');
+    var pipelineView = document.getElementById('pipeline-view');
+    var navTable = document.getElementById('nav-table');
+    var navPipeline = document.getElementById('nav-pipeline');
+
+    if (view === 'pipeline') {{
+        tableView.style.display = 'none';
+        pipelineView.style.display = 'block';
+        navTable.classList.remove('active');
+        navPipeline.classList.add('active');
+        renderPipeline();
+    }} else {{
+        tableView.style.display = '';
+        pipelineView.style.display = 'none';
+        navTable.classList.add('active');
+        navPipeline.classList.remove('active');
+    }}
+}}
+
+function renderPipeline() {{
+    var savedStatuses = loadSavedStatuses();
+    var columns = ['Not Started', 'In Progress', 'Submitted', 'Interview', 'Offer', 'Rejected'];
+    var grouped = {{}};
+    columns.forEach(function(c) {{ grouped[c] = []; }});
+
+    PROGRAMS.forEach(function(p) {{
+        var status = savedStatuses[p.id] || p.application_status || 'Not Started';
+        if (!grouped[status]) grouped[status] = [];
+        grouped[status].push(p);
+    }});
+
+    var favs = loadFavorites();
+
+    var html = '';
+    columns.forEach(function(col) {{
+        var items = grouped[col];
+        var colClass = col.toLowerCase().replace(/ /g, '-');
+        html += '<div class="pipeline-col">';
+        html += '<div class="pipeline-col-header pipeline-header-' + colClass + '">';
+        html += '<span>' + col + '</span>';
+        html += '<span class="pipeline-count">' + items.length + '</span>';
+        html += '</div>';
+        html += '<div class="pipeline-col-body">';
+        items.forEach(function(p) {{
+            var isFav = favs.indexOf(p.id) !== -1;
+            var stars = '\u2605'.repeat(p.reputation) + '\u2606'.repeat(5 - p.reputation);
+            var deadlineHtml = '';
+            var today = new Date(); today.setHours(0,0,0,0);
+            var closeDate = parseDate(p.app_close_date);
+            var openDate = parseDate(p.app_open_date);
+            if (openDate && closeDate) {{
+                if (closeDate < today) {{
+                    deadlineHtml = '<span class="deadline-past">closed</span>';
+                }} else if (openDate <= today && closeDate >= today) {{
+                    var dLeft = Math.ceil((closeDate - today) / (1000*60*60*24));
+                    deadlineHtml = '<span class="badge-open">OPEN</span> <span class="deadline-soon">' + dLeft + 'd</span>';
+                }} else {{
+                    var dUntil = Math.ceil((openDate - today) / (1000*60*60*24));
+                    deadlineHtml = '<span class="deadline-soon">in ' + dUntil + 'd</span>';
+                }}
+            }}
+            html += '<div class="pipeline-card' + (isFav ? ' pipeline-fav' : '') + '" onclick="showDetail(' + p.id + ')">';
+            html += '<div class="pipeline-card-title">' + (isFav ? '<span class="fav-star">\u2605</span> ' : '') + escHtml(p.hospital) + '</div>';
+            html += '<div class="pipeline-card-meta">';
+            html += '<span class="stars" style="font-size:0.65rem">' + stars + '</span>';
+            if (p.pay_range) {{
+                var payM = p.pay_range.match(/(\\$[\\d.,]+\\/hr)/);
+                if (payM) html += ' <span style="color:#6b7280;font-size:0.7rem">' + payM[1] + '</span>';
+            }}
+            html += '</div>';
+            if (deadlineHtml) html += '<div class="pipeline-card-deadline">' + deadlineHtml + '</div>';
+            html += '<div class="pipeline-card-region" style="font-size:0.68rem;color:#9ca3af">' + escHtml(p.region) + '</div>';
+            html += '</div>';
+        }});
+        if (items.length === 0) {{
+            html += '<div class="pipeline-empty">No programs</div>';
+        }}
+        html += '</div></div>';
+    }});
+
+    document.getElementById('pipeline-container').innerHTML = html;
 }}
 
 function toggleShortcutHelp() {{
