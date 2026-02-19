@@ -5626,6 +5626,37 @@ function renderStats() {{
     html += '</div>';
     html += '</div></div>';
 
+    // Region summary cards
+    html += '<div class="stats-card stats-card-wide"><h3>&#127758; Region Breakdown</h3>';
+    html += '<div class="region-cards-grid">';
+    var allRegionsList = Object.keys(regionCounts).sort(function(a, b) {{ return regionCounts[b] - regionCounts[a]; }});
+    allRegionsList.forEach(function(reg) {{
+        var regProgs = PROGRAMS.filter(function(p) {{ return p.region === reg; }});
+        var regOpen = 0, regAvgPay = 0, regPayCount = 0;
+        var regStatuses = {{}};
+        regProgs.forEach(function(p) {{
+            var st = savedStatuses[p.id] || p.application_status || 'Not Started';
+            regStatuses[st] = (regStatuses[st] || 0) + 1;
+            var openD = parseDate(p.app_open_date);
+            var closeD = parseDate(p.app_close_date);
+            if (openD && closeD && openD <= today && closeD >= today) regOpen++;
+            var pm = (p.pay_range || '').match(/(\\d[\\d.,]+)\\/hr/);
+            if (pm) {{ regAvgPay += parseFloat(pm[1].replace(',','')); regPayCount++; }}
+        }});
+        var avgPay = regPayCount > 0 ? '$' + Math.round(regAvgPay / regPayCount) + '/hr' : 'N/A';
+        var applied = (regStatuses['Submitted'] || 0) + (regStatuses['Interview'] || 0) + (regStatuses['Offer'] || 0);
+        html += '<div class="region-card" onclick="filterByRegion(\\\'' + escHtml(reg) + '\\\')">';
+        html += '<div class="rc-name">' + escHtml(reg) + '</div>';
+        html += '<div class="rc-stats">';
+        html += '<span><strong>' + regProgs.length + '</strong> programs</span>';
+        if (regOpen > 0) html += '<span class="rc-open">' + regOpen + ' open</span>';
+        html += '<span>' + avgPay + ' avg</span>';
+        if (applied > 0) html += '<span class="rc-applied">' + applied + ' applied</span>';
+        html += '</div>';
+        html += '</div>';
+    }});
+    html += '</div></div>';
+
     // Region x Status heatmap
     html += '<div class="stats-card stats-card-wide"><h3>Region x Status Heatmap</h3>';
     html += '<div class="heatmap-scroll"><table class="heatmap-table"><thead><tr><th></th>';
