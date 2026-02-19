@@ -7273,3 +7273,51 @@ mark.search-highlight {
         grid-template-columns: 1fr;
     }
 }
+
+/* Salary calculator */
+.salary-calc {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 12px;
+    font-size: 0.82rem;
+}
+.salary-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 0;
+}
+.salary-deduct {
+    color: #6b7280;
+    font-size: 0.78rem;
+}
+.salary-deduct span:last-child {
+    color: #ef4444;
+}
+.salary-net {
+    border-top: 1px solid #86efac;
+    padding-top: 6px;
+    margin-top: 4px;
+}
+.salary-net strong {
+    color: #16a34a;
+    font-size: 0.95rem;
+}
+.salary-disclaimer {
+    display: block;
+    margin-top: 8px;
+    color: #9ca3af;
+    font-size: 0.7rem;
+    font-style: italic;
+}
+[data-theme="dark"] .salary-calc {
+    background: #052e16;
+    border-color: #166534;
+}
+[data-theme="dark"] .salary-net {
+    border-color: #166534;
+}
+[data-theme="dark"] .salary-deduct span:last-child {
+    color: #f87171;
+}

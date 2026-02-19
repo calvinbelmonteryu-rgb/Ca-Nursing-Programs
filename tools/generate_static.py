@@ -4238,7 +4238,39 @@ function showDetail(id) {{
     html += '<dt>City</dt><dd>' + escHtml(p.city) + '</dd>';
     html += '<dt>Pay</dt><dd>' + escHtml(p.pay_range || 'N/A') + '</dd>';
     html += '<dt>Length</dt><dd>' + (p.program_length_months || 'N/A') + ' months</dd>';
-    html += '</dl></div>';
+    html += '</dl>';
+    // Salary calculator
+    var payM = (p.pay_range || '').match(/(\\d[\\d.,]+)\\/hr/);
+    if (payM) {{
+        var hourly = parseFloat(payM[1].replace(',', ''));
+        var annual = Math.round(hourly * 36 * 52); // 36 hrs/week standard for RN
+        var monthly = Math.round(annual / 12);
+        // Simplified CA + Federal tax estimate for single filer
+        var fedTax = annual <= 11600 ? annual * 0.10 :
+                     annual <= 47150 ? 1160 + (annual - 11600) * 0.12 :
+                     annual <= 100525 ? 5426.60 + (annual - 47150) * 0.22 :
+                     17168.50 + (annual - 100525) * 0.24;
+        var caTax = annual <= 10412 ? annual * 0.01 :
+                    annual <= 24684 ? 104 + (annual - 10412) * 0.02 :
+                    annual <= 38959 ? 390 + (annual - 24684) * 0.04 :
+                    annual <= 54081 ? 961 + (annual - 38959) * 0.06 :
+                    annual <= 68350 ? 1868 + (annual - 54081) * 0.08 :
+                    3010 + (annual - 68350) * 0.093;
+        var fica = annual * 0.0765;
+        var totalTax = Math.round(fedTax + caTax + fica);
+        var takeHome = annual - totalTax;
+        var monthlyNet = Math.round(takeHome / 12);
+        html += '<div class="salary-calc">';
+        html += '<div class="salary-row"><span>Gross Annual (36 hr/wk)</span><strong>$' + annual.toLocaleString() + '</strong></div>';
+        html += '<div class="salary-row salary-deduct"><span>Federal tax (est)</span><span>-$' + Math.round(fedTax).toLocaleString() + '</span></div>';
+        html += '<div class="salary-row salary-deduct"><span>CA state tax (est)</span><span>-$' + Math.round(caTax).toLocaleString() + '</span></div>';
+        html += '<div class="salary-row salary-deduct"><span>FICA (SS + Medicare)</span><span>-$' + Math.round(fica).toLocaleString() + '</span></div>';
+        html += '<div class="salary-row salary-net"><span>Take-Home Annual</span><strong>~$' + takeHome.toLocaleString() + '</strong></div>';
+        html += '<div class="salary-row salary-net"><span>Take-Home Monthly</span><strong>~$' + monthlyNet.toLocaleString() + '</strong></div>';
+        html += '<small class="salary-disclaimer">Estimated for single filer, 36 hr/wk. Actual pay may vary with shift differentials, overtime, and benefits.</small>';
+        html += '</div>';
+    }}
+    html += '</div>';
 
     html += '</div>';
 

@@ -7290,6 +7290,54 @@ mark.search-highlight {
     }
 }
 
+/* Salary calculator */
+.salary-calc {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 12px;
+    font-size: 0.82rem;
+}
+.salary-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 0;
+}
+.salary-deduct {
+    color: #6b7280;
+    font-size: 0.78rem;
+}
+.salary-deduct span:last-child {
+    color: #ef4444;
+}
+.salary-net {
+    border-top: 1px solid #86efac;
+    padding-top: 6px;
+    margin-top: 4px;
+}
+.salary-net strong {
+    color: #16a34a;
+    font-size: 0.95rem;
+}
+.salary-disclaimer {
+    display: block;
+    margin-top: 8px;
+    color: #9ca3af;
+    font-size: 0.7rem;
+    font-style: italic;
+}
+[data-theme="dark"] .salary-calc {
+    background: #052e16;
+    border-color: #166534;
+}
+[data-theme="dark"] .salary-net {
+    border-color: #166534;
+}
+[data-theme="dark"] .salary-deduct span:last-child {
+    color: #f87171;
+}
+
     </style>
 </head>
 <body>
@@ -12321,7 +12369,39 @@ function showDetail(id) {
     html += '<dt>City</dt><dd>' + escHtml(p.city) + '</dd>';
     html += '<dt>Pay</dt><dd>' + escHtml(p.pay_range || 'N/A') + '</dd>';
     html += '<dt>Length</dt><dd>' + (p.program_length_months || 'N/A') + ' months</dd>';
-    html += '</dl></div>';
+    html += '</dl>';
+    // Salary calculator
+    var payM = (p.pay_range || '').match(/(\d[\d.,]+)\/hr/);
+    if (payM) {
+        var hourly = parseFloat(payM[1].replace(',', ''));
+        var annual = Math.round(hourly * 36 * 52); // 36 hrs/week standard for RN
+        var monthly = Math.round(annual / 12);
+        // Simplified CA + Federal tax estimate for single filer
+        var fedTax = annual <= 11600 ? annual * 0.10 :
+                     annual <= 47150 ? 1160 + (annual - 11600) * 0.12 :
+                     annual <= 100525 ? 5426.60 + (annual - 47150) * 0.22 :
+                     17168.50 + (annual - 100525) * 0.24;
+        var caTax = annual <= 10412 ? annual * 0.01 :
+                    annual <= 24684 ? 104 + (annual - 10412) * 0.02 :
+                    annual <= 38959 ? 390 + (annual - 24684) * 0.04 :
+                    annual <= 54081 ? 961 + (annual - 38959) * 0.06 :
+                    annual <= 68350 ? 1868 + (annual - 54081) * 0.08 :
+                    3010 + (annual - 68350) * 0.093;
+        var fica = annual * 0.0765;
+        var totalTax = Math.round(fedTax + caTax + fica);
+        var takeHome = annual - totalTax;
+        var monthlyNet = Math.round(takeHome / 12);
+        html += '<div class="salary-calc">';
+        html += '<div class="salary-row"><span>Gross Annual (36 hr/wk)</span><strong>$' + annual.toLocaleString() + '</strong></div>';
+        html += '<div class="salary-row salary-deduct"><span>Federal tax (est)</span><span>-$' + Math.round(fedTax).toLocaleString() + '</span></div>';
+        html += '<div class="salary-row salary-deduct"><span>CA state tax (est)</span><span>-$' + Math.round(caTax).toLocaleString() + '</span></div>';
+        html += '<div class="salary-row salary-deduct"><span>FICA (SS + Medicare)</span><span>-$' + Math.round(fica).toLocaleString() + '</span></div>';
+        html += '<div class="salary-row salary-net"><span>Take-Home Annual</span><strong>~$' + takeHome.toLocaleString() + '</strong></div>';
+        html += '<div class="salary-row salary-net"><span>Take-Home Monthly</span><strong>~$' + monthlyNet.toLocaleString() + '</strong></div>';
+        html += '<small class="salary-disclaimer">Estimated for single filer, 36 hr/wk. Actual pay may vary with shift differentials, overtime, and benefits.</small>';
+        html += '</div>';
+    }
+    html += '</div>';
 
     html += '</div>';
 
