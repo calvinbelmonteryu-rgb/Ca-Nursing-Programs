@@ -3209,6 +3209,18 @@ tbody tr:hover .col-fav { background: #eff6ff; }
 .chip-red .chip-count {
     background: rgba(239, 68, 68, 0.15);
 }
+.chip-blue {
+    background: #eff6ff;
+    border-color: #93c5fd;
+    color: #1e40af;
+}
+.chip-blue:hover {
+    background: #dbeafe;
+    border-color: #60a5fa;
+}
+.chip-blue .chip-count {
+    background: rgba(59, 130, 246, 0.15);
+}
 
 /* ===== PAY CELL ===== */
 .pay-cell { font-size: 0.85rem; white-space: nowrap; }

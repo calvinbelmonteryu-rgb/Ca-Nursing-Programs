@@ -477,6 +477,7 @@ def generate():
 
         <div class="quick-chips">
             <button class="chip chip-red" onclick="filterFavorites(this)" id="fav-chip">&#9733; Favorites <span class="chip-count" id="fav-count">0</span></button>
+            <button class="chip chip-blue" onclick="filterMyApps(this)" id="myapps-chip">&#128203; My Apps <span class="chip-count" id="myapps-count">0</span></button>
             <span class="chip-sep"></span>
             <button class="chip chip-green" onclick="filterOpen(this)">Open Now <span class="chip-count">{open_now}</span></button>
             <button class="chip chip-green" onclick="filterApplyNow(this)" style="background:#dcfce7;border-color:#22c55e;color:#065f46;font-weight:700">Apply Now!</button>
@@ -864,6 +865,7 @@ function saveStatus(id, status) {{
         localStorage.setItem('rn_tracker_status_history', JSON.stringify(history));
         // Check milestones
         checkMilestones(all);
+        updateMyAppsCount();
         // Offer celebration
         if (status === 'Offer' && prevStatus !== 'Offer') {{
             var prog = PROGRAMS.find(function(p) {{ return p.id === id; }});
@@ -1646,6 +1648,29 @@ function filterFavorites(btn) {{
     showToast('Showing favorites');
 }}
 
+function filterMyApps(btn) {{
+    if (btn.classList.contains('chip-active')) {{
+        clearAllFilters();
+        return;
+    }}
+    resetFilters();
+    window._specialFilter = 'myapps';
+    filterTableSpecial();
+    btn.classList.add('chip-active');
+    showToast('Showing your applications');
+}}
+
+function updateMyAppsCount() {{
+    var savedStatuses = loadSavedStatuses();
+    var count = 0;
+    PROGRAMS.forEach(function(p) {{
+        var st = savedStatuses[p.id] || p.application_status || 'Not Started';
+        if (st !== 'Not Started') count++;
+    }});
+    var el = document.getElementById('myapps-count');
+    if (el) el.textContent = count;
+}}
+
 document.addEventListener('DOMContentLoaded', function() {{
     // Restore saved statuses from localStorage
     var savedStatuses = loadSavedStatuses();
@@ -1915,6 +1940,7 @@ document.addEventListener('DOMContentLoaded', function() {{
     markNotesIndicators();
     renderFavButtons();
     updateFavCount();
+    updateMyAppsCount();
     renderStatusSummary();
     renderWeeklyDigest();
     renderStreak();
@@ -2856,6 +2882,10 @@ function filterTableSpecial() {{
                     if (closeDateF && closeDateF < today) {{ show = false; }}
                 }}
             }}
+        }} else if (window._specialFilter === 'myapps') {{
+            var statusSel3 = row.querySelector('.status-select');
+            var rowStatus3 = statusSel3 ? statusSel3.value : 'Not Started';
+            if (rowStatus3 !== 'Not Started') show = true;
         }} else if (window._specialFilter === 'cohort-jul-sep' || window._specialFilter === 'cohort-oct-dec') {{
             if (dateCells.length >= 3) {{
                 var cohortRaw = dateCells[2].dataset.raw || '';
