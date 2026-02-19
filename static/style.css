@@ -210,6 +210,10 @@ nav a.active {
     color: #1f2937;
 }
 
+.sheet tbody tr {
+    cursor: pointer;
+}
+
 .sheet tbody tr:hover {
     background: #eff6ff;
 }
@@ -984,6 +988,16 @@ footer small {
 .chip:hover {
     background: #f3f4f6;
     border-color: #9ca3af;
+}
+
+.chip.chip-active {
+    background: #1e40af;
+    color: white;
+    border-color: #1e40af;
+}
+
+.chip.chip-active .chip-count {
+    background: rgba(255,255,255,0.2);
 }
 
 .chip-green {

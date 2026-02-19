@@ -220,6 +220,10 @@ nav a.active {
     color: #1f2937;
 }
 
+.sheet tbody tr {
+    cursor: pointer;
+}
+
 .sheet tbody tr:hover {
     background: #eff6ff;
 }
@@ -994,6 +998,16 @@ footer small {
 .chip:hover {
     background: #f3f4f6;
     border-color: #9ca3af;
+}
+
+.chip.chip-active {
+    background: #1e40af;
+    color: white;
+    border-color: #1e40af;
+}
+
+.chip.chip-active .chip-count {
+    background: rgba(255,255,255,0.2);
 }
 
 .chip-green {
@@ -3030,33 +3044,44 @@ function clearAllFilters() {
     document.querySelectorAll('.sheet-filters select[data-instant]').forEach(function(sel) {
         sel.value = '';
     });
-    // Clear special filters
+    // Clear special filters and chip highlights
     window._specialFilter = null;
+    clearChipActive();
     filterTable();
     updateUrlParams();
     showToast('Filters cleared');
 }
 
+function clearChipActive() {
+    document.querySelectorAll('.chip').forEach(function(c) { c.classList.remove('chip-active'); });
+}
+
 function filterOpen() {
     clearAllFilters();
+    clearChipActive();
     window._specialFilter = 'open';
     filterTableSpecial();
+    event.target.closest('.chip').classList.add('chip-active');
     showToast('Showing open programs');
 }
 
 function filterUpcoming() {
     clearAllFilters();
+    clearChipActive();
     window._specialFilter = 'upcoming';
     filterTableSpecial();
+    event.target.closest('.chip').classList.add('chip-active');
     showToast('Showing upcoming programs');
 }
 
 function filterBsn(val) {
     clearAllFilters();
+    clearChipActive();
     var bsnSelect = document.querySelector('[data-instant="bsn"]');
     if (bsnSelect) bsnSelect.value = val;
     filterTable();
     updateUrlParams();
+    event.target.closest('.chip').classList.add('chip-active');
     showToast('Showing ' + val + ' BSN programs');
 }
 

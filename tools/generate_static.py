@@ -656,33 +656,44 @@ function clearAllFilters() {{
     document.querySelectorAll('.sheet-filters select[data-instant]').forEach(function(sel) {{
         sel.value = '';
     }});
-    // Clear special filters
+    // Clear special filters and chip highlights
     window._specialFilter = null;
+    clearChipActive();
     filterTable();
     updateUrlParams();
     showToast('Filters cleared');
 }}
 
+function clearChipActive() {{
+    document.querySelectorAll('.chip').forEach(function(c) {{ c.classList.remove('chip-active'); }});
+}}
+
 function filterOpen() {{
     clearAllFilters();
+    clearChipActive();
     window._specialFilter = 'open';
     filterTableSpecial();
+    event.target.closest('.chip').classList.add('chip-active');
     showToast('Showing open programs');
 }}
 
 function filterUpcoming() {{
     clearAllFilters();
+    clearChipActive();
     window._specialFilter = 'upcoming';
     filterTableSpecial();
+    event.target.closest('.chip').classList.add('chip-active');
     showToast('Showing upcoming programs');
 }}
 
 function filterBsn(val) {{
     clearAllFilters();
+    clearChipActive();
     var bsnSelect = document.querySelector('[data-instant="bsn"]');
     if (bsnSelect) bsnSelect.value = val;
     filterTable();
     updateUrlParams();
+    event.target.closest('.chip').classList.add('chip-active');
     showToast('Showing ' + val + ' BSN programs');
 }}
 
