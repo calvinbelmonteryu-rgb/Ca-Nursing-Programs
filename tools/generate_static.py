@@ -272,6 +272,21 @@ def generate():
                 <span class="sheet-count">{total} rows</span>
                 <button type="button" class="clear-filter" id="clear-all-btn" onclick="clearAllFilters()" style="display:none">Clear All</button>
                 <span class="filter-spacer"></span>
+                <div class="col-toggle-wrap">
+                    <button type="button" onclick="toggleColMenu()" title="Show/hide columns">Columns</button>
+                    <div id="col-menu" class="col-menu" style="display:none">
+                        <label><input type="checkbox" data-toggle-col="col-program" checked> Program</label>
+                        <label><input type="checkbox" data-toggle-col="col-region" checked> Region</label>
+                        <label><input type="checkbox" data-toggle-col="col-city" checked> City</label>
+                        <label><input type="checkbox" data-toggle-col="col-bsn" checked> BSN</label>
+                        <label><input type="checkbox" data-toggle-col="col-date" checked> Dates</label>
+                        <label><input type="checkbox" data-toggle-col="col-rep" checked> Rep</label>
+                        <label><input type="checkbox" data-toggle-col="col-pay" checked> Pay</label>
+                        <label><input type="checkbox" data-toggle-col="col-len" checked> Length</label>
+                        <label><input type="checkbox" data-toggle-col="col-specialties" checked> Specialties</label>
+                        <label><input type="checkbox" data-toggle-col="col-notes" checked> Notes</label>
+                    </div>
+                </div>
                 <button type="button" id="compare-btn" disabled onclick="goCompare()">Compare</button>
                 <button type="button" onclick="exportCSV()" title="Export CSV">Export</button>
             </div>
@@ -891,6 +906,54 @@ function exportCSV() {{
     a.click();
     showToast('CSV exported');
 }}
+
+function toggleColMenu() {{
+    var menu = document.getElementById('col-menu');
+    menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+}}
+
+// Close column menu when clicking outside
+document.addEventListener('click', function(e) {{
+    var wrap = document.querySelector('.col-toggle-wrap');
+    var menu = document.getElementById('col-menu');
+    if (wrap && menu && !wrap.contains(e.target)) {{
+        menu.style.display = 'none';
+    }}
+}});
+
+// Column visibility toggle
+document.addEventListener('change', function(e) {{
+    if (e.target.dataset.toggleCol) {{
+        var colClass = e.target.dataset.toggleCol;
+        var show = e.target.checked;
+        var display = show ? '' : 'none';
+        document.querySelectorAll('.' + colClass).forEach(function(el) {{
+            el.style.display = display;
+        }});
+        // Save preferences
+        try {{
+            var prefs = JSON.parse(localStorage.getItem('rn_tracker_cols') || '{{}}');
+            prefs[colClass] = show;
+            localStorage.setItem('rn_tracker_cols', JSON.stringify(prefs));
+        }} catch(ex) {{}}
+    }}
+}});
+
+// Restore column visibility preferences on load
+(function() {{
+    try {{
+        var prefs = JSON.parse(localStorage.getItem('rn_tracker_cols') || '{{}}');
+        Object.keys(prefs).forEach(function(colClass) {{
+            if (!prefs[colClass]) {{
+                document.querySelectorAll('.' + colClass).forEach(function(el) {{
+                    el.style.display = 'none';
+                }});
+                var cb = document.querySelector('[data-toggle-col="' + colClass + '"]');
+                if (cb) cb.checked = false;
+            }}
+        }});
+    }} catch(ex) {{}}
+}})();
 
 function escHtml(str) {{
     if (!str) return '';

@@ -223,7 +223,28 @@ nav a.active {
 }
 
 /* Column sizing */
-.col-check { width: 28px; text-align: center; }
+.col-check {
+    width: 28px;
+    text-align: center;
+    position: sticky;
+    left: 0;
+    z-index: 4;
+    background: inherit;
+}
+
+thead .col-check {
+    z-index: 14;
+    background: #f3f4f6;
+}
+
+tbody tr:nth-child(odd) .col-check { background: white; }
+tbody tr:nth-child(even) .col-check { background: #fafafa; }
+tbody tr:hover .col-check { background: #eff6ff; }
+.row-in-progress .col-check { background: #fefce8 !important; }
+.row-submitted .col-check { background: #eff6ff !important; }
+.row-interview .col-check { background: #f5f3ff !important; }
+.row-offer .col-check { background: #ecfdf5 !important; }
+.row-rejected .col-check { background: #fef2f2 !important; }
 .col-id { width: 30px; text-align: center; color: #9ca3af; }
 .col-hospital { min-width: 180px; max-width: 220px; font-weight: 500; }
 .col-hospital a { color: #1d4ed8; text-decoration: none; }
@@ -257,9 +278,10 @@ nav a.active {
 /* Frozen hospital column */
 .frozen-col {
     position: sticky;
-    left: 0;
+    left: 28px;
     z-index: 5;
     background: inherit;
+    box-shadow: 2px 0 4px rgba(0,0,0,0.06);
 }
 
 thead .frozen-col {
@@ -882,6 +904,46 @@ footer {
     vertical-align: middle;
 }
 
+/* ===== COLUMN TOGGLE ===== */
+.col-toggle-wrap {
+    position: relative;
+    display: inline-block;
+}
+
+.col-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    padding: 8px 4px;
+    z-index: 30;
+    min-width: 140px;
+}
+
+.col-menu label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    border-radius: 3px;
+    white-space: nowrap;
+}
+
+.col-menu label:hover {
+    background: #f3f4f6;
+}
+
+.col-menu input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+    margin: 0;
+}
+
 /* ===== SORT LINKS ===== */
 .sheet-filters a.active {
     background: #3b82f6;
@@ -944,11 +1006,13 @@ footer {
     background: white;
 }
 
-.sheet tbody tr.even-row .frozen-col {
+.sheet tbody tr.even-row .frozen-col,
+.sheet tbody tr.even-row .col-check {
     background: #fafafa;
 }
 
-.sheet tbody tr.odd-row .frozen-col {
+.sheet tbody tr.odd-row .frozen-col,
+.sheet tbody tr.odd-row .col-check {
     background: white;
 }
 
