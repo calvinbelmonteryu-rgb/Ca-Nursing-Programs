@@ -129,6 +129,7 @@ def generate():
 
     regions = sorted(set(p["region"] for p in programs))
     cities = sorted(set(p["city"] for p in programs))
+    bsn_values = sorted(set(p.get("bsn_required", "") for p in programs if p.get("bsn_required")))
     statuses = ["Not Started", "In Progress", "Submitted", "Interview", "Offer", "Rejected"]
 
     # Build table rows
@@ -164,12 +165,16 @@ def generate():
         app_close_fmt = format_date(app_close_raw)
         cohort_fmt = format_date(cohort_raw) if parse_date(cohort_raw) else esc(cohort_raw)
 
-        row = f"""<tr data-id="{p['id']}" data-region="{esc(p.get('region',''))}" data-city="{esc(p.get('city',''))}" data-status="{esc(status)}">
+        bsn = p.get("bsn_required", "")
+        bsn_cls = "bsn-no" if bsn == "No" else "bsn-pref" if bsn == "Preferred" else "bsn-req" if bsn == "Yes" else ""
+
+        row = f"""<tr data-id="{p['id']}" data-region="{esc(p.get('region',''))}" data-city="{esc(p.get('city',''))}" data-bsn="{esc(bsn)}" data-status="{esc(status)}">
 <td class="col-check"><input type="checkbox" class="compare-check" value="{p['id']}"></td>
-<td class="col-hospital frozen-col"><a href="#{p['id']}">{esc(p['hospital'])}</a></td>
+<td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="{p['id']}">{esc(p['hospital'])}</a></td>
 <td class="col-program">{esc(p.get('program_name',''))}</td>
 <td class="col-region">{esc(p.get('region',''))}</td>
 <td class="col-city" title="{full_city}">{esc(city)}</td>
+<td class="col-bsn {bsn_cls}">{esc(bsn)}</td>
 <td class="col-date" data-raw="{esc(app_open_raw)}">{app_open_fmt}</td>
 <td class="col-date" data-raw="{esc(app_close_raw)}">{app_close_fmt}</td>
 <td class="col-date" data-raw="{esc(cohort_raw)}">{cohort_fmt}</td>
@@ -185,7 +190,31 @@ def generate():
 
     region_options = ''.join(f'<option value="{esc(r)}">{esc(r)}</option>' for r in regions)
     city_options = ''.join(f'<option value="{esc(c)}">{esc(c)}</option>' for c in cities)
+    bsn_options = ''.join(f'<option value="{esc(b)}">{esc(b)}</option>' for b in bsn_values)
     status_options_filter = ''.join(f'<option value="{esc(s)}">{esc(s)}</option>' for s in statuses)
+
+    # Embed program data as JSON for detail modal
+    programs_json = json.dumps([{
+        "id": p["id"],
+        "hospital": p.get("hospital", ""),
+        "program_name": p.get("program_name", ""),
+        "region": p.get("region", ""),
+        "city": p.get("city", ""),
+        "bsn_required": p.get("bsn_required", ""),
+        "reputation": p.get("reputation", 0),
+        "program_length_months": p.get("program_length_months", ""),
+        "pay_range": p.get("pay_range", ""),
+        "app_open_date": p.get("app_open_date", ""),
+        "app_close_date": p.get("app_close_date", ""),
+        "cohort_start": p.get("cohort_start", ""),
+        "specialty_units": p.get("specialty_units", []),
+        "requirements": p.get("requirements", ""),
+        "application_url": p.get("application_url", ""),
+        "application_status": p.get("application_status", "Not Started"),
+        "personal_notes": p.get("personal_notes", ""),
+        "reputation_notes": p.get("reputation_notes", ""),
+        "info_session_dates": p.get("info_session_dates", []),
+    } for p in programs])
 
     nclex_stat = f"<strong>{nclex_days}d</strong>" if nclex_days is not None else nclex_date
     urgent_class = ' stat-highlight-red' if urgent > 0 else ''
@@ -235,6 +264,10 @@ def generate():
                     <option value="">All Cities</option>
                     {city_options}
                 </select>
+                <select data-instant="bsn">
+                    <option value="">All BSN</option>
+                    {bsn_options}
+                </select>
                 <select data-instant="status">
                     <option value="">All Statuses</option>
                     {status_options_filter}
@@ -247,6 +280,7 @@ def generate():
                     <option value="paused">Paused</option>
                 </select>
                 <span class="sheet-count">{total} rows</span>
+                <button type="button" class="clear-filter" id="clear-all-btn" onclick="clearAllFilters()" style="display:none">Clear All</button>
                 <span class="filter-spacer"></span>
                 <button type="button" id="compare-btn" disabled onclick="goCompare()">Compare</button>
                 <button type="button" onclick="exportCSV()" title="Export CSV">Export</button>
@@ -262,15 +296,16 @@ def generate():
                         <th class="col-program sortable" data-col="2" data-sort="text" data-label="Program">Program <span class="sort-arrow">&udarr;</span></th>
                         <th class="col-region sortable" data-col="3" data-sort="text" data-label="Region">Region <span class="sort-arrow">&udarr;</span></th>
                         <th class="col-city sortable" data-col="4" data-sort="text" data-label="City">City <span class="sort-arrow">&udarr;</span></th>
-                        <th class="col-date sortable" data-col="5" data-sort="date" data-label="App Open">App Open <span class="sort-arrow">&udarr;</span></th>
-                        <th class="col-date sortable" data-col="6" data-sort="date" data-label="App Close">App Close <span class="sort-arrow">&udarr;</span></th>
-                        <th class="col-date sortable" data-col="7" data-sort="date" data-label="Cohort">Cohort <span class="sort-arrow">&udarr;</span></th>
-                        <th class="col-rep sortable" data-col="8" data-sort="stars" data-label="Reputation">Rep <span class="sort-arrow">&udarr;</span></th>
-                        <th class="col-pay sortable" data-col="9" data-sort="pay" data-label="Pay">Pay <span class="sort-arrow">&udarr;</span></th>
-                        <th class="col-len sortable" data-col="10" data-sort="num" data-label="Length">Len <span class="sort-arrow">&udarr;</span></th>
-                        <th class="col-specialties sortable" data-col="11" data-sort="text" data-label="Specialties">Specialties <span class="sort-arrow">&udarr;</span></th>
-                        <th class="col-status sortable" data-col="12" data-sort="status" data-label="Status">Status <span class="sort-arrow">&udarr;</span></th>
-                        <th class="col-notes sortable" data-col="13" data-sort="text" data-label="Notes">Notes <span class="sort-arrow">&udarr;</span></th>
+                        <th class="col-bsn sortable" data-col="5" data-sort="text" data-label="BSN">BSN <span class="sort-arrow">&udarr;</span></th>
+                        <th class="col-date sortable" data-col="6" data-sort="date" data-label="App Open">App Open <span class="sort-arrow">&udarr;</span></th>
+                        <th class="col-date sortable" data-col="7" data-sort="date" data-label="App Close">App Close <span class="sort-arrow">&udarr;</span></th>
+                        <th class="col-date sortable" data-col="8" data-sort="date" data-label="Cohort">Cohort <span class="sort-arrow">&udarr;</span></th>
+                        <th class="col-rep sortable" data-col="9" data-sort="stars" data-label="Reputation">Rep <span class="sort-arrow">&udarr;</span></th>
+                        <th class="col-pay sortable" data-col="10" data-sort="pay" data-label="Pay">Pay <span class="sort-arrow">&udarr;</span></th>
+                        <th class="col-len sortable" data-col="11" data-sort="num" data-label="Length">Len <span class="sort-arrow">&udarr;</span></th>
+                        <th class="col-specialties sortable" data-col="12" data-sort="text" data-label="Specialties">Specialties <span class="sort-arrow">&udarr;</span></th>
+                        <th class="col-status sortable" data-col="13" data-sort="status" data-label="Status">Status <span class="sort-arrow">&udarr;</span></th>
+                        <th class="col-notes sortable" data-col="14" data-sort="text" data-label="Notes">Notes <span class="sort-arrow">&udarr;</span></th>
                         <th class="col-apply">Apply</th>
                     </tr>
                 </thead>
@@ -281,11 +316,28 @@ def generate():
         </div>
     </main>
 
+    <!-- Detail Modal -->
+    <div id="detail-modal" class="modal-overlay" style="display:none">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <!-- Compare Modal -->
+    <div id="compare-modal" class="modal-overlay" style="display:none">
+        <div class="modal-content modal-wide">
+            <button class="modal-close" onclick="closeCompareModal()">&times;</button>
+            <div id="compare-body"></div>
+        </div>
+    </div>
+
     <footer class="container">
         <small>CA New Grad RN Program Tracker &bull; NCLEX Target: May 2026 &bull; Updated {today.strftime("%b %d, %Y")}</small>
     </footer>
 
     <script>
+var PROGRAMS = {programs_json};
 // ===== Static site JS (no backend) =====
 
 const statusClasses = {{
@@ -368,7 +420,7 @@ document.addEventListener('DOMContentLoaded', function() {{
         }});
     }});
 
-    // Note expand/collapse
+    // Note expand/collapse + hospital detail links
     document.addEventListener('click', function(e) {{
         if (e.target.classList.contains('note-expand')) {{
             e.preventDefault();
@@ -381,6 +433,32 @@ document.addEventListener('DOMContentLoaded', function() {{
             var td = e.target.closest('td');
             td.querySelector('.note-trunc').style.display = '';
             td.querySelector('.note-full').style.display = 'none';
+        }}
+        // Hospital name → detail modal
+        if (e.target.classList.contains('hospital-link')) {{
+            e.preventDefault();
+            var id = parseInt(e.target.dataset.id);
+            if (id) showDetail(id);
+        }}
+    }});
+
+    // Close modals on overlay click or Escape
+    document.querySelectorAll('.modal-overlay').forEach(function(overlay) {{
+        overlay.addEventListener('click', function(e) {{
+            if (e.target === overlay) {{
+                overlay.style.display = 'none';
+                document.body.style.overflow = '';
+            }}
+        }});
+    }});
+    document.addEventListener('keydown', function(e) {{
+        if (e.key === 'Escape') {{
+            document.querySelectorAll('.modal-overlay').forEach(function(m) {{
+                if (m.style.display !== 'none') {{
+                    m.style.display = 'none';
+                    document.body.style.overflow = '';
+                }}
+            }});
         }}
     }});
 }});
@@ -399,14 +477,20 @@ function filterTable() {{
     var searchInput = document.querySelector('.sheet-filters input[type="search"]');
     var regionSelect = document.querySelector('.sheet-filters select[data-instant="region"]');
     var citySelect = document.querySelector('.sheet-filters select[data-instant="city"]');
+    var bsnSelect = document.querySelector('.sheet-filters select[data-instant="bsn"]');
     var statusSelect = document.querySelector('.sheet-filters select[data-instant="status"]');
     var cohortStatusSelect = document.querySelector('.sheet-filters select[data-instant="cohort-status"]');
 
     var query = searchInput ? searchInput.value.toLowerCase().trim() : '';
     var region = regionSelect ? regionSelect.value : '';
     var city = citySelect ? citySelect.value : '';
+    var bsn = bsnSelect ? bsnSelect.value : '';
     var status = statusSelect ? statusSelect.value : '';
     var cohortStatus = cohortStatusSelect ? cohortStatusSelect.value : '';
+
+    var hasFilters = query || region || city || bsn || status || cohortStatus;
+    var clearBtn = document.getElementById('clear-all-btn');
+    if (clearBtn) clearBtn.style.display = hasFilters ? '' : 'none';
 
     var rows = document.querySelectorAll('.sheet tbody tr');
     var visibleCount = 0;
@@ -423,6 +507,9 @@ function filterTable() {{
         }}
         if (show && city) {{
             if (row.dataset.city !== city) show = false;
+        }}
+        if (show && bsn) {{
+            if (row.dataset.bsn !== bsn) show = false;
         }}
         if (show && status) {{
             var statusSel = row.querySelector('.status-select');
@@ -444,6 +531,17 @@ function filterTable() {{
 
     var countEl = document.querySelector('.sheet-count');
     if (countEl) countEl.textContent = visibleCount + ' of ' + rows.length + ' rows';
+    restripe();
+}}
+
+function clearAllFilters() {{
+    var searchInput = document.querySelector('.sheet-filters input[type="search"]');
+    if (searchInput) searchInput.value = '';
+    document.querySelectorAll('.sheet-filters select[data-instant]').forEach(function(sel) {{
+        sel.value = '';
+    }});
+    filterTable();
+    showToast('Filters cleared');
 }}
 
 function highlightDeadlines() {{
@@ -615,7 +713,62 @@ function updateCompareBtn() {{
 }}
 
 function goCompare() {{
-    showToast('Compare view not available in static version');
+    var checked = document.querySelectorAll('.compare-check:checked');
+    if (checked.length < 2) return;
+    var ids = Array.from(checked).map(function(cb) {{ return parseInt(cb.value); }});
+    var progs = ids.map(function(id) {{ return PROGRAMS.find(function(p) {{ return p.id === id; }}); }}).filter(Boolean);
+    if (progs.length < 2) return;
+
+    var fields = [
+        ['Program', 'program_name'],
+        ['Region', 'region'],
+        ['City', 'city'],
+        ['BSN Required', 'bsn_required'],
+        ['App Open', 'app_open_date'],
+        ['App Close', 'app_close_date'],
+        ['Cohort Start', 'cohort_start'],
+        ['Reputation', '_stars'],
+        ['Pay', 'pay_range'],
+        ['Length', '_length'],
+        ['Specialties', '_specs'],
+        ['Requirements', 'requirements'],
+        ['Notes', 'personal_notes']
+    ];
+
+    var html = '<h2>Compare Programs</h2>';
+    html += '<div class="compare-scroll"><table class="compare-table"><thead><tr><th></th>';
+    progs.forEach(function(p) {{
+        html += '<th>' + escHtml(p.hospital) + '</th>';
+    }});
+    html += '</tr></thead><tbody>';
+
+    fields.forEach(function(f) {{
+        html += '<tr><td class="compare-label">' + f[0] + '</td>';
+        progs.forEach(function(p) {{
+            var val = '';
+            if (f[1] === '_stars') {{
+                val = '\u2605'.repeat(p.reputation) + '\u2606'.repeat(5 - p.reputation);
+            }} else if (f[1] === '_length') {{
+                val = p.program_length_months + ' months';
+            }} else if (f[1] === '_specs') {{
+                val = (p.specialty_units || []).join(', ');
+            }} else {{
+                val = p[f[1]] || '';
+            }}
+            html += '<td>' + escHtml(val).replace(/\\n/g, '<br>') + '</td>';
+        }});
+        html += '</tr>';
+    }});
+
+    html += '</tbody></table></div>';
+    document.getElementById('compare-body').innerHTML = html;
+    document.getElementById('compare-modal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}}
+
+function closeCompareModal() {{
+    document.getElementById('compare-modal').style.display = 'none';
+    document.body.style.overflow = '';
 }}
 
 function exportCSV() {{
@@ -648,6 +801,74 @@ function exportCSV() {{
     a.href = URL.createObjectURL(blob);
     a.download = 'ca_rn_programs.csv';
     a.click();
+}}
+
+function escHtml(str) {{
+    if (!str) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}}
+
+// Detail modal
+function showDetail(id) {{
+    var p = PROGRAMS.find(function(prog) {{ return prog.id === id; }});
+    if (!p) return;
+
+    var stars = '\u2605'.repeat(p.reputation) + '\u2606'.repeat(5 - p.reputation);
+    var specs = (p.specialty_units || []).join(', ') || 'N/A';
+    var infoSessions = (p.info_session_dates || []).join(', ') || 'None listed';
+    var notes = escHtml(p.personal_notes || '').replace(/\\n/g, '<br>');
+    var repNotes = escHtml(p.reputation_notes || '').replace(/\\n/g, '<br>');
+
+    var bsnCls = p.bsn_required === 'No' ? 'bsn-no' : p.bsn_required === 'Preferred' ? 'bsn-pref' : 'bsn-req';
+
+    var html = '<div class="detail-modal-header">';
+    html += '<h2>' + escHtml(p.hospital) + '</h2>';
+    html += '<p class="detail-program-name">' + escHtml(p.program_name) + '</p>';
+    html += '<div class="detail-meta"><span class="stars">' + stars + '</span>';
+    html += ' <span class="' + bsnCls + '">' + escHtml(p.bsn_required || 'N/A') + ' BSN</span></div>';
+    html += '</div>';
+
+    html += '<div class="detail-grid">';
+
+    html += '<div class="detail-section"><h3>Dates</h3><dl>';
+    html += '<dt>App Open</dt><dd>' + escHtml(p.app_open_date || 'TBD') + '</dd>';
+    html += '<dt>App Close</dt><dd>' + escHtml(p.app_close_date || 'TBD') + '</dd>';
+    html += '<dt>Cohort Start</dt><dd>' + escHtml(p.cohort_start || 'TBD') + '</dd>';
+    html += '<dt>Info Sessions</dt><dd>' + escHtml(infoSessions) + '</dd>';
+    html += '</dl></div>';
+
+    html += '<div class="detail-section"><h3>Details</h3><dl>';
+    html += '<dt>Region</dt><dd>' + escHtml(p.region) + '</dd>';
+    html += '<dt>City</dt><dd>' + escHtml(p.city) + '</dd>';
+    html += '<dt>Pay</dt><dd>' + escHtml(p.pay_range || 'N/A') + '</dd>';
+    html += '<dt>Length</dt><dd>' + (p.program_length_months || 'N/A') + ' months</dd>';
+    html += '</dl></div>';
+
+    html += '</div>';
+
+    html += '<div class="detail-section"><h3>Specialties</h3><p>' + escHtml(specs) + '</p></div>';
+    html += '<div class="detail-section"><h3>Requirements</h3><p>' + escHtml(p.requirements || 'N/A').replace(/\\n/g, '<br>') + '</p></div>';
+
+    if (repNotes) {{
+        html += '<div class="detail-section"><h3>Reputation Notes</h3><p class="detail-rep-notes">' + repNotes + '</p></div>';
+    }}
+
+    if (notes) {{
+        html += '<div class="detail-section"><h3>Personal Notes</h3><p class="detail-notes">' + notes + '</p></div>';
+    }}
+
+    if (p.application_url) {{
+        html += '<div class="detail-actions"><a href="' + escHtml(p.application_url) + '" target="_blank" class="apply-btn-modal">Apply Now &rarr;</a></div>';
+    }}
+
+    document.getElementById('modal-body').innerHTML = html;
+    document.getElementById('detail-modal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}}
+
+function closeModal() {{
+    document.getElementById('detail-modal').style.display = 'none';
+    document.body.style.overflow = '';
 }}
 
 function showToast(message) {{
