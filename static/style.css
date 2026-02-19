@@ -7508,3 +7508,66 @@ mark.search-highlight {
 [data-theme="dark"] .window-mini-bar {
     background: #374151;
 }
+
+/* Application funnel chart */
+.funnel-chart {
+    position: relative;
+}
+.funnel-row {
+    margin-bottom: 2px;
+}
+.funnel-arrow {
+    text-align: center;
+    padding: 2px 0;
+    color: #9ca3af;
+    font-size: 0.7rem;
+}
+.funnel-rate {
+    background: #f3f4f6;
+    padding: 1px 6px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.65rem;
+}
+.funnel-bar-wrap {
+    display: flex;
+    justify-content: center;
+}
+.funnel-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 14px;
+    border-radius: 6px;
+    color: #fff;
+    min-height: 36px;
+    transition: width 0.5s ease;
+}
+.funnel-label {
+    font-weight: 600;
+    font-size: 0.82rem;
+    white-space: nowrap;
+}
+.funnel-count {
+    font-weight: 800;
+    font-size: 1.1rem;
+}
+.funnel-rejected {
+    text-align: center;
+    margin-top: 8px;
+    padding: 6px 12px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 6px;
+    color: #dc2626;
+    font-weight: 600;
+    font-size: 0.82rem;
+}
+[data-theme="dark"] .funnel-rate {
+    background: #1f2937;
+    color: #d1d5db;
+}
+[data-theme="dark"] .funnel-rejected {
+    background: #1c0a0a;
+    border-color: #7f1d1d;
+}

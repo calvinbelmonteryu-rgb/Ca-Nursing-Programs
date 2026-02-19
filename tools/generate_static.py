@@ -5527,32 +5527,6 @@ function renderStats() {{
     [5,4,3,2,1].forEach(function(r) {{ repData['\u2605'.repeat(r) + '\u2606'.repeat(5-r)] = repCounts[r]; }});
     html += barChart('Reputation Distribution', repData, null);
 
-    // Application funnel
-    html += '<div class="stats-card"><h3>Application Funnel</h3>';
-    html += '<div class="funnel">';
-    var funnelStages = ['Not Started', 'In Progress', 'Submitted', 'Interview', 'Offer'];
-    var funnelColors = ['#9ca3af', '#f59e0b', '#3b82f6', '#8b5cf6', '#22c55e'];
-    var maxFunnel = Math.max.apply(null, funnelStages.map(function(s) {{ return statusCounts[s] || 0; }})) || 1;
-    funnelStages.forEach(function(stage, i) {{
-        var count = statusCounts[stage] || 0;
-        var widthPct = Math.max(Math.round(count / maxFunnel * 100), count > 0 ? 12 : 4);
-        html += '<div class="funnel-row">';
-        html += '<div class="funnel-bar" style="width:' + widthPct + '%;background:' + funnelColors[i] + '">';
-        html += '<span class="funnel-label">' + stage + '</span>';
-        html += '<span class="funnel-count">' + count + '</span>';
-        html += '</div>';
-        if (i < funnelStages.length - 1) {{
-            var nextCount = statusCounts[funnelStages[i+1]] || 0;
-            var convRate = count > 0 ? Math.round(nextCount / count * 100) : 0;
-            html += '<div class="funnel-arrow">' + convRate + '%</div>';
-        }}
-        html += '</div>';
-    }});
-    if (statusCounts['Rejected'] > 0) {{
-        html += '<div class="funnel-rejected"><span>Rejected: ' + statusCounts['Rejected'] + '</span></div>';
-    }}
-    html += '</div></div>';
-
     // Data quality card
     var missingPay = 0, missingDates = 0, missingUrl = 0, missingCohort = 0;
     var incomplete = [];
@@ -5694,6 +5668,38 @@ function renderStats() {{
     html += '</tbody></table></div></div>';
 
     html += '</div>';
+
+    // Application funnel
+    var funnelStages = ['Not Started', 'In Progress', 'Submitted', 'Interview', 'Offer'];
+    var funnelCounts = funnelStages.map(function(s) {{ return statusCounts[s] || 0; }});
+    var funnelColors = ['#94a3b8', '#3b82f6', '#22c55e', '#a78bfa', '#f59e0b'];
+    var maxFunnel = Math.max.apply(null, funnelCounts.concat([1]));
+    var hasActive = funnelCounts.slice(1).some(function(c) {{ return c > 0; }});
+    if (hasActive) {{
+        html += '<div class="stats-card stats-card-wide"><h3>&#9660; Application Funnel</h3>';
+        html += '<div class="funnel-chart">';
+        funnelStages.forEach(function(stage, i) {{
+            var count = funnelCounts[i];
+            var pct = Math.max(Math.round(count / maxFunnel * 100), 8);
+            var convRate = '';
+            if (i > 0 && funnelCounts[i - 1] > 0) {{
+                var rate = Math.round(count / funnelCounts[i - 1] * 100);
+                convRate = '<span class="funnel-rate">' + rate + '%</span>';
+            }}
+            html += '<div class="funnel-row">';
+            if (i > 0) html += '<div class="funnel-arrow">' + convRate + '</div>';
+            html += '<div class="funnel-bar-wrap">';
+            html += '<div class="funnel-bar" style="width:' + pct + '%;background:' + funnelColors[i] + '">';
+            html += '<span class="funnel-label">' + stage + '</span>';
+            html += '<span class="funnel-count">' + count + '</span>';
+            html += '</div></div></div>';
+        }});
+        // Rejected sidebar
+        if (statusCounts['Rejected'] > 0) {{
+            html += '<div class="funnel-rejected">Rejected: ' + statusCounts['Rejected'] + '</div>';
+        }}
+        html += '</div></div>';
+    }}
 
     // My Journey timeline
     var allLog = JSON.parse(localStorage.getItem('rn_tracker_log') || '[]');
