@@ -13384,6 +13384,22 @@ function saveTags(id, tags) {
     } catch(e) {}
 }
 
+var TAG_COLORS = {
+    'priority': '#ef4444', 'top pick': '#ef4444', 'urgent': '#ef4444',
+    'dream': '#8b5cf6', 'reach': '#8b5cf6',
+    'safety': '#22c55e', 'backup': '#22c55e',
+    'research': '#f59e0b', 'info session': '#f59e0b',
+    'local': '#3b82f6', 'nearby': '#3b82f6',
+    'competitive': '#ec4899', 'hard': '#ec4899'
+};
+function getTagColor(tags) {
+    for (var i = 0; i < tags.length; i++) {
+        var t = tags[i].toLowerCase();
+        if (TAG_COLORS[t]) return TAG_COLORS[t];
+    }
+    return '';
+}
+
 function renderTableTags() {
     var allTags = JSON.parse(localStorage.getItem('rn_tracker_tags') || '{}');
     document.querySelectorAll('.sheet tbody tr').forEach(function(row) {
@@ -13393,10 +13409,14 @@ function renderTableTags() {
         if (!hospCell) return;
         // Remove old tags
         hospCell.querySelectorAll('.table-tag').forEach(function(t) { t.remove(); });
+        // Tag color border
+        var tagColor = getTagColor(tags);
+        row.style.borderLeft = tagColor ? '3px solid ' + tagColor : '';
         if (tags.length > 0) {
             var tagHtml = '';
             tags.slice(0, 2).forEach(function(t) {
-                tagHtml += '<span class="table-tag">' + t + '</span>';
+                var color = TAG_COLORS[t.toLowerCase()] || '#6b7280';
+                tagHtml += '<span class="table-tag" style="border-color:' + color + '">' + t + '</span>';
             });
             if (tags.length > 2) tagHtml += '<span class="table-tag table-tag-more">+' + (tags.length - 2) + '</span>';
             var wrap = document.createElement('span');
