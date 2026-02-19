@@ -388,6 +388,7 @@ def generate():
                         <button type="button" onclick="document.getElementById('restore-file').click(); toggleMoreMenu();">Restore</button>
                         <button type="button" onclick="shareUrl(); toggleMoreMenu();">Share URL</button>
                         <button type="button" onclick="printView(); toggleMoreMenu();">Print / PDF</button>
+                        <button type="button" onclick="exportSummary(); toggleMoreMenu();">Copy Summary</button>
                         <button type="button" onclick="showActivityFeed(); toggleMoreMenu();">Activity Feed</button>
                     </div>
                     <div id="col-menu" class="col-menu" style="display:none">
@@ -421,6 +422,8 @@ def generate():
             <span class="chip-sep"></span>
             <button class="chip chip-purple" onclick="filterCohort('jul-sep', this)">Jul-Sep <span class="chip-count">{cohort_jul_sep}</span></button>
             <button class="chip chip-purple" onclick="filterCohort('oct-dec', this)">Oct-Dec <span class="chip-count">{cohort_oct_dec}</span></button>
+            <span class="chip-sep"></span>
+            <button class="chip chip-focus" onclick="toggleFocusMode(this)" id="focus-chip">Focus Mode</button>
         </div>
 
         <div class="sheet-wrapper">
@@ -1384,6 +1387,18 @@ function filterCohort(range, btn) {{
     showToast('Showing ' + range.replace('-', '\u2013').toUpperCase() + ' 2026 cohorts');
 }}
 
+function toggleFocusMode(btn) {{
+    if (btn.classList.contains('chip-active')) {{
+        clearAllFilters();
+        return;
+    }}
+    resetFilters();
+    window._specialFilter = 'focus';
+    filterTableSpecial();
+    btn.classList.add('chip-active');
+    showToast('Focus Mode: hiding rejected & closed');
+}}
+
 function filterApplyNow(btn) {{
     if (btn.classList.contains('chip-active')) {{
         clearAllFilters();
@@ -1451,6 +1466,20 @@ function filterTableSpecial() {{
                 var closeDate2 = parseDate(closeRaw2);
                 if (closeDate2 && closeDate2 >= today) {{
                     show = true;
+                }}
+            }}
+        }} else if (window._specialFilter === 'focus') {{
+            // Focus mode: hide rejected and closed deadlines
+            var statusSel = row.querySelector('.status-select');
+            var rowStatus = statusSel ? statusSel.value : 'Not Started';
+            if (rowStatus === 'Rejected') {{ show = false; }}
+            else {{
+                show = true;
+                // Also hide if deadline has passed and not already applied
+                if (dateCells.length >= 2 && rowStatus === 'Not Started') {{
+                    var closeRawF = dateCells[1].dataset.raw || '';
+                    var closeDateF = parseDate(closeRawF);
+                    if (closeDateF && closeDateF < today) {{ show = false; }}
                 }}
             }}
         }} else if (window._specialFilter === 'cohort-jul-sep' || window._specialFilter === 'cohort-oct-dec') {{
@@ -2948,7 +2977,24 @@ function renderStats() {{
     html += '<div class="stats-num-card"><span class="stats-big-num stat-green">' + openNow + '</span><span>Open Now</span></div>';
     html += '<div class="stats-num-card"><span class="stats-big-num" style="color:#f59e0b">' + upcoming30 + '</span><span>Closing in 30d</span></div>';
     html += '<div class="stats-num-card"><span class="stats-big-num" style="color:#8b5cf6">' + favs.length + '</span><span>Favorites</span></div>';
-    html += '</div></div>';
+    html += '</div>';
+
+    // Goal tracker
+    var goalTarget = parseInt(localStorage.getItem('rn_tracker_goal') || '10');
+    var applied = (statusCounts['Submitted'] || 0) + (statusCounts['Interview'] || 0) + (statusCounts['Offer'] || 0);
+    var goalPct = Math.min(Math.round(applied / goalTarget * 100), 100);
+    html += '<div class="goal-widget">';
+    html += '<div class="goal-header">';
+    html += '<span class="goal-title">Application Goal</span>';
+    html += '<button class="goal-edit-btn" onclick="editGoal()">Edit</button>';
+    html += '</div>';
+    html += '<div class="goal-bar-wrap">';
+    html += '<div class="goal-bar"><div class="goal-fill" style="width:' + goalPct + '%"></div></div>';
+    html += '<span class="goal-text">' + applied + ' / ' + goalTarget + ' applied (' + goalPct + '%)</span>';
+    html += '</div>';
+    html += '</div>';
+
+    html += '</div>';
 
     // Top recommendations
     var recScores = [];
@@ -3270,6 +3316,64 @@ function launchConfetti() {{
         requestAnimationFrame(animate);
     }}
     animate();
+}}
+
+function exportSummary() {{
+    var savedStatuses = loadSavedStatuses();
+    var today = new Date();
+    var lines = [];
+    lines.push('CA New Grad RN Application Summary');
+    lines.push('Generated: ' + today.toLocaleDateString('en-US', {{weekday:'long', year:'numeric', month:'long', day:'numeric'}}));
+    lines.push('');
+
+    var statuses = ['Interview', 'Submitted', 'In Progress', 'Offer', 'Not Started', 'Rejected'];
+    statuses.forEach(function(status) {{
+        var progs = PROGRAMS.filter(function(p) {{
+            return (savedStatuses[p.id] || p.application_status || 'Not Started') === status;
+        }});
+        if (progs.length === 0) return;
+        lines.push('## ' + status + ' (' + progs.length + ')');
+        progs.forEach(function(p) {{
+            var stars = '\\u2605'.repeat(p.reputation) + '\\u2606'.repeat(5 - p.reputation);
+            var line = '- ' + p.hospital;
+            if (p.pay_range) {{
+                var pm = p.pay_range.match(/(\\$[\\d.,]+\\/hr)/);
+                if (pm) line += ' | ' + pm[1];
+            }}
+            line += ' | ' + p.region + ' | ' + stars;
+            var closeD = parseDate(p.app_close_date);
+            if (closeD) {{
+                var daysLeft = Math.ceil((closeD - today) / (1000*60*60*24));
+                if (daysLeft >= 0 && daysLeft <= 30) {{
+                    line += ' | closes in ' + daysLeft + 'd';
+                }}
+            }}
+            lines.push(line);
+        }});
+        lines.push('');
+    }});
+
+    var goalTarget = parseInt(localStorage.getItem('rn_tracker_goal') || '10');
+    var applied = PROGRAMS.filter(function(p) {{
+        var s = savedStatuses[p.id] || 'Not Started';
+        return s === 'Submitted' || s === 'Interview' || s === 'Offer';
+    }}).length;
+    lines.push('Goal Progress: ' + applied + '/' + goalTarget + ' (' + Math.round(applied/goalTarget*100) + '%)');
+
+    var text = lines.join('\\n');
+    navigator.clipboard.writeText(text).then(function() {{
+        showToast('Summary copied to clipboard!');
+    }});
+}}
+
+function editGoal() {{
+    var current = localStorage.getItem('rn_tracker_goal') || '10';
+    var newGoal = prompt('Set your application goal (number of programs to apply to):', current);
+    if (newGoal && !isNaN(parseInt(newGoal)) && parseInt(newGoal) > 0) {{
+        localStorage.setItem('rn_tracker_goal', parseInt(newGoal).toString());
+        renderStats();
+        showToast('Goal updated to ' + parseInt(newGoal));
+    }}
 }}
 
 function printView() {{

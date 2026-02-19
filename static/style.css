@@ -1574,6 +1574,20 @@ footer small {
     background: rgba(245, 158, 11, 0.15);
 }
 
+.chip-focus {
+    background: #ede9fe;
+    border-color: #a78bfa;
+    color: #6d28d9;
+}
+.chip-focus:hover {
+    background: #ddd6fe;
+}
+.chip-focus.chip-active {
+    background: #7c3aed;
+    color: white;
+    border-color: #7c3aed;
+}
+
 /* ===== MORE ACTIONS ===== */
 .more-actions-wrap {
     position: relative;
@@ -3025,6 +3039,69 @@ mark.search-highlight {
 [data-theme="dark"] .stats-bar-value {
     color: var(--text);
 }
+
+/* Goal tracker */
+.goal-widget {
+    background: linear-gradient(135deg, #eff6ff, #f0fdf4);
+    border: 1px solid #bfdbfe;
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin-top: 12px;
+}
+.goal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+.goal-title {
+    font-weight: 700;
+    font-size: 0.82rem;
+    color: #1e40af;
+}
+.goal-edit-btn {
+    background: none;
+    border: 1px solid #93c5fd;
+    color: #3b82f6;
+    padding: 2px 10px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    cursor: pointer;
+}
+.goal-edit-btn:hover { background: #dbeafe; }
+.goal-bar-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.goal-bar {
+    flex: 1;
+    height: 10px;
+    background: #dbeafe;
+    border-radius: 5px;
+    overflow: hidden;
+}
+.goal-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #3b82f6, #22c55e);
+    border-radius: 5px;
+    transition: width 0.5s ease;
+}
+.goal-text {
+    font-size: 0.72rem;
+    color: #6b7280;
+    white-space: nowrap;
+    font-weight: 600;
+}
+[data-theme="dark"] .goal-widget {
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+    border-color: #334155;
+}
+[data-theme="dark"] .goal-title { color: #60a5fa; }
+[data-theme="dark"] .goal-edit-btn { border-color: #475569; color: #60a5fa; }
+[data-theme="dark"] .goal-edit-btn:hover { background: #1e3a5f; }
+[data-theme="dark"] .goal-bar { background: #334155; }
+[data-theme="dark"] .goal-text { color: #94a3b8; }
 
 /* Recommendations */
 .rec-section {
