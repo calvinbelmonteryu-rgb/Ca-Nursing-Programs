@@ -1442,6 +1442,7 @@ document.addEventListener('DOMContentLoaded', function() {{
     renderNotifications();
     renderDeadlineTicker();
     updateMiniDonuts();
+    renderWaitingBadges();
     renderSavedFilters();
     initRowPreview();
     renderTableTags();
@@ -2120,6 +2121,43 @@ function deleteFilterPreset(idx) {{
     localStorage.setItem('rn_tracker_filter_presets', JSON.stringify(presets));
     renderSavedFilters();
     showToast('Filter deleted');
+}}
+
+function renderWaitingBadges() {{
+    var history = JSON.parse(localStorage.getItem('rn_tracker_status_history') || '{{}}');
+    var savedStatuses = loadSavedStatuses();
+    var today = new Date();
+    document.querySelectorAll('.sheet tbody tr').forEach(function(row) {{
+        var id = row.dataset.id;
+        if (!id) return;
+        var status = savedStatuses[id] || 'Not Started';
+        var existingBadge = row.querySelector('.waiting-badge');
+        if (existingBadge) existingBadge.remove();
+        if (status !== 'Submitted' && status !== 'Interview') return;
+        var progHistory = history[id] || [];
+        // Find when this status was set
+        var statusDate = null;
+        for (var i = progHistory.length - 1; i >= 0; i--) {{
+            if (progHistory[i].status === status) {{
+                statusDate = new Date(progHistory[i].time);
+                break;
+            }}
+        }}
+        if (!statusDate) return;
+        var daysWaiting = Math.floor((today - statusDate) / 86400000);
+        if (daysWaiting < 1) return;
+        var badge = document.createElement('span');
+        badge.className = 'waiting-badge';
+        if (daysWaiting > 30) {{
+            badge.classList.add('waiting-long');
+            badge.title = 'Waiting ' + daysWaiting + ' days — consider following up';
+        }} else {{
+            badge.title = 'Waiting ' + daysWaiting + ' days';
+        }}
+        badge.textContent = daysWaiting + 'd';
+        var statusCell = row.querySelector('.col-status');
+        if (statusCell) statusCell.appendChild(badge);
+    }});
 }}
 
 function updateMiniDonuts() {{
@@ -3780,6 +3818,19 @@ function showDetail(id) {{
     html += ' <span class="' + bsnCls + '">' + escHtml(p.bsn_required || 'N/A') + ' BSN</span>';
     html += ' <select class="modal-status-select ' + statusSelCls + '" id="modal-status" data-id="' + p.id + '">' + statusOpts + '</select>';
     html += ' <span class="readiness-badge" style="background:' + readinessColor + '">' + readinessScore + '% ready</span>';
+    // Waiting days for submitted/interview
+    if (currentStatus === 'Submitted' || currentStatus === 'Interview') {{
+        var waitHist = getStatusHistory(p.id);
+        var waitDate = null;
+        for (var wi = waitHist.length - 1; wi >= 0; wi--) {{
+            if (waitHist[wi].status === currentStatus) {{ waitDate = new Date(waitHist[wi].time); break; }}
+        }}
+        if (waitDate) {{
+            var waitDays = Math.floor((new Date() - waitDate) / 86400000);
+            var waitCls = waitDays > 30 ? 'waiting-badge waiting-long' : 'waiting-badge';
+            html += ' <span class="' + waitCls + '">' + waitDays + 'd waiting</span>';
+        }}
+    }}
     if (p.last_updated) {{
         html += ' <span class="detail-updated">Updated: ' + escHtml(p.last_updated) + '</span>';
     }}

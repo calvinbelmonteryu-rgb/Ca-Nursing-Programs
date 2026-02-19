@@ -6731,3 +6731,37 @@ mark.search-highlight {
 [data-theme="dark"] .mini-tl-event {
     border-color: #1f2937;
 }
+
+/* ===== WAITING BADGES ===== */
+.waiting-badge {
+    display: inline-block;
+    font-size: 0.62rem;
+    font-weight: 600;
+    padding: 1px 5px;
+    border-radius: 4px;
+    background: #eff6ff;
+    color: #1e40af;
+    margin-left: 4px;
+    vertical-align: middle;
+}
+
+.waiting-long {
+    background: #fef2f2;
+    color: #991b1b;
+    animation: waiting-pulse 3s ease-in-out infinite;
+}
+
+@keyframes waiting-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+[data-theme="dark"] .waiting-badge {
+    background: #172554;
+    color: #93c5fd;
+}
+
+[data-theme="dark"] .waiting-long {
+    background: #450a0a;
+    color: #fca5a5;
+}
