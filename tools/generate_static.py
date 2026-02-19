@@ -476,6 +476,50 @@ def generate():
         </div>
     </div>
 
+    <!-- Welcome Modal -->
+    <div id="welcome-modal" class="modal-overlay" style="display:none" role="dialog" aria-modal="true" aria-label="Welcome">
+        <div class="modal-content modal-welcome">
+            <h2>Welcome to CA New Grad RN Tracker</h2>
+            <p class="welcome-subtitle">Track {total} nursing residency programs across California</p>
+
+            <div class="welcome-features">
+                <div class="welcome-feature">
+                    <span class="welcome-icon">&#9733;</span>
+                    <div>
+                        <strong>Star your favorites</strong>
+                        <p>Click the star next to any program to save it for quick access</p>
+                    </div>
+                </div>
+                <div class="welcome-feature">
+                    <span class="welcome-icon">&#128203;</span>
+                    <div>
+                        <strong>Track your progress</strong>
+                        <p>Set application status and use the checklist in each program detail</p>
+                    </div>
+                </div>
+                <div class="welcome-feature">
+                    <span class="welcome-icon">&#128197;</span>
+                    <div>
+                        <strong>Multiple views</strong>
+                        <p>Switch between Table, Pipeline, Calendar, and Stats views</p>
+                    </div>
+                </div>
+                <div class="welcome-feature">
+                    <span class="welcome-icon">&#128268;</span>
+                    <div>
+                        <strong>Export &amp; backup</strong>
+                        <p>Download CSV, calendar (.ics), or backup your data via the More menu</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="welcome-actions">
+                <button onclick="dismissWelcome()" class="welcome-start">Get Started</button>
+                <p class="welcome-hint">Press <kbd>?</kbd> anytime for keyboard shortcuts</p>
+            </div>
+        </div>
+    </div>
+
     <!-- Shortcuts Modal -->
     <div id="shortcuts-modal" class="modal-overlay" style="display:none" role="dialog" aria-modal="true" aria-label="Keyboard Shortcuts">
         <div class="modal-content modal-shortcuts">
@@ -870,6 +914,11 @@ document.addEventListener('DOMContentLoaded', function() {{
     renderStatusSummary();
     renderRecentViewed();
     renderUrgencyBanner();
+
+    // First-time welcome
+    if (!localStorage.getItem('rn_tracker_welcomed')) {{
+        setTimeout(function() {{ openModal('welcome-modal'); }}, 500);
+    }}
 
     // Deep link: #program-5 opens detail modal for program 5
     var hash = window.location.hash;
@@ -1778,6 +1827,7 @@ function backupData() {{
         notes: loadSavedNotes(),
         checklists: JSON.parse(localStorage.getItem('rn_tracker_checklists') || '{{}}'),
         favorites: loadFavorites(),
+        tags: JSON.parse(localStorage.getItem('rn_tracker_tags') || '{{}}'),
         theme: localStorage.getItem('rn_tracker_theme') || 'light',
         density: localStorage.getItem('rn_tracker_density') || 'normal',
         cols: JSON.parse(localStorage.getItem('rn_tracker_cols') || '{{}}'),
@@ -1804,6 +1854,7 @@ function restoreData(input) {{
             if (data.theme) localStorage.setItem('rn_tracker_theme', data.theme);
             if (data.density) localStorage.setItem('rn_tracker_density', data.density);
             if (data.favorites) localStorage.setItem('rn_tracker_favorites', JSON.stringify(data.favorites));
+            if (data.tags) localStorage.setItem('rn_tracker_tags', JSON.stringify(data.tags));
             if (data.cols) localStorage.setItem('rn_tracker_cols', JSON.stringify(data.cols));
             showToast('Data restored! Reloading...');
             setTimeout(function() {{ window.location.reload(); }}, 1000);
@@ -1875,6 +1926,81 @@ function getVisibleProgramIds() {{
     return Array.from(document.querySelectorAll('.sheet tbody tr')).filter(function(r) {{
         return r.style.display !== 'none';
     }}).map(function(r) {{ return parseInt(r.dataset.id); }});
+}}
+
+// Tags
+function loadTags(id) {{
+    try {{
+        var all = JSON.parse(localStorage.getItem('rn_tracker_tags') || '{{}}');
+        return all[id] || [];
+    }} catch(e) {{ return []; }}
+}}
+
+function saveTags(id, tags) {{
+    try {{
+        var all = JSON.parse(localStorage.getItem('rn_tracker_tags') || '{{}}');
+        all[id] = tags;
+        localStorage.setItem('rn_tracker_tags', JSON.stringify(all));
+    }} catch(e) {{}}
+}}
+
+function addTagFromSelect(id, sel) {{
+    var val = sel.value;
+    if (!val) return;
+    if (val === '__custom') {{
+        var custom = prompt('Enter custom tag:');
+        if (!custom || !custom.trim()) {{ sel.value = ''; return; }}
+        val = custom.trim();
+    }}
+    var tags = loadTags(id);
+    if (tags.indexOf(val) === -1) {{
+        tags.push(val);
+        saveTags(id, tags);
+    }}
+    sel.value = '';
+    showDetail(id); // re-render
+    showToast('Tag added');
+}}
+
+function removeTag(id, tag) {{
+    var tags = loadTags(id);
+    tags = tags.filter(function(t) {{ return t !== tag; }});
+    saveTags(id, tags);
+    showDetail(id); // re-render
+    showToast('Tag removed');
+}}
+
+function findSimilarPrograms(prog, limit) {{
+    var scores = [];
+    PROGRAMS.forEach(function(p) {{
+        if (p.id === prog.id) return;
+        var score = 0;
+        // Same region
+        if (p.region === prog.region) score += 3;
+        // Similar reputation
+        var repDiff = Math.abs((p.reputation || 0) - (prog.reputation || 0));
+        if (repDiff === 0) score += 2;
+        else if (repDiff === 1) score += 1;
+        // Similar pay
+        var payA = parsePay(prog.pay_range || '');
+        var payB = parsePay(p.pay_range || '');
+        if (payA && payB) {{
+            var payDiff = Math.abs(payA - payB);
+            if (payDiff < 5) score += 2;
+            else if (payDiff < 10) score += 1;
+        }}
+        // Same BSN requirement
+        if (p.bsn_required === prog.bsn_required) score += 1;
+        // Overlapping specialties
+        var specA = prog.specialty_units || [];
+        var specB = p.specialty_units || [];
+        specA.forEach(function(s) {{
+            if (specB.indexOf(s) !== -1) score += 1;
+        }});
+        if (score > 0) scores.push({{ prog: p, score: score }});
+    }});
+    scores.sort(function(a, b) {{ return b.score - a.score; }});
+    return scores.slice(0, limit).map(function(s) {{ return s.prog; }});
 }}
 
 // Detail modal
@@ -1979,6 +2105,42 @@ function showDetail(id) {{
     html += '<div class="checklist-progress-bar"><div class="checklist-progress-fill" style="width:' + pct + '%"></div></div>';
     html += '<div class="checklist-progress">' + done + ' of ' + checklistItems.length + ' complete (' + pct + '%)</div>';
     html += '</div>';
+
+    // Tags
+    var savedTags = loadTags(p.id);
+    var presetTags = ['Top Pick', 'Backup', 'Good Location', 'Great Pay', 'Dream Job', 'Research More'];
+    html += '<div class="detail-section"><h3>Tags</h3>';
+    html += '<div class="tag-container" id="modal-tags">';
+    savedTags.forEach(function(t) {{
+        html += '<span class="tag-pill">' + escHtml(t) + ' <button onclick="removeTag(' + p.id + ', \\\'' + escHtml(t).replace(/'/g, "\\\\'") + '\\\')" class="tag-remove">&times;</button></span>';
+    }});
+    html += '<div class="tag-add-wrap">';
+    html += '<select id="tag-select" onchange="addTagFromSelect(' + p.id + ', this)">';
+    html += '<option value="">+ Add tag</option>';
+    presetTags.forEach(function(t) {{
+        if (savedTags.indexOf(t) === -1) {{
+            html += '<option value="' + escHtml(t) + '">' + escHtml(t) + '</option>';
+        }}
+    }});
+    html += '<option value="__custom">Custom...</option>';
+    html += '</select>';
+    html += '</div></div></div>';
+
+    // Similar programs
+    var similar = findSimilarPrograms(p, 4);
+    if (similar.length > 0) {{
+        html += '<div class="detail-section"><h3>Similar Programs</h3>';
+        html += '<div class="similar-programs">';
+        similar.forEach(function(sp) {{
+            var spStars = '\u2605'.repeat(sp.reputation) + '\u2606'.repeat(5 - sp.reputation);
+            html += '<a href="#" class="similar-card" onclick="showDetail(' + sp.id + '); return false;">';
+            html += '<strong>' + escHtml(sp.hospital) + '</strong>';
+            html += '<span class="stars" style="font-size:0.65rem">' + spStars + '</span>';
+            html += '<span style="font-size:0.7rem;color:#6b7280">' + escHtml(sp.region) + '</span>';
+            html += '</a>';
+        }});
+        html += '</div></div>';
+    }}
 
     if (p.application_url) {{
         html += '<div class="detail-actions"><a href="' + escHtml(p.application_url) + '" target="_blank" class="apply-btn-modal">Apply Now &rarr;</a></div>';
@@ -2502,6 +2664,11 @@ function renderCalendar() {{
     html += '</div>';
 
     document.getElementById('cal-grid').innerHTML = html;
+}}
+
+function dismissWelcome() {{
+    localStorage.setItem('rn_tracker_welcomed', 'true');
+    closeModalEl(document.getElementById('welcome-modal'));
 }}
 
 function toggleShortcutHelp() {{
