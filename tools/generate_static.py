@@ -228,6 +228,7 @@ def generate():
 
         row = f"""<tr data-id="{p['id']}" data-region="{esc(p.get('region',''))}" data-city="{esc(p.get('city',''))}" data-bsn="{esc(bsn)}" data-status="{esc(status)}">
 <td class="col-check"><input type="checkbox" class="compare-check" value="{p['id']}"></td>
+<td class="col-fav"><button class="fav-btn" data-id="{p['id']}" onclick="toggleFav({p['id']})" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="{p['id']}">{esc(p['hospital'])}</a></td>
 <td class="col-program">{esc(p.get('program_name',''))}</td>
 <td class="col-region">{region_dot}{esc(p.get('region',''))}</td>
@@ -300,6 +301,7 @@ def generate():
         <ul>
             <li><a href="#" class="active">Programs</a></li>
             <li><a href="#" onclick="toggleTheme(); return false;" id="theme-toggle" title="Toggle dark mode">Dark</a></li>
+            <li><a href="#" onclick="toggleShortcutHelp(); return false;" title="Keyboard shortcuts (?)" class="nav-help">?</a></li>
         </ul>
     </nav>
 
@@ -333,8 +335,16 @@ def generate():
                 <span class="sheet-count">{total} rows</span>
                 <button type="button" class="clear-filter" id="clear-all-btn" onclick="clearAllFilters()" style="display:none">Clear All</button>
                 <span class="filter-spacer"></span>
-                <div class="col-toggle-wrap">
-                    <button type="button" onclick="toggleColMenu()" title="Show/hide columns">Columns</button>
+                <button type="button" id="compare-btn" disabled onclick="goCompare()">Compare</button>
+                <div class="more-actions-wrap">
+                    <button type="button" onclick="toggleMoreMenu()" title="More actions" id="more-btn">More &darr;</button>
+                    <div id="more-menu" class="more-menu" style="display:none">
+                        <button type="button" onclick="toggleColMenu()">Columns</button>
+                        <button type="button" onclick="toggleDensity(); toggleMoreMenu();" id="density-btn">Compact</button>
+                        <button type="button" onclick="exportCSV(); toggleMoreMenu();">Export CSV</button>
+                        <button type="button" onclick="backupData(); toggleMoreMenu();">Backup</button>
+                        <button type="button" onclick="document.getElementById('restore-file').click(); toggleMoreMenu();">Restore</button>
+                    </div>
                     <div id="col-menu" class="col-menu" style="display:none">
                         <label><input type="checkbox" data-toggle-col="col-program" checked> Program</label>
                         <label><input type="checkbox" data-toggle-col="col-region" checked> Region</label>
@@ -348,16 +358,15 @@ def generate():
                         <label><input type="checkbox" data-toggle-col="col-notes" checked> Notes</label>
                     </div>
                 </div>
-                <button type="button" id="compare-btn" disabled onclick="goCompare()">Compare</button>
-                <button type="button" onclick="toggleDensity()" title="Toggle compact/comfortable view" id="density-btn">Compact</button>
-                <button type="button" onclick="exportCSV()" title="Export CSV">Export</button>
-                <button type="button" onclick="backupData()" title="Backup all your data (statuses, notes, checklists)">Backup</button>
-                <button type="button" onclick="document.getElementById('restore-file').click()" title="Restore from backup">Restore</button>
                 <input type="file" id="restore-file" accept=".json" style="display:none" onchange="restoreData(this)">
             </div>
         </div>
 
+        <div class="status-summary" id="status-summary"></div>
+
         <div class="quick-chips">
+            <button class="chip chip-red" onclick="filterFavorites(this)" id="fav-chip">&#9733; Favorites <span class="chip-count" id="fav-count">0</span></button>
+            <span class="chip-sep"></span>
             <button class="chip chip-green" onclick="filterOpen(this)">Open Now <span class="chip-count">{open_now}</span></button>
             <button class="chip chip-amber" onclick="filterUpcoming(this)">Upcoming <span class="chip-count">{upcoming}</span></button>
             <button class="chip" onclick="filterBsn('No', this)">ADN OK</button>
@@ -372,20 +381,21 @@ def generate():
                 <thead>
                     <tr>
                         <th class="col-check"><input type="checkbox" id="select-all"></th>
-                        <th class="col-hospital frozen-col sortable" data-col="1" data-sort="text" data-label="Hospital">Hospital <span class="sort-arrow">&udarr;</span></th>
-                        <th class="col-program sortable" data-col="2" data-sort="text" data-label="Program">Program <span class="sort-arrow">&udarr;</span></th>
-                        <th class="col-region sortable" data-col="3" data-sort="text" data-label="Region">Region <span class="sort-arrow">&udarr;</span></th>
-                        <th class="col-city sortable" data-col="4" data-sort="text" data-label="City">City <span class="sort-arrow">&udarr;</span></th>
-                        <th class="col-bsn sortable" data-col="5" data-sort="text" data-label="BSN">BSN <span class="sort-arrow">&udarr;</span></th>
-                        <th class="col-date sortable" data-col="6" data-sort="date" data-label="App Open">App Open <span class="sort-arrow">&udarr;</span></th>
-                        <th class="col-date sortable" data-col="7" data-sort="date" data-label="App Close">App Close <span class="sort-arrow">&udarr;</span></th>
-                        <th class="col-date sortable" data-col="8" data-sort="date" data-label="Cohort">Cohort <span class="sort-arrow">&udarr;</span></th>
-                        <th class="col-rep sortable" data-col="9" data-sort="stars" data-label="Reputation">Rep <span class="sort-arrow">&udarr;</span></th>
-                        <th class="col-pay sortable" data-col="10" data-sort="pay" data-label="Pay">Pay <span class="sort-arrow">&udarr;</span></th>
-                        <th class="col-len sortable" data-col="11" data-sort="num" data-label="Length">Len <span class="sort-arrow">&udarr;</span></th>
-                        <th class="col-specialties sortable" data-col="12" data-sort="text" data-label="Specialties">Specialties <span class="sort-arrow">&udarr;</span></th>
-                        <th class="col-status sortable" data-col="13" data-sort="status" data-label="Status">Status <span class="sort-arrow">&udarr;</span></th>
-                        <th class="col-notes sortable" data-col="14" data-sort="text" data-label="Notes">Notes <span class="sort-arrow">&udarr;</span></th>
+                        <th class="col-fav" title="Favorites">&#9733;</th>
+                        <th class="col-hospital frozen-col sortable" data-col="2" data-sort="text" data-label="Hospital">Hospital <span class="sort-arrow">&udarr;</span></th>
+                        <th class="col-program sortable" data-col="3" data-sort="text" data-label="Program">Program <span class="sort-arrow">&udarr;</span></th>
+                        <th class="col-region sortable" data-col="4" data-sort="text" data-label="Region">Region <span class="sort-arrow">&udarr;</span></th>
+                        <th class="col-city sortable" data-col="5" data-sort="text" data-label="City">City <span class="sort-arrow">&udarr;</span></th>
+                        <th class="col-bsn sortable" data-col="6" data-sort="text" data-label="BSN">BSN <span class="sort-arrow">&udarr;</span></th>
+                        <th class="col-date sortable" data-col="7" data-sort="date" data-label="App Open">App Open <span class="sort-arrow">&udarr;</span></th>
+                        <th class="col-date sortable" data-col="8" data-sort="date" data-label="App Close">App Close <span class="sort-arrow">&udarr;</span></th>
+                        <th class="col-date sortable" data-col="9" data-sort="date" data-label="Cohort">Cohort <span class="sort-arrow">&udarr;</span></th>
+                        <th class="col-rep sortable" data-col="10" data-sort="stars" data-label="Reputation">Rep <span class="sort-arrow">&udarr;</span></th>
+                        <th class="col-pay sortable" data-col="11" data-sort="pay" data-label="Pay">Pay <span class="sort-arrow">&udarr;</span></th>
+                        <th class="col-len sortable" data-col="12" data-sort="num" data-label="Length">Len <span class="sort-arrow">&udarr;</span></th>
+                        <th class="col-specialties sortable" data-col="13" data-sort="text" data-label="Specialties">Specialties <span class="sort-arrow">&udarr;</span></th>
+                        <th class="col-status sortable" data-col="14" data-sort="status" data-label="Status">Status <span class="sort-arrow">&udarr;</span></th>
+                        <th class="col-notes sortable" data-col="15" data-sort="text" data-label="Notes">Notes <span class="sort-arrow">&udarr;</span></th>
                         <th class="col-apply">Apply</th>
                     </tr>
                 </thead>
@@ -402,6 +412,38 @@ def generate():
         <div class="modal-content">
             <button class="modal-close" onclick="closeModal()" aria-label="Close">&times;</button>
             <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <!-- Shortcuts Modal -->
+    <div id="shortcuts-modal" class="modal-overlay" style="display:none" role="dialog" aria-modal="true" aria-label="Keyboard Shortcuts">
+        <div class="modal-content modal-shortcuts">
+            <button class="modal-close" onclick="closeModalEl(document.getElementById('shortcuts-modal'))" aria-label="Close">&times;</button>
+            <h2>Keyboard Shortcuts</h2>
+            <div class="shortcuts-grid">
+                <div class="shortcut-group">
+                    <h3>Navigation</h3>
+                    <div class="shortcut-row"><kbd>j</kbd> / <kbd>&darr;</kbd> <span>Next row</span></div>
+                    <div class="shortcut-row"><kbd>k</kbd> / <kbd>&uarr;</kbd> <span>Previous row</span></div>
+                    <div class="shortcut-row"><kbd>Enter</kbd> <span>Open program details</span></div>
+                    <div class="shortcut-row"><kbd>&larr;</kbd> <span>Previous program (in modal)</span></div>
+                    <div class="shortcut-row"><kbd>&rarr;</kbd> <span>Next program (in modal)</span></div>
+                    <div class="shortcut-row"><kbd>Esc</kbd> <span>Close modal / blur input</span></div>
+                </div>
+                <div class="shortcut-group">
+                    <h3>Actions</h3>
+                    <div class="shortcut-row"><kbd>/</kbd> <span>Focus search</span></div>
+                    <div class="shortcut-row"><kbd>f</kbd> <span>Toggle favorite (selected row)</span></div>
+                    <div class="shortcut-row"><kbd>d</kbd> <span>Toggle dark mode</span></div>
+                    <div class="shortcut-row"><kbd>?</kbd> <span>Show this help</span></div>
+                </div>
+                <div class="shortcut-group">
+                    <h3>Mobile</h3>
+                    <div class="shortcut-row">Swipe &larr; <span>Next program (in modal)</span></div>
+                    <div class="shortcut-row">Swipe &rarr; <span>Previous program (in modal)</span></div>
+                    <div class="shortcut-row">Double-tap <span>Open program details</span></div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -509,6 +551,97 @@ function removeChecklistItem(id, idx) {{
     }} catch(e) {{}}
 }}
 
+// Favorites
+function loadFavorites() {{
+    try {{
+        return JSON.parse(localStorage.getItem('rn_tracker_favorites') || '[]');
+    }} catch(e) {{ return []; }}
+}}
+
+function saveFavorites(favs) {{
+    try {{
+        localStorage.setItem('rn_tracker_favorites', JSON.stringify(favs));
+    }} catch(e) {{}}
+}}
+
+function toggleFav(id) {{
+    var favs = loadFavorites();
+    var idx = favs.indexOf(id);
+    if (idx !== -1) {{
+        favs.splice(idx, 1);
+    }} else {{
+        favs.push(id);
+    }}
+    saveFavorites(favs);
+    renderFavButtons();
+    updateFavCount();
+}}
+
+function renderFavButtons() {{
+    var favs = loadFavorites();
+    document.querySelectorAll('.fav-btn').forEach(function(btn) {{
+        var id = parseInt(btn.dataset.id);
+        if (favs.indexOf(id) !== -1) {{
+            btn.innerHTML = '\u2605';
+            btn.classList.add('fav-active');
+        }} else {{
+            btn.innerHTML = '\u2606';
+            btn.classList.remove('fav-active');
+        }}
+    }});
+}}
+
+function updateFavCount() {{
+    var cnt = document.getElementById('fav-count');
+    if (cnt) cnt.textContent = loadFavorites().length;
+}}
+
+function renderStatusSummary() {{
+    var statuses = loadSavedStatuses();
+    var counts = {{ 'Not Started': 0, 'In Progress': 0, 'Submitted': 0, 'Interview': 0, 'Offer': 0, 'Rejected': 0 }};
+    var total = PROGRAMS.length;
+    PROGRAMS.forEach(function(p) {{
+        var s = statuses[p.id] || p.application_status || 'Not Started';
+        if (counts.hasOwnProperty(s)) counts[s]++;
+    }});
+    var applied = counts['Submitted'] + counts['Interview'] + counts['Offer'];
+    var bar = document.getElementById('status-summary');
+    if (!bar) return;
+    var html = '<div class="summary-pills">';
+    if (counts['In Progress'] > 0) html += '<span class="summary-pill pill-in-progress" onclick="filterByStatus(\'In Progress\')">' + counts['In Progress'] + ' In Progress</span>';
+    if (counts['Submitted'] > 0) html += '<span class="summary-pill pill-submitted" onclick="filterByStatus(\'Submitted\')">' + counts['Submitted'] + ' Submitted</span>';
+    if (counts['Interview'] > 0) html += '<span class="summary-pill pill-interview" onclick="filterByStatus(\'Interview\')">' + counts['Interview'] + ' Interview</span>';
+    if (counts['Offer'] > 0) html += '<span class="summary-pill pill-offer" onclick="filterByStatus(\'Offer\')">' + counts['Offer'] + ' Offer</span>';
+    if (counts['Rejected'] > 0) html += '<span class="summary-pill pill-rejected" onclick="filterByStatus(\'Rejected\')">' + counts['Rejected'] + ' Rejected</span>';
+    var remaining = counts['Not Started'];
+    if (remaining > 0) html += '<span class="summary-pill pill-not-started">' + remaining + ' Not Started</span>';
+    html += '</div>';
+    bar.innerHTML = html;
+    // Hide if all are Not Started
+    bar.style.display = (counts['Not Started'] === total) ? 'none' : '';
+}}
+
+function filterByStatus(status) {{
+    resetFilters();
+    var statusSel = document.querySelector('[data-instant="status"]');
+    if (statusSel) statusSel.value = status;
+    filterTable();
+    updateUrlParams();
+    showToast('Showing ' + status);
+}}
+
+function filterFavorites(btn) {{
+    if (btn.classList.contains('chip-active')) {{
+        clearAllFilters();
+        return;
+    }}
+    resetFilters();
+    window._specialFilter = 'favorites';
+    filterTableSpecial();
+    btn.classList.add('chip-active');
+    showToast('Showing favorites');
+}}
+
 document.addEventListener('DOMContentLoaded', function() {{
     // Restore saved statuses from localStorage
     var savedStatuses = loadSavedStatuses();
@@ -532,6 +665,7 @@ document.addEventListener('DOMContentLoaded', function() {{
                 applyRowStatus(row, this.value);
                 row.dataset.status = this.value;
                 saveStatus(this.dataset.id, this.value);
+                renderStatusSummary();
                 showToast('Status saved');
             }}
         }});
@@ -621,8 +755,17 @@ document.addEventListener('DOMContentLoaded', function() {{
         if (e.key === 'Escape') document.activeElement.blur();
 
         if (!isEditing(e.target)) {{
-            // Dark mode shortcut
+            // Keyboard shortcuts
             if (e.key === 'd') {{ toggleTheme(); return; }}
+            if (e.key === 'f') {{
+                // Toggle favorite on selected row
+                var selRow = document.querySelector('.sheet tbody tr.selected-row');
+                if (selRow && selRow.dataset.id) {{
+                    toggleFav(parseInt(selRow.dataset.id));
+                    return;
+                }}
+            }}
+            if (e.key === '?') {{ toggleShortcutHelp(); return; }}
 
             // Modal prev/next with arrow keys
             var detailModal = document.getElementById('detail-modal');
@@ -661,6 +804,16 @@ document.addEventListener('DOMContentLoaded', function() {{
     }});
 
     highlightDeadlines();
+    renderFavButtons();
+    updateFavCount();
+    renderStatusSummary();
+
+    // Deep link: #program-5 opens detail modal for program 5
+    var hash = window.location.hash;
+    if (hash && hash.startsWith('#program-')) {{
+        var deepId = parseInt(hash.replace('#program-', ''));
+        if (deepId) setTimeout(function() {{ showDetail(deepId); }}, 100);
+    }}
 
     // Back to top button visibility
     var topBtn = document.getElementById('back-to-top');
@@ -955,7 +1108,11 @@ function filterTableSpecial() {{
         var dateCells = row.querySelectorAll('.col-date');
         var show = false;
 
-        if (window._specialFilter === 'open') {{
+        if (window._specialFilter === 'favorites') {{
+            var favs = loadFavorites();
+            var rowId = parseInt(row.dataset.id);
+            if (favs.indexOf(rowId) !== -1) show = true;
+        }} else if (window._specialFilter === 'open') {{
             if (dateCells.length >= 2) {{
                 var openRaw = dateCells[0].dataset.raw || '';
                 var closeRaw = dateCells[1].dataset.raw || '';
@@ -1299,17 +1456,28 @@ function highlightSelectedRow(rows, idx) {{
     }}
 }}
 
-function toggleColMenu() {{
-    var menu = document.getElementById('col-menu');
+function toggleMoreMenu() {{
+    var menu = document.getElementById('more-menu');
     menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+    // Close col menu when toggling more menu
+    if (menu.style.display === 'none') {{
+        document.getElementById('col-menu').style.display = 'none';
+    }}
 }}
 
-// Close column menu when clicking outside
+function toggleColMenu() {{
+    var colMenu = document.getElementById('col-menu');
+    colMenu.style.display = colMenu.style.display === 'none' ? 'block' : 'none';
+}}
+
+// Close menus when clicking outside
 document.addEventListener('click', function(e) {{
-    var wrap = document.querySelector('.col-toggle-wrap');
-    var menu = document.getElementById('col-menu');
-    if (wrap && menu && !wrap.contains(e.target)) {{
-        menu.style.display = 'none';
+    var moreWrap = document.querySelector('.more-actions-wrap');
+    if (moreWrap && !moreWrap.contains(e.target)) {{
+        var moreMenu = document.getElementById('more-menu');
+        var colMenu = document.getElementById('col-menu');
+        if (moreMenu) moreMenu.style.display = 'none';
+        if (colMenu) colMenu.style.display = 'none';
     }}
 }});
 
@@ -1352,6 +1520,7 @@ function backupData() {{
         statuses: loadSavedStatuses(),
         notes: loadSavedNotes(),
         checklists: JSON.parse(localStorage.getItem('rn_tracker_checklists') || '{{}}'),
+        favorites: loadFavorites(),
         theme: localStorage.getItem('rn_tracker_theme') || 'light',
         density: localStorage.getItem('rn_tracker_density') || 'normal',
         cols: JSON.parse(localStorage.getItem('rn_tracker_cols') || '{{}}'),
@@ -1377,6 +1546,7 @@ function restoreData(input) {{
             if (data.checklists) localStorage.setItem('rn_tracker_checklists', JSON.stringify(data.checklists));
             if (data.theme) localStorage.setItem('rn_tracker_theme', data.theme);
             if (data.density) localStorage.setItem('rn_tracker_density', data.density);
+            if (data.favorites) localStorage.setItem('rn_tracker_favorites', JSON.stringify(data.favorites));
             if (data.cols) localStorage.setItem('rn_tracker_cols', JSON.stringify(data.cols));
             showToast('Data restored! Reloading...');
             setTimeout(function() {{ window.location.reload(); }}, 1000);
@@ -1466,8 +1636,19 @@ function showDetail(id) {{
     var html = '<div class="detail-modal-header">';
     html += '<h2>' + escHtml(p.hospital) + '</h2>';
     html += '<p class="detail-program-name">' + escHtml(p.program_name) + '</p>';
+    // Status selector in modal
+    var savedStatuses = loadSavedStatuses();
+    var currentStatus = savedStatuses[p.id] || p.application_status || 'Not Started';
+    var modalStatuses = ['Not Started', 'In Progress', 'Submitted', 'Interview', 'Offer', 'Rejected'];
+    var statusOpts = '';
+    modalStatuses.forEach(function(s) {{
+        statusOpts += '<option value="' + s + '"' + (s === currentStatus ? ' selected' : '') + '>' + s + '</option>';
+    }});
+    var statusSelCls = selectStatusClasses[currentStatus] || '';
+
     html += '<div class="detail-meta"><span class="stars">' + stars + '</span>';
     html += ' <span class="' + bsnCls + '">' + escHtml(p.bsn_required || 'N/A') + ' BSN</span>';
+    html += ' <select class="modal-status-select ' + statusSelCls + '" id="modal-status" data-id="' + p.id + '">' + statusOpts + '</select>';
     if (p.last_updated) {{
         html += ' <span class="detail-updated">Updated: ' + escHtml(p.last_updated) + '</span>';
     }}
@@ -1557,6 +1738,7 @@ function showDetail(id) {{
 
     document.getElementById('modal-body').innerHTML = html;
     openModal('detail-modal');
+    history.replaceState(null, '', '#program-' + id);
 
     // Auto-save notes on input
     var notesArea = document.getElementById('modal-notes');
@@ -1567,6 +1749,30 @@ function showDetail(id) {{
             saveTimer = setTimeout(function() {{
                 saveNote(p.id, notesArea.value);
             }}, 500);
+        }});
+    }}
+
+    // Modal status change handler
+    var modalStatusSel = document.getElementById('modal-status');
+    if (modalStatusSel) {{
+        modalStatusSel.addEventListener('change', function() {{
+            var newStatus = this.value;
+            var progId = parseInt(this.dataset.id);
+            // Save to localStorage
+            saveStatus(progId, newStatus);
+            // Update table row
+            var row = document.querySelector('tr[data-id="' + progId + '"]');
+            if (row) {{
+                applyRowStatus(row, newStatus);
+                row.dataset.status = newStatus;
+                var tableSel = row.querySelector('.status-select');
+                if (tableSel) tableSel.value = newStatus;
+            }}
+            // Update modal select styling
+            Object.values(selectStatusClasses).forEach(function(c) {{ modalStatusSel.classList.remove(c); }});
+            if (selectStatusClasses[newStatus]) modalStatusSel.classList.add(selectStatusClasses[newStatus]);
+            renderStatusSummary();
+            showToast('Status updated');
         }});
     }}
 
@@ -1608,8 +1814,20 @@ function closeModalEl(el) {{
     setTimeout(function() {{ el.style.display = 'none'; }}, 200);
 }}
 
+function toggleShortcutHelp() {{
+    var modal = document.getElementById('shortcuts-modal');
+    if (modal.classList.contains('modal-visible')) {{
+        closeModalEl(modal);
+    }} else {{
+        openModal('shortcuts-modal');
+    }}
+}}
+
 function closeModal() {{
     closeModalEl(document.getElementById('detail-modal'));
+    if (window.location.hash.startsWith('#program-')) {{
+        history.replaceState(null, '', window.location.pathname + window.location.search);
+    }}
 }}
 
 function showToast(message) {{

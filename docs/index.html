@@ -281,7 +281,7 @@ tbody tr:hover .col-check { background: #eff6ff; }
 /* Frozen hospital column */
 .frozen-col {
     position: sticky;
-    left: 28px;
+    left: 56px;
     z-index: 5;
     background: inherit;
     box-shadow: 2px 0 4px rgba(0,0,0,0.06);
@@ -852,6 +852,14 @@ a.bar-link:hover { background: #f3f4f6; }
         display: none;
     }
 
+    .shortcuts-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .col-fav {
+        display: none;
+    }
+
     .sheet-filters button,
     .sheet-filters a {
         height: 32px;
@@ -903,7 +911,8 @@ a.bar-link:hover { background: #f3f4f6; }
 }
 
 .sheet tbody tr.selected-row .frozen-col,
-.sheet tbody tr.selected-row .col-check {
+.sheet tbody tr.selected-row .col-check,
+.sheet tbody tr.selected-row .col-fav {
     background: #eff6ff !important;
 }
 
@@ -987,6 +996,53 @@ footer small {
     margin-left: 4px;
     vertical-align: middle;
 }
+
+/* ===== STATUS SUMMARY ===== */
+.status-summary {
+    padding: 4px 8px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.summary-pills {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.summary-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 10px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: opacity 0.15s;
+}
+
+.summary-pill:hover {
+    opacity: 0.8;
+}
+
+.pill-not-started { background: #e5e7eb; color: #374151; cursor: default; }
+.pill-not-started:hover { opacity: 1; }
+.pill-in-progress { background: #fef3c7; color: #92400e; }
+.pill-submitted { background: #dbeafe; color: #1e40af; }
+.pill-interview { background: #ede9fe; color: #5b21b6; }
+.pill-offer { background: #d1fae5; color: #065f46; }
+.pill-rejected { background: #fee2e2; color: #991b1b; }
+
+[data-theme="dark"] .status-summary {
+    border-color: var(--border);
+}
+
+[data-theme="dark"] .pill-not-started { background: #334155; color: var(--text-muted); }
+[data-theme="dark"] .pill-in-progress { background: #422006; color: #fcd34d; }
+[data-theme="dark"] .pill-submitted { background: #1e3a5f; color: #93c5fd; }
+[data-theme="dark"] .pill-interview { background: #2e1065; color: #c4b5fd; }
+[data-theme="dark"] .pill-offer { background: #064e3b; color: #6ee7b7; }
+[data-theme="dark"] .pill-rejected { background: #450a0a; color: #fca5a5; }
 
 /* ===== QUICK CHIPS ===== */
 .quick-chips {
@@ -1088,12 +1144,57 @@ footer small {
     background: rgba(245, 158, 11, 0.15);
 }
 
-/* ===== COLUMN TOGGLE ===== */
-.col-toggle-wrap {
+/* ===== MORE ACTIONS ===== */
+.more-actions-wrap {
     position: relative;
     display: inline-block;
 }
 
+.more-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    padding: 4px;
+    z-index: 30;
+    min-width: 120px;
+}
+
+.more-menu button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 6px 12px;
+    font-size: 0.75rem;
+    border: none;
+    background: none;
+    color: #374151;
+    cursor: pointer;
+    border-radius: 4px;
+    white-space: nowrap;
+}
+
+.more-menu button:hover {
+    background: #f3f4f6;
+}
+
+[data-theme="dark"] .more-menu {
+    background: var(--surface);
+    border-color: var(--border);
+}
+
+[data-theme="dark"] .more-menu button {
+    color: var(--text);
+}
+
+[data-theme="dark"] .more-menu button:hover {
+    background: #334155;
+}
+
+/* ===== COLUMN TOGGLE ===== */
 .col-menu {
     position: absolute;
     top: 100%;
@@ -1211,12 +1312,14 @@ footer small {
 }
 
 .sheet tbody tr.even-row .frozen-col,
-.sheet tbody tr.even-row .col-check {
+.sheet tbody tr.even-row .col-check,
+.sheet tbody tr.even-row .col-fav {
     background: #fafafa;
 }
 
 .sheet tbody tr.odd-row .frozen-col,
-.sheet tbody tr.odd-row .col-check {
+.sheet tbody tr.odd-row .col-check,
+.sheet tbody tr.odd-row .col-fav {
     background: white;
 }
 
@@ -1447,6 +1550,23 @@ footer small {
     font-size: 0.72rem;
 }
 
+/* Modal status selector */
+.modal-status-select {
+    padding: 3px 8px;
+    font-size: 0.78rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-left: auto;
+    font-weight: 600;
+}
+
+.modal-status-select.sel-in-progress { color: #92400e; background: #fef3c7; border-color: #fcd34d; }
+.modal-status-select.sel-submitted { color: #1e40af; background: #dbeafe; border-color: #93c5fd; }
+.modal-status-select.sel-interview { color: #5b21b6; background: #ede9fe; border-color: #c4b5fd; }
+.modal-status-select.sel-offer { color: #065f46; background: #d1fae5; border-color: #6ee7b7; }
+.modal-status-select.sel-rejected { color: #991b1b; background: #fee2e2; border-color: #fca5a5; }
+
 /* Application checklist */
 .app-checklist {
     list-style: none;
@@ -1525,6 +1645,65 @@ footer small {
 .compare-best {
     background: #ecfdf5 !important;
     font-weight: 600;
+}
+
+/* ===== FAVORITES ===== */
+.col-fav {
+    width: 28px;
+    text-align: center;
+    padding: 2px !important;
+    position: sticky;
+    left: 28px;
+    z-index: 4;
+    background: inherit;
+}
+
+thead .col-fav {
+    z-index: 14;
+    background: #f3f4f6;
+}
+
+tbody tr:nth-child(odd) .col-fav { background: white; }
+tbody tr:nth-child(even) .col-fav { background: #fafafa; }
+tbody tr:hover .col-fav { background: #eff6ff; }
+.row-in-progress .col-fav { background: #fefce8 !important; }
+.row-submitted .col-fav { background: #eff6ff !important; }
+.row-interview .col-fav { background: #f5f3ff !important; }
+.row-offer .col-fav { background: #ecfdf5 !important; }
+.row-rejected .col-fav { background: #fef2f2 !important; }
+
+.fav-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    color: #d1d5db;
+    padding: 0;
+    line-height: 1;
+    transition: color 0.15s, transform 0.15s;
+}
+
+.fav-btn:hover {
+    color: #f59e0b;
+    transform: scale(1.2);
+}
+
+.fav-btn.fav-active {
+    color: #f59e0b;
+}
+
+.chip-red {
+    border-color: #fca5a5;
+    color: #b91c1c;
+    background: #fef2f2;
+}
+
+.chip-red:hover {
+    background: #fee2e2;
+}
+
+.chip-red .chip-count {
+    background: rgba(239, 68, 68, 0.15);
 }
 
 /* ===== PAY CELL ===== */
@@ -1832,17 +2011,20 @@ mark.search-highlight {
 }
 
 [data-theme="dark"] .sheet tbody tr.even-row .frozen-col,
-[data-theme="dark"] .sheet tbody tr.even-row .col-check {
+[data-theme="dark"] .sheet tbody tr.even-row .col-check,
+[data-theme="dark"] .sheet tbody tr.even-row .col-fav {
     background: #1a2332;
 }
 
 [data-theme="dark"] .sheet tbody tr.odd-row .frozen-col,
-[data-theme="dark"] .sheet tbody tr.odd-row .col-check {
+[data-theme="dark"] .sheet tbody tr.odd-row .col-check,
+[data-theme="dark"] .sheet tbody tr.odd-row .col-fav {
     background: var(--surface);
 }
 
 [data-theme="dark"] .sheet tbody tr:hover .frozen-col,
-[data-theme="dark"] .sheet tbody tr:hover .col-check {
+[data-theme="dark"] .sheet tbody tr:hover .col-check,
+[data-theme="dark"] .sheet tbody tr:hover .col-fav {
     background: #334155;
 }
 
@@ -1980,11 +2162,105 @@ mark.search-highlight {
     border-color: var(--border);
 }
 
+[data-theme="dark"] thead .col-fav {
+    background: #1e293b;
+}
+
+[data-theme="dark"] .sheet tbody tr.even-row .col-fav {
+    background: #1a2332;
+}
+
+[data-theme="dark"] .sheet tbody tr.odd-row .col-fav {
+    background: var(--surface);
+}
+
+[data-theme="dark"] .sheet tbody tr:hover .col-fav {
+    background: #334155;
+}
+
+[data-theme="dark"] .fav-btn {
+    color: #475569;
+}
+
+[data-theme="dark"] .fav-btn:hover,
+[data-theme="dark"] .fav-btn.fav-active {
+    color: #f59e0b;
+}
+
 [data-theme="dark"] .shortcuts-hint kbd {
     background: var(--surface);
     border-color: var(--border);
     color: var(--text-muted);
     box-shadow: 0 1px 0 var(--border);
+}
+
+/* ===== SHORTCUTS MODAL ===== */
+.modal-shortcuts {
+    max-width: 540px;
+}
+
+.modal-shortcuts h2 {
+    margin: 0 0 16px 0;
+    font-size: 1.1rem;
+}
+
+.shortcuts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.shortcut-group h3 {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #6b7280;
+    margin: 0 0 8px 0;
+}
+
+.shortcut-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 3px 0;
+    font-size: 0.82rem;
+}
+
+.shortcut-row kbd {
+    display: inline-block;
+    padding: 2px 7px;
+    font-size: 0.72rem;
+    font-family: monospace;
+    background: #f3f4f6;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    box-shadow: 0 1px 0 #d1d5db;
+    min-width: 22px;
+    text-align: center;
+}
+
+.shortcut-row span {
+    color: #374151;
+}
+
+[data-theme="dark"] .shortcut-row kbd {
+    background: var(--bg);
+    border-color: var(--border);
+    color: var(--text-muted);
+    box-shadow: 0 1px 0 var(--border);
+}
+
+[data-theme="dark"] .shortcut-row span {
+    color: var(--text);
+}
+
+[data-theme="dark"] .shortcut-group h3 {
+    color: var(--text-muted);
+}
+
+.nav-help {
+    font-weight: 700 !important;
+    font-size: 1rem !important;
 }
 
 /* ===== PRINT STYLES ===== */
@@ -2013,6 +2289,7 @@ mark.search-highlight {
         <ul>
             <li><a href="#" class="active">Programs</a></li>
             <li><a href="#" onclick="toggleTheme(); return false;" id="theme-toggle" title="Toggle dark mode">Dark</a></li>
+            <li><a href="#" onclick="toggleShortcutHelp(); return false;" title="Keyboard shortcuts (?)" class="nav-help">?</a></li>
         </ul>
     </nav>
 
@@ -2046,8 +2323,16 @@ mark.search-highlight {
                 <span class="sheet-count">57 rows</span>
                 <button type="button" class="clear-filter" id="clear-all-btn" onclick="clearAllFilters()" style="display:none">Clear All</button>
                 <span class="filter-spacer"></span>
-                <div class="col-toggle-wrap">
-                    <button type="button" onclick="toggleColMenu()" title="Show/hide columns">Columns</button>
+                <button type="button" id="compare-btn" disabled onclick="goCompare()">Compare</button>
+                <div class="more-actions-wrap">
+                    <button type="button" onclick="toggleMoreMenu()" title="More actions" id="more-btn">More &darr;</button>
+                    <div id="more-menu" class="more-menu" style="display:none">
+                        <button type="button" onclick="toggleColMenu()">Columns</button>
+                        <button type="button" onclick="toggleDensity(); toggleMoreMenu();" id="density-btn">Compact</button>
+                        <button type="button" onclick="exportCSV(); toggleMoreMenu();">Export CSV</button>
+                        <button type="button" onclick="backupData(); toggleMoreMenu();">Backup</button>
+                        <button type="button" onclick="document.getElementById('restore-file').click(); toggleMoreMenu();">Restore</button>
+                    </div>
                     <div id="col-menu" class="col-menu" style="display:none">
                         <label><input type="checkbox" data-toggle-col="col-program" checked> Program</label>
                         <label><input type="checkbox" data-toggle-col="col-region" checked> Region</label>
@@ -2061,16 +2346,15 @@ mark.search-highlight {
                         <label><input type="checkbox" data-toggle-col="col-notes" checked> Notes</label>
                     </div>
                 </div>
-                <button type="button" id="compare-btn" disabled onclick="goCompare()">Compare</button>
-                <button type="button" onclick="toggleDensity()" title="Toggle compact/comfortable view" id="density-btn">Compact</button>
-                <button type="button" onclick="exportCSV()" title="Export CSV">Export</button>
-                <button type="button" onclick="backupData()" title="Backup all your data (statuses, notes, checklists)">Backup</button>
-                <button type="button" onclick="document.getElementById('restore-file').click()" title="Restore from backup">Restore</button>
                 <input type="file" id="restore-file" accept=".json" style="display:none" onchange="restoreData(this)">
             </div>
         </div>
 
+        <div class="status-summary" id="status-summary"></div>
+
         <div class="quick-chips">
+            <button class="chip chip-red" onclick="filterFavorites(this)" id="fav-chip">&#9733; Favorites <span class="chip-count" id="fav-count">0</span></button>
+            <span class="chip-sep"></span>
             <button class="chip chip-green" onclick="filterOpen(this)">Open Now <span class="chip-count">2</span></button>
             <button class="chip chip-amber" onclick="filterUpcoming(this)">Upcoming <span class="chip-count">17</span></button>
             <button class="chip" onclick="filterBsn('No', this)">ADN OK</button>
@@ -2085,26 +2369,28 @@ mark.search-highlight {
                 <thead>
                     <tr>
                         <th class="col-check"><input type="checkbox" id="select-all"></th>
-                        <th class="col-hospital frozen-col sortable" data-col="1" data-sort="text" data-label="Hospital">Hospital <span class="sort-arrow">&udarr;</span></th>
-                        <th class="col-program sortable" data-col="2" data-sort="text" data-label="Program">Program <span class="sort-arrow">&udarr;</span></th>
-                        <th class="col-region sortable" data-col="3" data-sort="text" data-label="Region">Region <span class="sort-arrow">&udarr;</span></th>
-                        <th class="col-city sortable" data-col="4" data-sort="text" data-label="City">City <span class="sort-arrow">&udarr;</span></th>
-                        <th class="col-bsn sortable" data-col="5" data-sort="text" data-label="BSN">BSN <span class="sort-arrow">&udarr;</span></th>
-                        <th class="col-date sortable" data-col="6" data-sort="date" data-label="App Open">App Open <span class="sort-arrow">&udarr;</span></th>
-                        <th class="col-date sortable" data-col="7" data-sort="date" data-label="App Close">App Close <span class="sort-arrow">&udarr;</span></th>
-                        <th class="col-date sortable" data-col="8" data-sort="date" data-label="Cohort">Cohort <span class="sort-arrow">&udarr;</span></th>
-                        <th class="col-rep sortable" data-col="9" data-sort="stars" data-label="Reputation">Rep <span class="sort-arrow">&udarr;</span></th>
-                        <th class="col-pay sortable" data-col="10" data-sort="pay" data-label="Pay">Pay <span class="sort-arrow">&udarr;</span></th>
-                        <th class="col-len sortable" data-col="11" data-sort="num" data-label="Length">Len <span class="sort-arrow">&udarr;</span></th>
-                        <th class="col-specialties sortable" data-col="12" data-sort="text" data-label="Specialties">Specialties <span class="sort-arrow">&udarr;</span></th>
-                        <th class="col-status sortable" data-col="13" data-sort="status" data-label="Status">Status <span class="sort-arrow">&udarr;</span></th>
-                        <th class="col-notes sortable" data-col="14" data-sort="text" data-label="Notes">Notes <span class="sort-arrow">&udarr;</span></th>
+                        <th class="col-fav" title="Favorites">&#9733;</th>
+                        <th class="col-hospital frozen-col sortable" data-col="2" data-sort="text" data-label="Hospital">Hospital <span class="sort-arrow">&udarr;</span></th>
+                        <th class="col-program sortable" data-col="3" data-sort="text" data-label="Program">Program <span class="sort-arrow">&udarr;</span></th>
+                        <th class="col-region sortable" data-col="4" data-sort="text" data-label="Region">Region <span class="sort-arrow">&udarr;</span></th>
+                        <th class="col-city sortable" data-col="5" data-sort="text" data-label="City">City <span class="sort-arrow">&udarr;</span></th>
+                        <th class="col-bsn sortable" data-col="6" data-sort="text" data-label="BSN">BSN <span class="sort-arrow">&udarr;</span></th>
+                        <th class="col-date sortable" data-col="7" data-sort="date" data-label="App Open">App Open <span class="sort-arrow">&udarr;</span></th>
+                        <th class="col-date sortable" data-col="8" data-sort="date" data-label="App Close">App Close <span class="sort-arrow">&udarr;</span></th>
+                        <th class="col-date sortable" data-col="9" data-sort="date" data-label="Cohort">Cohort <span class="sort-arrow">&udarr;</span></th>
+                        <th class="col-rep sortable" data-col="10" data-sort="stars" data-label="Reputation">Rep <span class="sort-arrow">&udarr;</span></th>
+                        <th class="col-pay sortable" data-col="11" data-sort="pay" data-label="Pay">Pay <span class="sort-arrow">&udarr;</span></th>
+                        <th class="col-len sortable" data-col="12" data-sort="num" data-label="Length">Len <span class="sort-arrow">&udarr;</span></th>
+                        <th class="col-specialties sortable" data-col="13" data-sort="text" data-label="Specialties">Specialties <span class="sort-arrow">&udarr;</span></th>
+                        <th class="col-status sortable" data-col="14" data-sort="status" data-label="Status">Status <span class="sort-arrow">&udarr;</span></th>
+                        <th class="col-notes sortable" data-col="15" data-sort="text" data-label="Notes">Notes <span class="sort-arrow">&udarr;</span></th>
                         <th class="col-apply">Apply</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr data-id="1" data-region="NorCal" data-city="Multiple (Sacramento, Oakland, San Jose, Santa Rosa, etc.)" data-bsn="Preferred" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="1"></td>
+<td class="col-fav"><button class="fav-btn" data-id="1" onclick="toggleFav(1)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="1">Kaiser Permanente (NorCal)</a></td>
 <td class="col-program">New Graduate RN Residency Program</td>
 <td class="col-region"><span class="region-badge region-sacr"></span>NorCal</td>
@@ -2132,6 +2418,7 @@ Both Cohort 2 and 3 viable for May 2026 NCLEX taker. Apply via kaiserpermanentej
 <td class="col-apply"><a href="https://www.kaiserpermanentejobs.org/nurse-residency-career" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="2" data-region="SoCal" data-city="Los Angeles" data-bsn="Yes" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="2"></td>
+<td class="col-fav"><button class="fav-btn" data-id="2" onclick="toggleFav(2)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="2">UCLA Health</a></td>
 <td class="col-program">Vizient/AACN Nurse Residency Program</td>
 <td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
@@ -2149,6 +2436,7 @@ Both Cohort 2 and 3 viable for May 2026 NCLEX taker. Apply via kaiserpermanentej
 <td class="col-apply"><a href="https://www.uclahealthcareers.org/nursing-new-graduates/" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="3" data-region="SoCal" data-city="Los Angeles" data-bsn="No" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="3"></td>
+<td class="col-fav"><button class="fav-btn" data-id="3" onclick="toggleFav(3)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="3">Cedars-Sinai Medical Center</a></td>
 <td class="col-program">New Graduate Nurse Residency</td>
 <td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
@@ -2166,6 +2454,7 @@ Both Cohort 2 and 3 viable for May 2026 NCLEX taker. Apply via kaiserpermanentej
 <td class="col-apply"><a href="https://careers.cshs.org/nursing-new-grads" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="4" data-region="Bay Area" data-city="Palo Alto" data-bsn="No" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="4"></td>
+<td class="col-fav"><button class="fav-btn" data-id="4" onclick="toggleFav(4)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="4">Stanford Health Care</a></td>
 <td class="col-program">New Graduate RN Residency</td>
 <td class="col-region"><span class="region-badge region-bay"></span>Bay Area</td>
@@ -2183,6 +2472,7 @@ Both Cohort 2 and 3 viable for May 2026 NCLEX taker. Apply via kaiserpermanentej
 <td class="col-apply"><a href="https://careers.stanfordhealthcare.org/us/en/nurse-residency-program" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="5" data-region="Bay Area" data-city="San Francisco" data-bsn="No" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="5"></td>
+<td class="col-fav"><button class="fav-btn" data-id="5" onclick="toggleFav(5)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="5">UCSF Medical Center</a></td>
 <td class="col-program">New Nurse Residency Training Program (NNRTP)</td>
 <td class="col-region"><span class="region-badge region-bay"></span>Bay Area</td>
@@ -2200,6 +2490,7 @@ Both Cohort 2 and 3 viable for May 2026 NCLEX taker. Apply via kaiserpermanentej
 <td class="col-apply"><a href="https://hr.ucsf.edu/learning/career-professional-development/registered-nurse-training-programs" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="6" data-region="NorCal" data-city="Sacramento" data-bsn="Preferred" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="6"></td>
+<td class="col-fav"><button class="fav-btn" data-id="6" onclick="toggleFav(6)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="6">UC Davis Medical Center</a></td>
 <td class="col-program">Nurse Residency Program</td>
 <td class="col-region"><span class="region-badge region-sacr"></span>NorCal</td>
@@ -2217,6 +2508,7 @@ Both Cohort 2 and 3 viable for May 2026 NCLEX taker. Apply via kaiserpermanentej
 <td class="col-apply"><a href="https://health.ucdavis.edu/cppn/onboarding/new-graduate-nurse-residency-program" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="7" data-region="SoCal" data-city="Multiple (Burbank, Mission Hills, Tarzana, Santa Monica, Torrance)" data-bsn="No" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="7"></td>
+<td class="col-fav"><button class="fav-btn" data-id="7" onclick="toggleFav(7)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="7">Providence Health</a></td>
 <td class="col-program">Transition into Practice (TIP) RN Residency Program</td>
 <td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
@@ -2234,6 +2526,7 @@ Both Cohort 2 and 3 viable for May 2026 NCLEX taker. Apply via kaiserpermanentej
 <td class="col-apply"><a href="https://providence.jobs/tip/" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="8" data-region="Statewide" data-city="Multiple (Thousand Oaks, San Jose)" data-bsn="Preferred" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="8"></td>
+<td class="col-fav"><button class="fav-btn" data-id="8" onclick="toggleFav(8)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="8">HCA Healthcare (multiple hospitals)</a></td>
 <td class="col-program">StaRN New Graduate Residency</td>
 <td class="col-region"><span class="region-badge region-state"></span>Statewide</td>
@@ -2251,6 +2544,7 @@ Both Cohort 2 and 3 viable for May 2026 NCLEX taker. Apply via kaiserpermanentej
 <td class="col-apply"><a href="https://careers.hcahealthcare.com/pages/hca-healthcare-careers-for-new-graduate-nurses" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="9" data-region="NorCal" data-city="Multiple (Sacramento, Bay Area)" data-bsn="Preferred" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="9"></td>
+<td class="col-fav"><button class="fav-btn" data-id="9" onclick="toggleFav(9)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="9">Sutter Health</a></td>
 <td class="col-program">New Graduate RN Residency</td>
 <td class="col-region"><span class="region-badge region-sacr"></span>NorCal</td>
@@ -2268,6 +2562,7 @@ Both Cohort 2 and 3 viable for May 2026 NCLEX taker. Apply via kaiserpermanentej
 <td class="col-apply"><a href="https://jobs.sutterhealth.org/us/en/clinical-career-development" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="10" data-region="Statewide" data-city="Multiple Locations" data-bsn="No" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="10"></td>
+<td class="col-fav"><button class="fav-btn" data-id="10" onclick="toggleFav(10)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="10">Dignity Health / CommonSpirit</a></td>
 <td class="col-program">Nurse Residency Program</td>
 <td class="col-region"><span class="region-badge region-state"></span>Statewide</td>
@@ -2301,6 +2596,7 @@ ADN accepted (BSN preferred). NCLEX not required at app time but valid license n
 <td class="col-apply"><a href="https://www.commonspirit.careers/Nursing-New-Grad-Residency" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="11" data-region="SoCal" data-city="Los Angeles" data-bsn="Yes" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="11"></td>
+<td class="col-fav"><button class="fav-btn" data-id="11" onclick="toggleFav(11)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="11">Children&#39;s Hospital Los Angeles (CHLA)</a></td>
 <td class="col-program">RN Residency in Pediatrics</td>
 <td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
@@ -2318,6 +2614,7 @@ ADN accepted (BSN preferred). NCLEX not required at app time but valid license n
 <td class="col-apply"><a href="https://www.chla.org/nursing/rn-residency-pediatrics" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="12" data-region="SoCal" data-city="Orange" data-bsn="Yes" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="12"></td>
+<td class="col-fav"><button class="fav-btn" data-id="12" onclick="toggleFav(12)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="12">UC Irvine Medical Center</a></td>
 <td class="col-program">Vizient/AACN Nurse Residency Program</td>
 <td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
@@ -2335,6 +2632,7 @@ ADN accepted (BSN preferred). NCLEX not required at app time but valid license n
 <td class="col-apply"><a href="https://www.ucihealth.org/healthcare-professionals/nursing/nursing-at-uci" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="13" data-region="SoCal" data-city="Los Angeles (Boyle Heights)" data-bsn="No" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="13"></td>
+<td class="col-fav"><button class="fav-btn" data-id="13" onclick="toggleFav(13)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="13">Adventist Health White Memorial</a></td>
 <td class="col-program">New Grad Nurse Residency</td>
 <td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
@@ -2352,6 +2650,7 @@ ADN accepted (BSN preferred). NCLEX not required at app time but valid license n
 <td class="col-apply"><a href="https://www.adventisthealth.org/careers/internships-and-residencies/nurse-residency-program" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="14" data-region="SoCal" data-city="San Diego" data-bsn="Preferred" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="14"></td>
+<td class="col-fav"><button class="fav-btn" data-id="14" onclick="toggleFav(14)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="14">Sharp HealthCare</a></td>
 <td class="col-program">New Graduate RN Residency</td>
 <td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
@@ -2380,6 +2679,7 @@ ADN accepted (BSN preferred). NCLEX not required at app time but valid license n
 <td class="col-apply"><a href="https://careers.sharp.com/SHC-nurse-residency-program" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="15" data-region="SoCal" data-city="San Diego" data-bsn="Preferred" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="15"></td>
+<td class="col-fav"><button class="fav-btn" data-id="15" onclick="toggleFav(15)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="15">Scripps Health</a></td>
 <td class="col-program">New Graduate Nurse Residency Program</td>
 <td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
@@ -2407,6 +2707,7 @@ HireVue video interview required (72-hr expiration, 10 questions, self-paced). 4
 <td class="col-apply"><a href="https://careers.scripps.org/training-programs/new-grads-rn/" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="16" data-region="SoCal" data-city="Loma Linda" data-bsn="Yes" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="16"></td>
+<td class="col-fav"><button class="fav-btn" data-id="16" onclick="toggleFav(16)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="16">Loma Linda University Health</a></td>
 <td class="col-program">Adult RN Residency Program</td>
 <td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
@@ -2433,6 +2734,7 @@ BSN required. &lt;12 months RN experience. 1-year program + 2-year employment co
 <td class="col-apply"><a href="https://lluh.org/health-professionals/adult-rn-residency-program/how-apply" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="17" data-region="SoCal" data-city="Los Angeles" data-bsn="Yes" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="17"></td>
+<td class="col-fav"><button class="fav-btn" data-id="17" onclick="toggleFav(17)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="17">Keck Medicine of USC</a></td>
 <td class="col-program">Versant RN Residency Program</td>
 <td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
@@ -2450,6 +2752,7 @@ BSN required. &lt;12 months RN experience. 1-year program + 2-year employment co
 <td class="col-apply"><a href="https://www.keckmedicine.org/nurses/residency-training-program/" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="18" data-region="Bay Area" data-city="Walnut Creek / Concord" data-bsn="Preferred" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="18"></td>
+<td class="col-fav"><button class="fav-btn" data-id="18" onclick="toggleFav(18)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="18">John Muir Health</a></td>
 <td class="col-program">Vizient/AACN Nurse Residency Program</td>
 <td class="col-region"><span class="region-badge region-bay"></span>Bay Area</td>
@@ -2467,6 +2770,7 @@ BSN required. &lt;12 months RN experience. 1-year program + 2-year employment co
 <td class="col-apply"><a href="https://www.johnmuirhealth.com/for-physicians/nursing/nursing-residency-program.html" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="19" data-region="SoCal" data-city="Newport Beach / Irvine" data-bsn="Yes" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="19"></td>
+<td class="col-fav"><button class="fav-btn" data-id="19" onclick="toggleFav(19)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="19">Hoag Memorial Hospital Presbyterian</a></td>
 <td class="col-program">New Graduate Nurse Residency Program</td>
 <td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
@@ -2484,6 +2788,7 @@ BSN required. &lt;12 months RN experience. 1-year program + 2-year employment co
 <td class="col-apply"><a href="https://careers.hoag.org/hoag-life/new-grad-nurses/" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="20" data-region="SoCal" data-city="San Diego" data-bsn="Preferred" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="20"></td>
+<td class="col-fav"><button class="fav-btn" data-id="20" onclick="toggleFav(20)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="20">Rady Children&#39;s Hospital San Diego</a></td>
 <td class="col-program">New Grad RN Transition to Practice Program</td>
 <td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
@@ -2501,6 +2806,7 @@ BSN required. &lt;12 months RN experience. 1-year program + 2-year employment co
 <td class="col-apply"><a href="https://jobs.rchsd.org/residency-programs" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="21" data-region="Central Valley" data-city="Fresno / Clovis" data-bsn="Preferred" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="21"></td>
+<td class="col-fav"><button class="fav-btn" data-id="21" onclick="toggleFav(21)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="21">Community Medical Centers</a></td>
 <td class="col-program">RN Residency Program</td>
 <td class="col-region"><span class="region-badge region-central"></span>Central Valley</td>
@@ -2518,6 +2824,7 @@ BSN required. &lt;12 months RN experience. 1-year program + 2-year employment co
 <td class="col-apply"><a href="https://jobs.communitymedical.org/nursing/new-nurses/" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="22" data-region="SoCal" data-city="Los Angeles" data-bsn="No" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="22"></td>
+<td class="col-fav"><button class="fav-btn" data-id="22" onclick="toggleFav(22)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="22">LA County + USC Medical Center (LAC+USC)</a></td>
 <td class="col-program">New Graduate RN Residency Program</td>
 <td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
@@ -2537,6 +2844,7 @@ Contact: LAC_USC_NursingRecruitment@dhs.lacounty.gov or (323) 409-4663. Also che
 <td class="col-apply"><a href="https://dhs.lacounty.gov/office-of-nursing-affairs/home/nurse-recruitment/how-to-apply/" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="23" data-region="Bay Area" data-city="San Francisco" data-bsn="No" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="23"></td>
+<td class="col-fav"><button class="fav-btn" data-id="23" onclick="toggleFav(23)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="23">Zuckerberg San Francisco General Hospital</a></td>
 <td class="col-program">Registered Nurse Training Program (2320)</td>
 <td class="col-region"><span class="region-badge region-bay"></span>Bay Area</td>
@@ -2554,6 +2862,7 @@ Contact: LAC_USC_NursingRecruitment@dhs.lacounty.gov or (323) 409-4663. Also che
 <td class="col-apply"><a href="https://careers.sf.gov/classifications/?classCode=2320" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="24" data-region="Bay Area" data-city="Mountain View / Los Gatos" data-bsn="Preferred" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="24"></td>
+<td class="col-fav"><button class="fav-btn" data-id="24" onclick="toggleFav(24)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="24">El Camino Health</a></td>
 <td class="col-program">New Graduate RN Residency Program</td>
 <td class="col-region"><span class="region-badge region-bay"></span>Bay Area</td>
@@ -2571,6 +2880,7 @@ Contact: LAC_USC_NursingRecruitment@dhs.lacounty.gov or (323) 409-4663. Also che
 <td class="col-apply"><a href="https://www.elcaminohealth.org/about-us/nursing/nurse-residency-program" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="25" data-region="Central Valley" data-city="Madera" data-bsn="Preferred" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="25"></td>
+<td class="col-fav"><button class="fav-btn" data-id="25" onclick="toggleFav(25)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="25">Valley Children&#39;s Healthcare</a></td>
 <td class="col-program">Transition to Practice (TTP) Program</td>
 <td class="col-region"><span class="region-badge region-central"></span>Central Valley</td>
@@ -2588,6 +2898,7 @@ Contact: LAC_USC_NursingRecruitment@dhs.lacounty.gov or (323) 409-4663. Also che
 <td class="col-apply"><a href="https://www.valleychildrens.org/medical-education/nursing/nursing-grad-opportunities" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="26" data-region="SoCal" data-city="Santa Barbara" data-bsn="Preferred" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="26"></td>
+<td class="col-fav"><button class="fav-btn" data-id="26" onclick="toggleFav(26)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="26">Cottage Health</a></td>
 <td class="col-program">RN Residency Program</td>
 <td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
@@ -2617,6 +2928,7 @@ Contact: LAC_USC_NursingRecruitment@dhs.lacounty.gov or (323) 409-4663. Also che
 <td class="col-apply"><a href="https://www.cottagehealth.org/nursing/residency/" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="27" data-region="SoCal" data-city="Rancho Mirage" data-bsn="Preferred" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="27"></td>
+<td class="col-fav"><button class="fav-btn" data-id="27" onclick="toggleFav(27)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="27">Eisenhower Health</a></td>
 <td class="col-program">Coeta &amp; Donald Barker Foundation Nurse Residency</td>
 <td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
@@ -2634,6 +2946,7 @@ Contact: LAC_USC_NursingRecruitment@dhs.lacounty.gov or (323) 409-4663. Also che
 <td class="col-apply"><a href="https://careers.eisenhowerhealth.org/nurse-residency-program/" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="28" data-region="SoCal" data-city="Colton" data-bsn="No" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="28"></td>
+<td class="col-fav"><button class="fav-btn" data-id="28" onclick="toggleFav(28)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="28">Arrowhead Regional Medical Center</a></td>
 <td class="col-program">New Graduate Nurse Residency Program</td>
 <td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
@@ -2651,6 +2964,7 @@ Contact: LAC_USC_NursingRecruitment@dhs.lacounty.gov or (323) 409-4663. Also che
 <td class="col-apply"><a href="https://www.arrowheadregional.org/services/nursing/nursing-residency-program/" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="29" data-region="SoCal" data-city="Long Beach" data-bsn="Yes" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="29"></td>
+<td class="col-fav"><button class="fav-btn" data-id="29" onclick="toggleFav(29)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="29">MemorialCare Long Beach Medical Center / Miller Children&#39;s</a></td>
 <td class="col-program">New Grad RN Residency Program</td>
 <td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
@@ -2668,6 +2982,7 @@ Contact: LAC_USC_NursingRecruitment@dhs.lacounty.gov or (323) 409-4663. Also che
 <td class="col-apply"><a href="https://careers.memorialcare.org/recent-grads" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="30" data-region="SoCal" data-city="Escondido / Poway" data-bsn="Preferred" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="30"></td>
+<td class="col-fav"><button class="fav-btn" data-id="30" onclick="toggleFav(30)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="30">Palomar Health</a></td>
 <td class="col-program">Nurse Residency Program</td>
 <td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
@@ -2685,6 +3000,7 @@ Contact: LAC_USC_NursingRecruitment@dhs.lacounty.gov or (323) 409-4663. Also che
 <td class="col-apply"><a href="https://www.palomarhealth.org/careers/nurse-residency/" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="31" data-region="SoCal" data-city="Pasadena" data-bsn="Preferred" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="31"></td>
+<td class="col-fav"><button class="fav-btn" data-id="31" onclick="toggleFav(31)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="31">Huntington Health</a></td>
 <td class="col-program">Nurse Residency Training Program</td>
 <td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
@@ -2702,6 +3018,7 @@ Contact: LAC_USC_NursingRecruitment@dhs.lacounty.gov or (323) 409-4663. Also che
 <td class="col-apply"><a href="https://www.huntingtonhealth.org/education/residency-programs/nursing-residency/" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="32" data-region="SoCal" data-city="Multiple (Los Angeles, Orange County, San Diego, Inland Empire)" data-bsn="Preferred" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="32"></td>
+<td class="col-fav"><button class="fav-btn" data-id="32" onclick="toggleFav(32)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="32">Kaiser Permanente (SoCal)</a></td>
 <td class="col-program">New Graduate RN Residency Program</td>
 <td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
@@ -2729,6 +3046,7 @@ Both Cohort 2 and 3 viable for May 2026 NCLEX taker. Apply via kaiserpermanentej
 <td class="col-apply"><a href="https://www.kaiserpermanentejobs.org/nurse-residency-career" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="33" data-region="SoCal" data-city="San Diego / La Jolla" data-bsn="Yes" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="33"></td>
+<td class="col-fav"><button class="fav-btn" data-id="33" onclick="toggleFav(33)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="33">UC San Diego Health</a></td>
 <td class="col-program">New Graduate RN Residency Program</td>
 <td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
@@ -2746,6 +3064,7 @@ Both Cohort 2 and 3 viable for May 2026 NCLEX taker. Apply via kaiserpermanentej
 <td class="col-apply"><a href="https://health.ucsd.edu/for-health-care-professionals/nursing/nurse-residency-program/" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="34" data-region="Bay Area" data-city="Palo Alto" data-bsn="Yes" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="34"></td>
+<td class="col-fav"><button class="fav-btn" data-id="34" onclick="toggleFav(34)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="34">Lucile Packard Children&#39;s Hospital Stanford</a></td>
 <td class="col-program">New Graduate RN Residency Program</td>
 <td class="col-region"><span class="region-badge region-bay"></span>Bay Area</td>
@@ -2763,6 +3082,7 @@ Both Cohort 2 and 3 viable for May 2026 NCLEX taker. Apply via kaiserpermanentej
 <td class="col-apply"><a href="https://careers.stanfordchildrens.org/rn-residency-program" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="35" data-region="SoCal" data-city="Orange" data-bsn="No" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="35"></td>
+<td class="col-fav"><button class="fav-btn" data-id="35" onclick="toggleFav(35)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="35">Children&#39;s Hospital of Orange County (CHOC)</a></td>
 <td class="col-program">New Graduate Nurse Residency Program</td>
 <td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
@@ -2780,6 +3100,7 @@ Both Cohort 2 and 3 viable for May 2026 NCLEX taker. Apply via kaiserpermanentej
 <td class="col-apply"><a href="https://choc.org/careers/residency-training-programs/rn-residency/" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="36" data-region="SoCal" data-city="Whittier" data-bsn="No" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="36"></td>
+<td class="col-fav"><button class="fav-btn" data-id="36" onclick="toggleFav(36)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="36">PIH Health Whittier Hospital</a></td>
 <td class="col-program">New Graduate Nurse Residency Program</td>
 <td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
@@ -2807,6 +3128,7 @@ Current cohort started 2/23/2026. ~25-30 nurses per cohort. Apply via jobs.pihhe
 <td class="col-apply"><a href="https://www.pihhealth.org/healthcare-professionals/nurses/nursing-whittier/new-graduate-nurse-residency-program/" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="37" data-region="SoCal" data-city="Torrance" data-bsn="Preferred" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="37"></td>
+<td class="col-fav"><button class="fav-btn" data-id="37" onclick="toggleFav(37)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="37">Torrance Memorial Medical Center</a></td>
 <td class="col-program">New Graduate RN Residency Program</td>
 <td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
@@ -2824,6 +3146,7 @@ Current cohort started 2/23/2026. ~25-30 nurses per cohort. Apply via jobs.pihhe
 <td class="col-apply"><a href="https://www.torrancememorial.org/about-us/nursing/new-graduate-nursing-residency/" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="38" data-region="SoCal" data-city="Pomona" data-bsn="No" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="38"></td>
+<td class="col-fav"><button class="fav-btn" data-id="38" onclick="toggleFav(38)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="38">Pomona Valley Hospital Medical Center</a></td>
 <td class="col-program">Versant RN Residency Program</td>
 <td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
@@ -2841,6 +3164,7 @@ Current cohort started 2/23/2026. ~25-30 nurses per cohort. Apply via jobs.pihhe
 <td class="col-apply"><a href="https://www.pvhmc.org/careers-residency/residency-programs/rn-residency-program/how-to-apply/" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="39" data-region="SoCal" data-city="Duarte" data-bsn="Yes" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="39"></td>
+<td class="col-fav"><button class="fav-btn" data-id="39" onclick="toggleFav(39)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="39">City of Hope National Medical Center</a></td>
 <td class="col-program">New Graduate RN Residency Program</td>
 <td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
@@ -2858,6 +3182,7 @@ Current cohort started 2/23/2026. ~25-30 nurses per cohort. Apply via jobs.pihhe
 <td class="col-apply"><a href="https://www.cityofhope.org/locations/los-angeles/departments-and-services/nursing/alan-marlene-norton" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="40" data-region="SoCal" data-city="Los Angeles (West LA)" data-bsn="Yes" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="40"></td>
+<td class="col-fav"><button class="fav-btn" data-id="40" onclick="toggleFav(40)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="40">VA Greater Los Angeles Healthcare System</a></td>
 <td class="col-program">Transition to Practice (TTP) Nurse Residency</td>
 <td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
@@ -2875,6 +3200,7 @@ Current cohort started 2/23/2026. ~25-30 nurses per cohort. Apply via jobs.pihhe
 <td class="col-apply"><a href="https://www.va.gov/greater-los-angeles-health-care/work-with-us/internships-and-fellowships/nurse-residency-programs/registered-nurse-residency-program/" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="41" data-region="Bay Area" data-city="San Jose" data-bsn="No" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="41"></td>
+<td class="col-fav"><button class="fav-btn" data-id="41" onclick="toggleFav(41)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="41">Santa Clara Valley Medical Center</a></td>
 <td class="col-program">New Graduate RN Residency Program</td>
 <td class="col-region"><span class="region-badge region-bay"></span>Bay Area</td>
@@ -2892,6 +3218,7 @@ Current cohort started 2/23/2026. ~25-30 nurses per cohort. Apply via jobs.pihhe
 <td class="col-apply"><a href="https://scvmc.scvh.org/careers/nursing" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="42" data-region="SoCal" data-city="West Covina / Covina / Glendora" data-bsn="No" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="42"></td>
+<td class="col-fav"><button class="fav-btn" data-id="42" onclick="toggleFav(42)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="42">Emanate Health</a></td>
 <td class="col-program">New Graduate Nurse Residency Program</td>
 <td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
@@ -2911,6 +3238,7 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
 <td class="col-apply"><a href="https://www.emanatehealth.org/careers/why-choose-us/rn-residency-program/" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="43" data-region="SoCal" data-city="Moreno Valley" data-bsn="No" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="43"></td>
+<td class="col-fav"><button class="fav-btn" data-id="43" onclick="toggleFav(43)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="43">Riverside University Health System</a></td>
 <td class="col-program">New Graduate RN Residency Program</td>
 <td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
@@ -2928,6 +3256,7 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
 <td class="col-apply"><a href="https://www.governmentjobs.com/careers/riverside" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="44" data-region="Central Valley" data-city="Visalia" data-bsn="No" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="44"></td>
+<td class="col-fav"><button class="fav-btn" data-id="44" onclick="toggleFav(44)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="44">Kaweah Health</a></td>
 <td class="col-program">New Graduate Nurse Residency Program</td>
 <td class="col-region"><span class="region-badge region-central"></span>Central Valley</td>
@@ -2945,6 +3274,7 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
 <td class="col-apply"><a href="https://www.kaweahhealth.org/careers/nursing/new-graduate-residency-program" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="45" data-region="Bay Area" data-city="Fremont" data-bsn="Yes" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="45"></td>
+<td class="col-fav"><button class="fav-btn" data-id="45" onclick="toggleFav(45)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="45">Washington Hospital Healthcare System</a></td>
 <td class="col-program">New Graduate RN Residency Program</td>
 <td class="col-region"><span class="region-badge region-bay"></span>Bay Area</td>
@@ -2962,6 +3292,7 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
 <td class="col-apply"><a href="https://www.washingtonhealth.com/careers/current-career-opportunities/" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="46" data-region="NorCal" data-city="Fairfield / Vacaville" data-bsn="No" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="46"></td>
+<td class="col-fav"><button class="fav-btn" data-id="46" onclick="toggleFav(46)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="46">NorthBay Healthcare</a></td>
 <td class="col-program">New Graduate RN Residency Program</td>
 <td class="col-region"><span class="region-badge region-sacr"></span>NorCal</td>
@@ -2979,6 +3310,7 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
 <td class="col-apply"><a href="https://www.northbay.org/careers/nursing/nursing-residency-program.html" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="47" data-region="Central Valley" data-city="Bakersfield" data-bsn="No" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="47"></td>
+<td class="col-fav"><button class="fav-btn" data-id="47" onclick="toggleFav(47)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="47">Kern Medical</a></td>
 <td class="col-program">New Graduate RN Residency Program</td>
 <td class="col-region"><span class="region-badge region-central"></span>Central Valley</td>
@@ -2996,6 +3328,7 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
 <td class="col-apply"><a href="https://www.kernmedical.com/academics/nurse-residency-program/" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="48" data-region="SoCal" data-city="Redlands" data-bsn="No" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="48"></td>
+<td class="col-fav"><button class="fav-btn" data-id="48" onclick="toggleFav(48)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="48">Redlands Community Hospital</a></td>
 <td class="col-program">New Grad Registered Nurse Program</td>
 <td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
@@ -3013,6 +3346,7 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
 <td class="col-apply"><a href="https://www.redlandshospital.org/nursing-excellence/new-grad-program/" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="49" data-region="SoCal" data-city="Arcadia" data-bsn="Preferred" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="49"></td>
+<td class="col-fav"><button class="fav-btn" data-id="49" onclick="toggleFav(49)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="49">USC Arcadia Hospital</a></td>
 <td class="col-program">RN New Grad Training Program</td>
 <td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
@@ -3030,6 +3364,7 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
 <td class="col-apply"><a href="https://www.uscarcadiahospital.org/careers2/" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="50" data-region="SoCal" data-city="Ventura" data-bsn="No" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="50"></td>
+<td class="col-fav"><button class="fav-btn" data-id="50" onclick="toggleFav(50)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="50">Ventura County Medical Center</a></td>
 <td class="col-program">RN Residency Program</td>
 <td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
@@ -3047,6 +3382,7 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
 <td class="col-apply"><a href="https://nursingeducation.venturacounty.gov/nursing-residency-program/" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="51" data-region="SoCal" data-city="Fountain Valley" data-bsn="Preferred" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="51"></td>
+<td class="col-fav"><button class="fav-btn" data-id="51" onclick="toggleFav(51)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="51">MemorialCare Orange Coast Medical Center</a></td>
 <td class="col-program">New Grad RN Residency Program</td>
 <td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
@@ -3064,6 +3400,7 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
 <td class="col-apply"><a href="https://careers.memorialcare.org/recent-grads" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="52" data-region="SoCal" data-city="Laguna Hills" data-bsn="Preferred" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="52"></td>
+<td class="col-fav"><button class="fav-btn" data-id="52" onclick="toggleFav(52)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="52">MemorialCare Saddleback Medical Center</a></td>
 <td class="col-program">New Grad RN Residency Program</td>
 <td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
@@ -3081,6 +3418,7 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
 <td class="col-apply"><a href="https://careers.memorialcare.org/recent-grads" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="53" data-region="SoCal" data-city="Downey" data-bsn="No" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="53"></td>
+<td class="col-fav"><button class="fav-btn" data-id="53" onclick="toggleFav(53)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="53">PIH Health Downey Hospital</a></td>
 <td class="col-program">New Graduate Nurse Residency Program</td>
 <td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
@@ -3098,6 +3436,7 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
 <td class="col-apply"><a href="https://jobs.pihhealth.org/" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="54" data-region="SoCal" data-city="Los Angeles" data-bsn="No" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="54"></td>
+<td class="col-fav"><button class="fav-btn" data-id="54" onclick="toggleFav(54)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="54">PIH Health Good Samaritan Hospital</a></td>
 <td class="col-program">New Graduate Nurse Residency Program</td>
 <td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
@@ -3115,6 +3454,7 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
 <td class="col-apply"><a href="https://jobs.pihhealth.org/" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="55" data-region="SoCal" data-city="Glendale" data-bsn="No" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="55"></td>
+<td class="col-fav"><button class="fav-btn" data-id="55" onclick="toggleFav(55)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="55">Adventist Health Glendale</a></td>
 <td class="col-program">New Grad Nurse Residency</td>
 <td class="col-region"><span class="region-badge region-socal"></span>SoCal</td>
@@ -3132,6 +3472,7 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
 <td class="col-apply"><a href="https://www.adventisthealth.org/careers/internships-and-residencies/nurse-residency-program" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="56" data-region="NorCal" data-city="Roseville" data-bsn="No" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="56"></td>
+<td class="col-fav"><button class="fav-btn" data-id="56" onclick="toggleFav(56)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="56">Adventist Health Roseville</a></td>
 <td class="col-program">New Grad Nurse Residency</td>
 <td class="col-region"><span class="region-badge region-sacr"></span>NorCal</td>
@@ -3149,6 +3490,7 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
 <td class="col-apply"><a href="https://www.adventisthealth.org/careers/internships-and-residencies/nurse-residency-program" target="_blank" class="apply-link">Apply &rarr;</a></td>
 </tr><tr data-id="57" data-region="Central Valley" data-city="Hanford / Bakersfield" data-bsn="No" data-status="Not Started">
 <td class="col-check"><input type="checkbox" class="compare-check" value="57"></td>
+<td class="col-fav"><button class="fav-btn" data-id="57" onclick="toggleFav(57)" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="57">Adventist Health Central CA (Hanford / Bakersfield)</a></td>
 <td class="col-program">New Grad Nurse Residency</td>
 <td class="col-region"><span class="region-badge region-central"></span>Central Valley</td>
@@ -3176,6 +3518,38 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
         <div class="modal-content">
             <button class="modal-close" onclick="closeModal()" aria-label="Close">&times;</button>
             <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <!-- Shortcuts Modal -->
+    <div id="shortcuts-modal" class="modal-overlay" style="display:none" role="dialog" aria-modal="true" aria-label="Keyboard Shortcuts">
+        <div class="modal-content modal-shortcuts">
+            <button class="modal-close" onclick="closeModalEl(document.getElementById('shortcuts-modal'))" aria-label="Close">&times;</button>
+            <h2>Keyboard Shortcuts</h2>
+            <div class="shortcuts-grid">
+                <div class="shortcut-group">
+                    <h3>Navigation</h3>
+                    <div class="shortcut-row"><kbd>j</kbd> / <kbd>&darr;</kbd> <span>Next row</span></div>
+                    <div class="shortcut-row"><kbd>k</kbd> / <kbd>&uarr;</kbd> <span>Previous row</span></div>
+                    <div class="shortcut-row"><kbd>Enter</kbd> <span>Open program details</span></div>
+                    <div class="shortcut-row"><kbd>&larr;</kbd> <span>Previous program (in modal)</span></div>
+                    <div class="shortcut-row"><kbd>&rarr;</kbd> <span>Next program (in modal)</span></div>
+                    <div class="shortcut-row"><kbd>Esc</kbd> <span>Close modal / blur input</span></div>
+                </div>
+                <div class="shortcut-group">
+                    <h3>Actions</h3>
+                    <div class="shortcut-row"><kbd>/</kbd> <span>Focus search</span></div>
+                    <div class="shortcut-row"><kbd>f</kbd> <span>Toggle favorite (selected row)</span></div>
+                    <div class="shortcut-row"><kbd>d</kbd> <span>Toggle dark mode</span></div>
+                    <div class="shortcut-row"><kbd>?</kbd> <span>Show this help</span></div>
+                </div>
+                <div class="shortcut-group">
+                    <h3>Mobile</h3>
+                    <div class="shortcut-row">Swipe &larr; <span>Next program (in modal)</span></div>
+                    <div class="shortcut-row">Swipe &rarr; <span>Previous program (in modal)</span></div>
+                    <div class="shortcut-row">Double-tap <span>Open program details</span></div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -3283,6 +3657,97 @@ function removeChecklistItem(id, idx) {
     } catch(e) {}
 }
 
+// Favorites
+function loadFavorites() {
+    try {
+        return JSON.parse(localStorage.getItem('rn_tracker_favorites') || '[]');
+    } catch(e) { return []; }
+}
+
+function saveFavorites(favs) {
+    try {
+        localStorage.setItem('rn_tracker_favorites', JSON.stringify(favs));
+    } catch(e) {}
+}
+
+function toggleFav(id) {
+    var favs = loadFavorites();
+    var idx = favs.indexOf(id);
+    if (idx !== -1) {
+        favs.splice(idx, 1);
+    } else {
+        favs.push(id);
+    }
+    saveFavorites(favs);
+    renderFavButtons();
+    updateFavCount();
+}
+
+function renderFavButtons() {
+    var favs = loadFavorites();
+    document.querySelectorAll('.fav-btn').forEach(function(btn) {
+        var id = parseInt(btn.dataset.id);
+        if (favs.indexOf(id) !== -1) {
+            btn.innerHTML = '★';
+            btn.classList.add('fav-active');
+        } else {
+            btn.innerHTML = '☆';
+            btn.classList.remove('fav-active');
+        }
+    });
+}
+
+function updateFavCount() {
+    var cnt = document.getElementById('fav-count');
+    if (cnt) cnt.textContent = loadFavorites().length;
+}
+
+function renderStatusSummary() {
+    var statuses = loadSavedStatuses();
+    var counts = { 'Not Started': 0, 'In Progress': 0, 'Submitted': 0, 'Interview': 0, 'Offer': 0, 'Rejected': 0 };
+    var total = PROGRAMS.length;
+    PROGRAMS.forEach(function(p) {
+        var s = statuses[p.id] || p.application_status || 'Not Started';
+        if (counts.hasOwnProperty(s)) counts[s]++;
+    });
+    var applied = counts['Submitted'] + counts['Interview'] + counts['Offer'];
+    var bar = document.getElementById('status-summary');
+    if (!bar) return;
+    var html = '<div class="summary-pills">';
+    if (counts['In Progress'] > 0) html += '<span class="summary-pill pill-in-progress" onclick="filterByStatus('In Progress')">' + counts['In Progress'] + ' In Progress</span>';
+    if (counts['Submitted'] > 0) html += '<span class="summary-pill pill-submitted" onclick="filterByStatus('Submitted')">' + counts['Submitted'] + ' Submitted</span>';
+    if (counts['Interview'] > 0) html += '<span class="summary-pill pill-interview" onclick="filterByStatus('Interview')">' + counts['Interview'] + ' Interview</span>';
+    if (counts['Offer'] > 0) html += '<span class="summary-pill pill-offer" onclick="filterByStatus('Offer')">' + counts['Offer'] + ' Offer</span>';
+    if (counts['Rejected'] > 0) html += '<span class="summary-pill pill-rejected" onclick="filterByStatus('Rejected')">' + counts['Rejected'] + ' Rejected</span>';
+    var remaining = counts['Not Started'];
+    if (remaining > 0) html += '<span class="summary-pill pill-not-started">' + remaining + ' Not Started</span>';
+    html += '</div>';
+    bar.innerHTML = html;
+    // Hide if all are Not Started
+    bar.style.display = (counts['Not Started'] === total) ? 'none' : '';
+}
+
+function filterByStatus(status) {
+    resetFilters();
+    var statusSel = document.querySelector('[data-instant="status"]');
+    if (statusSel) statusSel.value = status;
+    filterTable();
+    updateUrlParams();
+    showToast('Showing ' + status);
+}
+
+function filterFavorites(btn) {
+    if (btn.classList.contains('chip-active')) {
+        clearAllFilters();
+        return;
+    }
+    resetFilters();
+    window._specialFilter = 'favorites';
+    filterTableSpecial();
+    btn.classList.add('chip-active');
+    showToast('Showing favorites');
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // Restore saved statuses from localStorage
     var savedStatuses = loadSavedStatuses();
@@ -3306,6 +3771,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 applyRowStatus(row, this.value);
                 row.dataset.status = this.value;
                 saveStatus(this.dataset.id, this.value);
+                renderStatusSummary();
                 showToast('Status saved');
             }
         });
@@ -3395,8 +3861,17 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.key === 'Escape') document.activeElement.blur();
 
         if (!isEditing(e.target)) {
-            // Dark mode shortcut
+            // Keyboard shortcuts
             if (e.key === 'd') { toggleTheme(); return; }
+            if (e.key === 'f') {
+                // Toggle favorite on selected row
+                var selRow = document.querySelector('.sheet tbody tr.selected-row');
+                if (selRow && selRow.dataset.id) {
+                    toggleFav(parseInt(selRow.dataset.id));
+                    return;
+                }
+            }
+            if (e.key === '?') { toggleShortcutHelp(); return; }
 
             // Modal prev/next with arrow keys
             var detailModal = document.getElementById('detail-modal');
@@ -3435,6 +3910,16 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     highlightDeadlines();
+    renderFavButtons();
+    updateFavCount();
+    renderStatusSummary();
+
+    // Deep link: #program-5 opens detail modal for program 5
+    var hash = window.location.hash;
+    if (hash && hash.startsWith('#program-')) {
+        var deepId = parseInt(hash.replace('#program-', ''));
+        if (deepId) setTimeout(function() { showDetail(deepId); }, 100);
+    }
 
     // Back to top button visibility
     var topBtn = document.getElementById('back-to-top');
@@ -3729,7 +4214,11 @@ function filterTableSpecial() {
         var dateCells = row.querySelectorAll('.col-date');
         var show = false;
 
-        if (window._specialFilter === 'open') {
+        if (window._specialFilter === 'favorites') {
+            var favs = loadFavorites();
+            var rowId = parseInt(row.dataset.id);
+            if (favs.indexOf(rowId) !== -1) show = true;
+        } else if (window._specialFilter === 'open') {
             if (dateCells.length >= 2) {
                 var openRaw = dateCells[0].dataset.raw || '';
                 var closeRaw = dateCells[1].dataset.raw || '';
@@ -4073,17 +4562,28 @@ function highlightSelectedRow(rows, idx) {
     }
 }
 
-function toggleColMenu() {
-    var menu = document.getElementById('col-menu');
+function toggleMoreMenu() {
+    var menu = document.getElementById('more-menu');
     menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+    // Close col menu when toggling more menu
+    if (menu.style.display === 'none') {
+        document.getElementById('col-menu').style.display = 'none';
+    }
 }
 
-// Close column menu when clicking outside
+function toggleColMenu() {
+    var colMenu = document.getElementById('col-menu');
+    colMenu.style.display = colMenu.style.display === 'none' ? 'block' : 'none';
+}
+
+// Close menus when clicking outside
 document.addEventListener('click', function(e) {
-    var wrap = document.querySelector('.col-toggle-wrap');
-    var menu = document.getElementById('col-menu');
-    if (wrap && menu && !wrap.contains(e.target)) {
-        menu.style.display = 'none';
+    var moreWrap = document.querySelector('.more-actions-wrap');
+    if (moreWrap && !moreWrap.contains(e.target)) {
+        var moreMenu = document.getElementById('more-menu');
+        var colMenu = document.getElementById('col-menu');
+        if (moreMenu) moreMenu.style.display = 'none';
+        if (colMenu) colMenu.style.display = 'none';
     }
 });
 
@@ -4126,6 +4626,7 @@ function backupData() {
         statuses: loadSavedStatuses(),
         notes: loadSavedNotes(),
         checklists: JSON.parse(localStorage.getItem('rn_tracker_checklists') || '{}'),
+        favorites: loadFavorites(),
         theme: localStorage.getItem('rn_tracker_theme') || 'light',
         density: localStorage.getItem('rn_tracker_density') || 'normal',
         cols: JSON.parse(localStorage.getItem('rn_tracker_cols') || '{}'),
@@ -4151,6 +4652,7 @@ function restoreData(input) {
             if (data.checklists) localStorage.setItem('rn_tracker_checklists', JSON.stringify(data.checklists));
             if (data.theme) localStorage.setItem('rn_tracker_theme', data.theme);
             if (data.density) localStorage.setItem('rn_tracker_density', data.density);
+            if (data.favorites) localStorage.setItem('rn_tracker_favorites', JSON.stringify(data.favorites));
             if (data.cols) localStorage.setItem('rn_tracker_cols', JSON.stringify(data.cols));
             showToast('Data restored! Reloading...');
             setTimeout(function() { window.location.reload(); }, 1000);
@@ -4240,8 +4742,19 @@ function showDetail(id) {
     var html = '<div class="detail-modal-header">';
     html += '<h2>' + escHtml(p.hospital) + '</h2>';
     html += '<p class="detail-program-name">' + escHtml(p.program_name) + '</p>';
+    // Status selector in modal
+    var savedStatuses = loadSavedStatuses();
+    var currentStatus = savedStatuses[p.id] || p.application_status || 'Not Started';
+    var modalStatuses = ['Not Started', 'In Progress', 'Submitted', 'Interview', 'Offer', 'Rejected'];
+    var statusOpts = '';
+    modalStatuses.forEach(function(s) {
+        statusOpts += '<option value="' + s + '"' + (s === currentStatus ? ' selected' : '') + '>' + s + '</option>';
+    });
+    var statusSelCls = selectStatusClasses[currentStatus] || '';
+
     html += '<div class="detail-meta"><span class="stars">' + stars + '</span>';
     html += ' <span class="' + bsnCls + '">' + escHtml(p.bsn_required || 'N/A') + ' BSN</span>';
+    html += ' <select class="modal-status-select ' + statusSelCls + '" id="modal-status" data-id="' + p.id + '">' + statusOpts + '</select>';
     if (p.last_updated) {
         html += ' <span class="detail-updated">Updated: ' + escHtml(p.last_updated) + '</span>';
     }
@@ -4331,6 +4844,7 @@ function showDetail(id) {
 
     document.getElementById('modal-body').innerHTML = html;
     openModal('detail-modal');
+    history.replaceState(null, '', '#program-' + id);
 
     // Auto-save notes on input
     var notesArea = document.getElementById('modal-notes');
@@ -4341,6 +4855,30 @@ function showDetail(id) {
             saveTimer = setTimeout(function() {
                 saveNote(p.id, notesArea.value);
             }, 500);
+        });
+    }
+
+    // Modal status change handler
+    var modalStatusSel = document.getElementById('modal-status');
+    if (modalStatusSel) {
+        modalStatusSel.addEventListener('change', function() {
+            var newStatus = this.value;
+            var progId = parseInt(this.dataset.id);
+            // Save to localStorage
+            saveStatus(progId, newStatus);
+            // Update table row
+            var row = document.querySelector('tr[data-id="' + progId + '"]');
+            if (row) {
+                applyRowStatus(row, newStatus);
+                row.dataset.status = newStatus;
+                var tableSel = row.querySelector('.status-select');
+                if (tableSel) tableSel.value = newStatus;
+            }
+            // Update modal select styling
+            Object.values(selectStatusClasses).forEach(function(c) { modalStatusSel.classList.remove(c); });
+            if (selectStatusClasses[newStatus]) modalStatusSel.classList.add(selectStatusClasses[newStatus]);
+            renderStatusSummary();
+            showToast('Status updated');
         });
     }
 
@@ -4382,8 +4920,20 @@ function closeModalEl(el) {
     setTimeout(function() { el.style.display = 'none'; }, 200);
 }
 
+function toggleShortcutHelp() {
+    var modal = document.getElementById('shortcuts-modal');
+    if (modal.classList.contains('modal-visible')) {
+        closeModalEl(modal);
+    } else {
+        openModal('shortcuts-modal');
+    }
+}
+
 function closeModal() {
     closeModalEl(document.getElementById('detail-modal'));
+    if (window.location.hash.startsWith('#program-')) {
+        history.replaceState(null, '', window.location.pathname + window.location.search);
+    }
 }
 
 function showToast(message) {
