@@ -390,6 +390,9 @@ def generate():
                         <button type="button" onclick="printView(); toggleMoreMenu();">Print / PDF</button>
                         <button type="button" onclick="exportSummary(); toggleMoreMenu();">Copy Summary</button>
                         <button type="button" onclick="showActivityFeed(); toggleMoreMenu();">Activity Feed</button>
+                        <hr style="margin:4px 0;border-color:#e5e7eb">
+                        <button type="button" onclick="saveFilterPreset(); toggleMoreMenu();">Save Current Filter</button>
+                        <div id="saved-filters-menu"></div>
                     </div>
                     <div id="col-menu" class="col-menu" style="display:none">
                         <label><input type="checkbox" data-toggle-col="col-program" checked> Program</label>
@@ -1000,6 +1003,7 @@ document.addEventListener('DOMContentLoaded', function() {{
     renderRecentViewed();
     renderUrgencyBanner();
     renderNotifications();
+    renderSavedFilters();
 
     // Close notifications panel on outside click
     document.addEventListener('click', function(e) {{
@@ -1385,6 +1389,74 @@ function filterCohort(range, btn) {{
     filterTableSpecial();
     btn.classList.add('chip-active');
     showToast('Showing ' + range.replace('-', '\u2013').toUpperCase() + ' 2026 cohorts');
+}}
+
+// Filter presets
+function saveFilterPreset() {{
+    var search = (document.querySelector('.sheet-filters input[type="search"]') || {{}}).value || '';
+    var region = (document.querySelector('[data-instant="region"]') || {{}}).value || '';
+    var city = (document.querySelector('[data-instant="city"]') || {{}}).value || '';
+    var bsn = (document.querySelector('[data-instant="bsn"]') || {{}}).value || '';
+    var status = (document.querySelector('[data-instant="status"]') || {{}}).value || '';
+    var name = prompt('Name this filter preset:');
+    if (!name || !name.trim()) return;
+    var presets = loadFilterPresets();
+    presets.push({{ name: name.trim(), search: search, region: region, city: city, bsn: bsn, status: status }});
+    localStorage.setItem('rn_tracker_filter_presets', JSON.stringify(presets));
+    renderSavedFilters();
+    showToast('Filter saved: ' + name.trim());
+}}
+
+function loadFilterPresets() {{
+    try {{
+        return JSON.parse(localStorage.getItem('rn_tracker_filter_presets') || '[]');
+    }} catch(e) {{ return []; }}
+}}
+
+function applyFilterPreset(idx) {{
+    var presets = loadFilterPresets();
+    if (idx < 0 || idx >= presets.length) return;
+    var p = presets[idx];
+    var searchInput = document.querySelector('.sheet-filters input[type="search"]');
+    if (searchInput) searchInput.value = p.search || '';
+    var regionSel = document.querySelector('[data-instant="region"]');
+    if (regionSel) regionSel.value = p.region || '';
+    var citySel = document.querySelector('[data-instant="city"]');
+    if (citySel) citySel.value = p.city || '';
+    var bsnSel = document.querySelector('[data-instant="bsn"]');
+    if (bsnSel) bsnSel.value = p.bsn || '';
+    var statusSel = document.querySelector('[data-instant="status"]');
+    if (statusSel) statusSel.value = p.status || '';
+    window._specialFilter = null;
+    filterTable();
+    updateUrlParams();
+    showToast('Loaded: ' + p.name);
+}}
+
+function deleteFilterPreset(idx) {{
+    var presets = loadFilterPresets();
+    presets.splice(idx, 1);
+    localStorage.setItem('rn_tracker_filter_presets', JSON.stringify(presets));
+    renderSavedFilters();
+    showToast('Filter deleted');
+}}
+
+function renderSavedFilters() {{
+    var container = document.getElementById('saved-filters-menu');
+    if (!container) return;
+    var presets = loadFilterPresets();
+    if (presets.length === 0) {{
+        container.innerHTML = '';
+        return;
+    }}
+    var html = '';
+    presets.forEach(function(p, i) {{
+        html += '<div class="saved-filter-item">';
+        html += '<button type="button" onclick="applyFilterPreset(' + i + '); toggleMoreMenu();">' + escHtml(p.name) + '</button>';
+        html += '<button type="button" class="saved-filter-delete" onclick="deleteFilterPreset(' + i + ')" title="Delete">&times;</button>';
+        html += '</div>';
+    }});
+    container.innerHTML = html;
 }}
 
 function toggleFocusMode(btn) {{
@@ -2261,6 +2333,34 @@ function showDetail(id) {{
         html += ' <span class="detail-updated">Updated: ' + escHtml(p.last_updated) + '</span>';
     }}
     html += '</div>';
+    html += '</div>';
+
+    // Progress pipeline
+    var stages = ['Not Started', 'In Progress', 'Submitted', 'Interview', 'Offer'];
+    var stageIdx = stages.indexOf(currentStatus);
+    if (currentStatus === 'Rejected') stageIdx = -2; // special handling
+    html += '<div class="progress-pipeline">';
+    stages.forEach(function(stage, i) {{
+        var cls = 'pp-step';
+        if (currentStatus === 'Rejected') {{
+            cls += ' pp-rejected';
+        }} else if (i < stageIdx) {{
+            cls += ' pp-done';
+        }} else if (i === stageIdx) {{
+            cls += ' pp-current';
+        }}
+        html += '<div class="' + cls + '">';
+        html += '<div class="pp-dot"></div>';
+        html += '<span class="pp-label">' + stage + '</span>';
+        html += '</div>';
+        if (i < stages.length - 1) {{
+            html += '<div class="pp-line' + (i < stageIdx ? ' pp-line-done' : '') + '"></div>';
+        }}
+    }});
+    if (currentStatus === 'Rejected') {{
+        html += '<div class="pp-line pp-line-rejected"></div>';
+        html += '<div class="pp-step pp-rejected-step"><div class="pp-dot"></div><span class="pp-label">Rejected</span></div>';
+    }}
     html += '</div>';
 
     // Compute deadline status for modal
