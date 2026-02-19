@@ -3838,6 +3838,7 @@ function backupData() {{
         statusHistory: JSON.parse(localStorage.getItem('rn_tracker_status_history') || '{{}}'),
         milestones: JSON.parse(localStorage.getItem('rn_tracker_milestones') || '[]'),
         applyChecklist: JSON.parse(localStorage.getItem('rn_tracker_checklist_state') || '{{}}'),
+        interviewPrep: JSON.parse(localStorage.getItem('rn_tracker_interview_prep') || '{{}}'),
         exported: new Date().toISOString()
     }};
     var blob = new Blob([JSON.stringify(data, null, 2)], {{type: 'application/json'}});
@@ -3871,6 +3872,7 @@ function restoreData(input) {{
             if (data.statusHistory) localStorage.setItem('rn_tracker_status_history', JSON.stringify(data.statusHistory));
             if (data.milestones) localStorage.setItem('rn_tracker_milestones', JSON.stringify(data.milestones));
             if (data.applyChecklist) localStorage.setItem('rn_tracker_checklist_state', JSON.stringify(data.applyChecklist));
+            if (data.interviewPrep) localStorage.setItem('rn_tracker_interview_prep', JSON.stringify(data.interviewPrep));
             showToast('Data restored! Reloading...');
             setTimeout(function() {{ window.location.reload(); }}, 1000);
         }} catch(ex) {{
@@ -4352,22 +4354,6 @@ function showDetail(id) {{
     // Similar programs
     var similar = findSimilarPrograms(p, 4);
     if (similar.length > 0) {{
-        html += '<div class="detail-section"><h3>Similar Programs</h3>';
-        html += '<div class="similar-programs">';
-        similar.forEach(function(sp) {{
-            var spStars = '\u2605'.repeat(sp.reputation) + '\u2606'.repeat(5 - sp.reputation);
-            html += '<a href="#" class="similar-card" onclick="showDetail(' + sp.id + '); return false;">';
-            html += '<strong>' + escHtml(sp.hospital) + '</strong>';
-            html += '<span class="stars" style="font-size:0.65rem">' + spStars + '</span>';
-            html += '<span style="font-size:0.7rem;color:#6b7280">' + escHtml(sp.region) + '</span>';
-            html += '</a>';
-        }});
-        html += '</div></div>';
-    }}
-
-    // Similar programs
-    var similar = findSimilarPrograms(p, 4);
-    if (similar.length > 0) {{
         html += '<div class="detail-section similar-section"><h3>Similar Programs</h3>';
         html += '<div class="similar-grid">';
         similar.forEach(function(sp) {{
@@ -4385,6 +4371,32 @@ function showDetail(id) {{
             html += '</div>';
         }});
         html += '</div></div>';
+    }}
+
+    // Interview prep section (shown when status is Interview)
+    var currentStatus = savedStatuses[p.id] || p.application_status || 'Not Started';
+    if (currentStatus === 'Interview') {{
+        var interviewPrep = JSON.parse(localStorage.getItem('rn_tracker_interview_prep') || '{{}}');
+        var prepData = interviewPrep[p.id] || {{}};
+        html += '<div class="detail-section interview-prep-section">';
+        html += '<h3>&#127919; Interview Prep</h3>';
+        var questions = [
+            {{ q: 'Why did you choose nursing?', key: 'why_nursing' }},
+            {{ q: 'Why this hospital/program?', key: 'why_hospital' }},
+            {{ q: 'Describe a clinical experience that challenged you', key: 'challenge' }},
+            {{ q: 'How do you handle a difficult patient or family?', key: 'difficult_pt' }},
+            {{ q: 'Tell me about a time you worked in a team', key: 'teamwork' }},
+            {{ q: 'What are your strengths and areas for growth?', key: 'strengths' }}
+        ];
+        questions.forEach(function(item) {{
+            var val = prepData[item.key] || '';
+            html += '<div class="prep-question">';
+            html += '<label class="prep-q-label">' + item.q + '</label>';
+            html += '<textarea class="prep-answer" data-prog="' + p.id + '" data-key="' + item.key + '" rows="2" placeholder="Prepare your answer...">' + escHtml(val) + '</textarea>';
+            html += '</div>';
+        }});
+        html += '<small class="notes-hint">Interview answers auto-save to your browser.</small>';
+        html += '</div>';
     }}
 
     // Activity log
@@ -4439,6 +4451,22 @@ function showDetail(id) {{
             }}, 500);
         }});
     }}
+
+    // Auto-save interview prep answers
+    document.querySelectorAll('.prep-answer').forEach(function(ta) {{
+        var prepTimer;
+        ta.addEventListener('input', function() {{
+            clearTimeout(prepTimer);
+            var progId = parseInt(ta.dataset.prog);
+            var key = ta.dataset.key;
+            prepTimer = setTimeout(function() {{
+                var all = JSON.parse(localStorage.getItem('rn_tracker_interview_prep') || '{{}}');
+                if (!all[progId]) all[progId] = {{}};
+                all[progId][key] = ta.value;
+                localStorage.setItem('rn_tracker_interview_prep', JSON.stringify(all));
+            }}, 500);
+        }});
+    }});
 
     // Modal status change handler
     var modalStatusSel = document.getElementById('modal-status');
