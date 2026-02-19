@@ -2224,6 +2224,78 @@ footer small {
     color: #6b7280;
 }
 
+/* Activity feed */
+.activity-feed {
+    max-height: 500px;
+    overflow-y: auto;
+    padding-left: 16px;
+    position: relative;
+}
+.activity-feed::before {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #e5e7eb;
+}
+.feed-date-header {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #6b7280;
+    padding: 12px 0 4px;
+    position: relative;
+}
+.feed-entry {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    position: relative;
+}
+.feed-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #3b82f6;
+    flex-shrink: 0;
+    margin-top: 5px;
+    position: absolute;
+    left: -14px;
+    z-index: 1;
+}
+.feed-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.feed-prog {
+    font-weight: 600;
+    font-size: 0.82rem;
+    color: #1e40af;
+    text-decoration: none;
+}
+.feed-prog:hover { text-decoration: underline; }
+.feed-action {
+    font-size: 0.76rem;
+    color: #6b7280;
+}
+.feed-time {
+    font-size: 0.68rem;
+    color: #9ca3af;
+    white-space: nowrap;
+    margin-top: 3px;
+}
+[data-theme="dark"] .activity-feed::before { background: #374151; }
+[data-theme="dark"] .feed-date-header { color: #9ca3af; }
+[data-theme="dark"] .feed-prog { color: #60a5fa; }
+[data-theme="dark"] .feed-action { color: #9ca3af; }
+[data-theme="dark"] .feed-time { color: #6b7280; }
+
 /* Compare modal */
 .compare-scroll {
     overflow-x: auto;
@@ -2954,6 +3026,73 @@ mark.search-highlight {
     color: var(--text);
 }
 
+/* Data quality */
+.dq-score {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+.dq-ring {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: conic-gradient(#22c55e calc(var(--pct) * 1%), #e5e7eb 0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+.dq-ring::after {
+    content: '';
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: white;
+    position: absolute;
+}
+.dq-ring span {
+    position: relative;
+    z-index: 1;
+    font-weight: 700;
+    font-size: 0.78rem;
+    color: #374151;
+}
+.dq-label {
+    font-size: 0.78rem;
+    color: #6b7280;
+    font-weight: 600;
+}
+.dq-list {
+    margin-top: 10px;
+    font-size: 0.76rem;
+    border-top: 1px solid #e5e7eb;
+    padding-top: 8px;
+}
+.dq-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 3px 0;
+}
+.dq-item a {
+    color: #1e40af;
+    text-decoration: none;
+    font-weight: 500;
+}
+.dq-item a:hover { text-decoration: underline; }
+.dq-issues {
+    color: #ef4444;
+    font-size: 0.68rem;
+}
+[data-theme="dark"] .dq-ring::after { background: var(--surface); }
+[data-theme="dark"] .dq-ring span { color: var(--text); }
+[data-theme="dark"] .dq-label { color: var(--text-muted); }
+[data-theme="dark"] .dq-list { border-color: var(--border); }
+[data-theme="dark"] .dq-item a { color: #60a5fa; }
+[data-theme="dark"] .dq-issues { color: #fca5a5; }
+[data-theme="dark"] .dq-ring { background: conic-gradient(#22c55e calc(var(--pct) * 1%), #374151 0); }
+
 @media (max-width: 768px) {
     .stats-summary-cards {
         grid-template-columns: repeat(2, 1fr);
@@ -3109,6 +3248,31 @@ mark.search-highlight {
 [data-theme="dark"] .pipeline-header-interview { background: #2e1065; color: #c4b5fd; }
 [data-theme="dark"] .pipeline-header-offer { background: #064e3b; color: #6ee7b7; }
 [data-theme="dark"] .pipeline-header-rejected { background: #450a0a; color: #fca5a5; }
+
+/* Pipeline drag and drop */
+.pipeline-dragging {
+    opacity: 0.4;
+    transform: rotate(2deg);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+}
+.pipeline-drop-target {
+    min-height: 80px;
+}
+.pipeline-drop-hover {
+    background: rgba(59, 130, 246, 0.08);
+    border: 2px dashed #3b82f6;
+    border-radius: 8px;
+}
+.pipeline-card[draggable="true"] {
+    cursor: grab;
+}
+.pipeline-card[draggable="true"]:active {
+    cursor: grabbing;
+}
+[data-theme="dark"] .pipeline-drop-hover {
+    background: rgba(59, 130, 246, 0.15);
+    border-color: #60a5fa;
+}
 
 [data-theme="dark"] .pipeline-empty {
     color: var(--text-muted);

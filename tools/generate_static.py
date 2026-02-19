@@ -388,6 +388,7 @@ def generate():
                         <button type="button" onclick="document.getElementById('restore-file').click(); toggleMoreMenu();">Restore</button>
                         <button type="button" onclick="shareUrl(); toggleMoreMenu();">Share URL</button>
                         <button type="button" onclick="printView(); toggleMoreMenu();">Print / PDF</button>
+                        <button type="button" onclick="showActivityFeed(); toggleMoreMenu();">Activity Feed</button>
                     </div>
                     <div id="col-menu" class="col-menu" style="display:none">
                         <label><input type="checkbox" data-toggle-col="col-program" checked> Program</label>
@@ -585,6 +586,14 @@ def generate():
         <div class="modal-content modal-wide">
             <button class="modal-close" onclick="closeCompareModal()" aria-label="Close">&times;</button>
             <div id="compare-body"></div>
+        </div>
+    </div>
+
+    <div id="activity-modal" class="modal-overlay" style="display:none" role="dialog" aria-modal="true" aria-label="Activity Feed">
+        <div class="modal-content modal-wide">
+            <button class="modal-close" onclick="closeModal('activity-modal')" aria-label="Close">&times;</button>
+            <h2 style="margin-top:0">Activity Feed</h2>
+            <div id="activity-feed-body"></div>
         </div>
     </div>
 
@@ -2694,6 +2703,57 @@ function showView(view) {{
     }}
 }}
 
+// Pipeline drag and drop
+function onPipelineDragStart(e) {{
+    e.dataTransfer.setData('text/plain', e.target.dataset.progId);
+    e.target.classList.add('pipeline-dragging');
+    // Highlight all drop targets
+    document.querySelectorAll('.pipeline-col-body').forEach(function(col) {{
+        col.classList.add('pipeline-drop-target');
+    }});
+}}
+
+function onPipelineDragEnd(e) {{
+    e.target.classList.remove('pipeline-dragging');
+    document.querySelectorAll('.pipeline-col-body').forEach(function(col) {{
+        col.classList.remove('pipeline-drop-target');
+        col.classList.remove('pipeline-drop-hover');
+    }});
+}}
+
+function onPipelineDragOver(e) {{
+    e.preventDefault();
+    e.currentTarget.classList.add('pipeline-drop-hover');
+}}
+
+function onPipelineDragLeave(e) {{
+    e.currentTarget.classList.remove('pipeline-drop-hover');
+}}
+
+function onPipelineDrop(e) {{
+    e.preventDefault();
+    var progId = parseInt(e.dataTransfer.getData('text/plain'));
+    var newStatus = e.currentTarget.dataset.status;
+    if (!progId || !newStatus) return;
+
+    // Update status
+    saveStatus(progId, newStatus);
+
+    // Update table row if it exists
+    var row = document.querySelector('tr[data-id="' + progId + '"]');
+    if (row) {{
+        applyRowStatus(row, newStatus);
+        row.dataset.status = newStatus;
+        var sel = row.querySelector('.status-select');
+        if (sel) sel.value = newStatus;
+    }}
+
+    renderStatusSummary();
+    renderNotifications();
+    renderPipeline();
+    showToast('Moved to ' + newStatus);
+}}
+
 function renderPipeline() {{
     var savedStatuses = loadSavedStatuses();
     var columns = ['Not Started', 'In Progress', 'Submitted', 'Interview', 'Offer', 'Rejected'];
@@ -2717,7 +2777,7 @@ function renderPipeline() {{
         html += '<span>' + col + '</span>';
         html += '<span class="pipeline-count">' + items.length + '</span>';
         html += '</div>';
-        html += '<div class="pipeline-col-body">';
+        html += '<div class="pipeline-col-body" data-status="' + col + '" ondragover="onPipelineDragOver(event)" ondrop="onPipelineDrop(event)" ondragleave="onPipelineDragLeave(event)">';
         items.forEach(function(p) {{
             var isFav = favs.indexOf(p.id) !== -1;
             var stars = '\u2605'.repeat(p.reputation) + '\u2606'.repeat(5 - p.reputation);
@@ -2736,7 +2796,7 @@ function renderPipeline() {{
                     deadlineHtml = '<span class="deadline-soon">in ' + dUntil + 'd</span>';
                 }}
             }}
-            html += '<div class="pipeline-card' + (isFav ? ' pipeline-fav' : '') + '" onclick="showDetail(' + p.id + ')">';
+            html += '<div class="pipeline-card' + (isFav ? ' pipeline-fav' : '') + '" draggable="true" data-prog-id="' + p.id + '" ondragstart="onPipelineDragStart(event)" ondragend="onPipelineDragEnd(event)" onclick="showDetail(' + p.id + ')">';
             html += '<div class="pipeline-card-title">' + (isFav ? '<span class="fav-star">\u2605</span> ' : '') + escHtml(p.hospital) + '</div>';
             html += '<div class="pipeline-card-meta">';
             html += '<span class="stars" style="font-size:0.65rem">' + stars + '</span>';
@@ -2877,6 +2937,39 @@ function renderStats() {{
     var repData = {{}};
     [5,4,3,2,1].forEach(function(r) {{ repData['\u2605'.repeat(r) + '\u2606'.repeat(5-r)] = repCounts[r]; }});
     html += barChart('Reputation Distribution', repData, null);
+
+    // Data quality card
+    var missingPay = 0, missingDates = 0, missingUrl = 0, missingCohort = 0;
+    var incomplete = [];
+    PROGRAMS.forEach(function(p) {{
+        var issues = [];
+        if (!p.pay_range || p.pay_range === 'TBD' || p.pay_range === '') {{ missingPay++; issues.push('pay'); }}
+        if (!p.app_open_date || !p.app_close_date || p.app_open_date === 'TBD' || p.app_close_date === 'TBD') {{ missingDates++; issues.push('dates'); }}
+        if (!p.application_url || p.application_url === '') {{ missingUrl++; issues.push('URL'); }}
+        if (!p.cohort_start_date || p.cohort_start_date === 'TBD') {{ missingCohort++; issues.push('cohort'); }}
+        if (issues.length > 0) incomplete.push({{ prog: p, issues: issues }});
+    }});
+    var completeness = Math.round(((total * 4 - missingPay - missingDates - missingUrl - missingCohort) / (total * 4)) * 100);
+    html += '<div class="stats-card"><h3>Data Quality</h3>';
+    html += '<div class="dq-score"><div class="dq-ring" style="--pct:' + completeness + '"><span>' + completeness + '%</span></div><div class="dq-label">Complete</div></div>';
+    var dqData = {{ 'Missing Pay': missingPay, 'Missing Dates': missingDates, 'Missing Apply URL': missingUrl, 'Missing Cohort': missingCohort }};
+    var dqColors = {{ 'Missing Pay': '#ef4444', 'Missing Dates': '#f59e0b', 'Missing Apply URL': '#8b5cf6', 'Missing Cohort': '#6b7280' }};
+    Object.keys(dqData).forEach(function(key) {{
+        if (dqData[key] > 0) {{
+            html += '<div class="stats-bar-row"><span class="stats-bar-label">' + key + '</span>';
+            html += '<div class="stats-bar-track"><div class="stats-bar-fill" style="width:' + Math.round(dqData[key]/total*100) + '%;background:' + dqColors[key] + '"></div></div>';
+            html += '<span class="stats-bar-value">' + dqData[key] + '/' + total + '</span></div>';
+        }}
+    }});
+    if (incomplete.length > 0) {{
+        html += '<div class="dq-list"><strong>Needs attention:</strong>';
+        incomplete.slice(0, 5).forEach(function(item) {{
+            html += '<div class="dq-item"><a href="#" onclick="showDetail(' + item.prog.id + '); return false;">' + escHtml(item.prog.hospital) + '</a> <span class="dq-issues">' + item.issues.join(', ') + '</span></div>';
+        }});
+        if (incomplete.length > 5) html += '<div class="dq-item" style="color:#9ca3af">+' + (incomplete.length - 5) + ' more</div>';
+        html += '</div>';
+    }}
+    html += '</div>';
 
     html += '</div>';
 
@@ -3059,6 +3152,41 @@ function launchConfetti() {{
 
 function printView() {{
     window.print();
+}}
+
+function showActivityFeed() {{
+    var log = getActivityLog();
+    var body = document.getElementById('activity-feed-body');
+    if (!body) return;
+    if (log.length === 0) {{
+        body.innerHTML = '<div style="text-align:center;color:#9ca3af;padding:40px">No activity recorded yet. Changes you make will appear here.</div>';
+        openModal('activity-modal');
+        return;
+    }}
+    var html = '<div class="activity-feed">';
+    var lastDate = '';
+    log.forEach(function(entry) {{
+        var d = new Date(entry.time);
+        var dateStr = d.toLocaleDateString('en-US', {{weekday:'short', month:'short', day:'numeric'}});
+        if (dateStr !== lastDate) {{
+            html += '<div class="feed-date-header">' + dateStr + '</div>';
+            lastDate = dateStr;
+        }}
+        var timeStr = d.toLocaleTimeString('en-US', {{hour:'numeric', minute:'2-digit'}});
+        var prog = PROGRAMS.find(function(p) {{ return p.id === entry.id; }});
+        var progName = prog ? escHtml(prog.hospital) : 'Unknown';
+        html += '<div class="feed-entry">';
+        html += '<span class="feed-dot"></span>';
+        html += '<div class="feed-content">';
+        html += '<a href="#" onclick="showDetail(' + entry.id + '); return false;" class="feed-prog">' + progName + '</a>';
+        html += '<span class="feed-action">' + escHtml(entry.action) + '</span>';
+        html += '</div>';
+        html += '<span class="feed-time">' + timeStr + '</span>';
+        html += '</div>';
+    }});
+    html += '</div>';
+    body.innerHTML = html;
+    openModal('activity-modal');
 }}
 
 function hideCtxMenu() {{
