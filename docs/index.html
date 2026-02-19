@@ -253,6 +253,7 @@ tbody tr:hover .col-check { background: #eff6ff; }
 .region-central { background: #22c55e; }
 .region-sacr { background: #8b5cf6; }
 .region-ie { background: #ef4444; }
+.region-state { background: #6b7280; }
 .col-city { min-width: 100px; white-space: nowrap; }
 .col-bsn { width: 40px; text-align: center; }
 .col-rep { width: 70px; white-space: nowrap; }
@@ -321,6 +322,12 @@ tbody tr:hover .frozen-col {
     border-color: #d1d5db;
     background: white;
 }
+
+.sheet .status-select.sel-in-progress { color: #92400e; background: #fef3c7; }
+.sheet .status-select.sel-submitted { color: #1e40af; background: #dbeafe; }
+.sheet .status-select.sel-interview { color: #5b21b6; background: #ede9fe; }
+.sheet .status-select.sel-offer { color: #065f46; background: #d1fae5; }
+.sheet .status-select.sel-rejected { color: #991b1b; background: #fee2e2; }
 
 /* Apply link in spreadsheet */
 .apply-link {
@@ -1859,7 +1866,7 @@ Both Cohort 2 and 3 viable for May 2026 NCLEX taker. Apply via kaiserpermanentej
 <td class="col-check"><input type="checkbox" class="compare-check" value="8"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="8">HCA Healthcare (multiple hospitals)</a></td>
 <td class="col-program">StaRN New Graduate Residency</td>
-<td class="col-region">Statewide</td>
+<td class="col-region"><span class="region-badge region-state"></span>Statewide</td>
 <td class="col-city" title="Multiple (Thousand Oaks, San Jose)">T Oaks, SJ</td>
 <td class="col-bsn bsn-pref">Preferred</td>
 <td class="col-date" data-raw=""></td>
@@ -1893,7 +1900,7 @@ Both Cohort 2 and 3 viable for May 2026 NCLEX taker. Apply via kaiserpermanentej
 <td class="col-check"><input type="checkbox" class="compare-check" value="10"></td>
 <td class="col-hospital frozen-col"><a href="#" class="hospital-link" data-id="10">Dignity Health / CommonSpirit</a></td>
 <td class="col-program">Nurse Residency Program</td>
-<td class="col-region">Statewide</td>
+<td class="col-region"><span class="region-badge region-state"></span>Statewide</td>
 <td class="col-city" title="Multiple Locations">Multi</td>
 <td class="col-bsn bsn-no">No</td>
 <td class="col-date" data-raw="2026-02-16">Feb 16</td>
@@ -2811,7 +2818,7 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
     </div>
 
     <footer class="container">
-        <small>CA New Grad RN Program Tracker &bull; Updated Feb 18, 2026</small>
+        <small>57 programs across 5 regions &bull; Updated Feb 18, 2026</small>
         <small class="shortcuts-hint"><kbd>/</kbd> Search &bull; <kbd>j</kbd><kbd>k</kbd> Navigate &bull; <kbd>Enter</kbd> Details &bull; <kbd>Esc</kbd> Close</small>
     </footer>
 
@@ -2830,11 +2837,25 @@ const statusClasses = {
     'Rejected': 'row-rejected'
 };
 
+var selectStatusClasses = {
+    'In Progress': 'sel-in-progress',
+    'Submitted': 'sel-submitted',
+    'Interview': 'sel-interview',
+    'Offer': 'sel-offer',
+    'Rejected': 'sel-rejected'
+};
+
 function applyRowStatus(row, status) {
     Object.values(statusClasses).forEach(function(cls) {
         if (cls) row.classList.remove(cls);
     });
     if (statusClasses[status]) row.classList.add(statusClasses[status]);
+    // Color the dropdown
+    var sel = row.querySelector('.status-select');
+    if (sel) {
+        Object.values(selectStatusClasses).forEach(function(c) { sel.classList.remove(c); });
+        if (selectStatusClasses[status]) sel.classList.add(selectStatusClasses[status]);
+    }
 }
 
 // localStorage helpers

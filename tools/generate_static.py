@@ -179,6 +179,7 @@ def generate():
         elif "Central" in region: region_cls = "region-central"
         elif "Sacr" in region or "NorCal" in region: region_cls = "region-sacr"
         elif "Inland" in region: region_cls = "region-ie"
+        elif "Statewide" in region: region_cls = "region-state"
         region_dot = f'<span class="region-badge {region_cls}"></span>' if region_cls else ""
 
         row = f"""<tr data-id="{p['id']}" data-region="{esc(p.get('region',''))}" data-city="{esc(p.get('city',''))}" data-bsn="{esc(bsn)}" data-status="{esc(status)}">
@@ -362,7 +363,7 @@ def generate():
     </div>
 
     <footer class="container">
-        <small>CA New Grad RN Program Tracker &bull; Updated {today.strftime("%b %d, %Y")}</small>
+        <small>{total} programs across {len(regions)} regions &bull; Updated {today.strftime("%b %d, %Y")}</small>
         <small class="shortcuts-hint"><kbd>/</kbd> Search &bull; <kbd>j</kbd><kbd>k</kbd> Navigate &bull; <kbd>Enter</kbd> Details &bull; <kbd>Esc</kbd> Close</small>
     </footer>
 
@@ -381,11 +382,25 @@ const statusClasses = {{
     'Rejected': 'row-rejected'
 }};
 
+var selectStatusClasses = {{
+    'In Progress': 'sel-in-progress',
+    'Submitted': 'sel-submitted',
+    'Interview': 'sel-interview',
+    'Offer': 'sel-offer',
+    'Rejected': 'sel-rejected'
+}};
+
 function applyRowStatus(row, status) {{
     Object.values(statusClasses).forEach(function(cls) {{
         if (cls) row.classList.remove(cls);
     }});
     if (statusClasses[status]) row.classList.add(statusClasses[status]);
+    // Color the dropdown
+    var sel = row.querySelector('.status-select');
+    if (sel) {{
+        Object.values(selectStatusClasses).forEach(function(c) {{ sel.classList.remove(c); }});
+        if (selectStatusClasses[status]) sel.classList.add(selectStatusClasses[status]);
+    }}
 }}
 
 // localStorage helpers
