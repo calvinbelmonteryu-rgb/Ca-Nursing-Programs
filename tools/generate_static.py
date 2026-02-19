@@ -579,10 +579,26 @@ document.addEventListener('DOMContentLoaded', function() {{
     }}
     if (params.toString()) filterTable();
 
-    // Default sort by App Close (soonest first) unless URL has params
+    // Restore saved sort or default to App Close
     if (!params.toString()) {{
-        var closeHeader = document.querySelector('[data-label="App Close"]');
-        if (closeHeader) sortTable(closeHeader);
+        try {{
+            var savedSort = JSON.parse(localStorage.getItem('rn_tracker_sort'));
+            if (savedSort && savedSort.col) {{
+                var th = document.querySelector('[data-col="' + savedSort.col + '"]');
+                if (th) {{
+                    // Set opposite direction since sortTable will toggle
+                    currentSort.col = savedSort.col;
+                    currentSort.asc = !savedSort.asc;
+                    sortTable(th);
+                }}
+            }} else {{
+                var closeHeader = document.querySelector('[data-label="App Close"]');
+                if (closeHeader) sortTable(closeHeader);
+            }}
+        }} catch(ex) {{
+            var closeHeader = document.querySelector('[data-label="App Close"]');
+            if (closeHeader) sortTable(closeHeader);
+        }}
     }}
 
     // Search
@@ -777,7 +793,45 @@ function filterTable() {{
     }});
 
     updateCount(visibleCount, rows.length);
+    highlightSearch(query);
     restripe();
+}}
+
+function highlightSearch(query) {{
+    // Clear previous highlights
+    document.querySelectorAll('mark.search-highlight').forEach(function(m) {{
+        var parent = m.parentNode;
+        parent.replaceChild(document.createTextNode(m.textContent), m);
+        parent.normalize();
+    }});
+    if (!query || query.length < 2) return;
+    // Highlight in visible cells (skip selects, inputs, links with data-id)
+    var rows = document.querySelectorAll('.sheet tbody tr');
+    rows.forEach(function(row) {{
+        if (row.style.display === 'none') return;
+        row.querySelectorAll('td').forEach(function(td) {{
+            if (td.querySelector('select') || td.querySelector('input') || td.classList.contains('col-check') || td.classList.contains('col-apply')) return;
+            highlightTextInNode(td, query);
+        }});
+    }});
+}}
+
+function highlightTextInNode(node, query) {{
+    if (node.nodeType === 3) {{
+        var idx = node.textContent.toLowerCase().indexOf(query);
+        if (idx >= 0) {{
+            var mark = document.createElement('mark');
+            mark.className = 'search-highlight';
+            var after = node.splitText(idx);
+            var matched = after.splitText(query.length);
+            mark.appendChild(after.cloneNode(true));
+            after.parentNode.replaceChild(mark, after);
+        }}
+    }} else if (node.nodeType === 1 && node.tagName !== 'MARK' && node.tagName !== 'SELECT' && node.tagName !== 'INPUT') {{
+        Array.from(node.childNodes).forEach(function(child) {{
+            highlightTextInNode(child, query);
+        }});
+    }}
 }}
 
 function updateCount(visible, total) {{
@@ -1046,6 +1100,7 @@ function sortTable(th) {{
 
     rows.forEach(function(row) {{ tbody.appendChild(row); }});
     restripe();
+    try {{ localStorage.setItem('rn_tracker_sort', JSON.stringify(currentSort)); }} catch(ex) {{}}
     showToast('Sorted by ' + label + (currentSort.asc ? ' \u25B2' : ' \u25BC'));
 }}
 

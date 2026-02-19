@@ -1684,6 +1684,19 @@ footer small {
     background: #fef2f2 !important;
 }
 
+/* ===== SEARCH HIGHLIGHT ===== */
+mark.search-highlight {
+    background: #fef08a;
+    color: inherit;
+    padding: 0 1px;
+    border-radius: 2px;
+}
+
+[data-theme="dark"] mark.search-highlight {
+    background: #854d0e;
+    color: #fef3c7;
+}
+
 /* ===== NO RESULTS ===== */
 .no-results {
     text-align: center;
