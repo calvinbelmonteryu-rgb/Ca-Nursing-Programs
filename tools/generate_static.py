@@ -121,6 +121,17 @@ def generate():
         if app_open and app_open <= today and (not app_close or app_close >= today):
             open_now += 1
 
+    # Count cohort start date ranges
+    cohort_jul_sep = 0
+    cohort_oct_dec = 0
+    for p in programs:
+        cs = parse_date(p.get("cohort_start", ""))
+        if cs:
+            if cs.year == 2026 and 7 <= cs.month <= 9:
+                cohort_jul_sep += 1
+            elif cs.year == 2026 and 10 <= cs.month <= 12:
+                cohort_oct_dec += 1
+
     nclex_date = metadata.get("nclex_target_date", "")
     nclex_parsed = parse_date(nclex_date)
     if not nclex_parsed and len(nclex_date) == 7:
@@ -327,6 +338,9 @@ def generate():
             <button class="chip chip-amber" onclick="filterUpcoming(this)">Upcoming <span class="chip-count">{upcoming}</span></button>
             <button class="chip" onclick="filterBsn('No', this)">ADN OK</button>
             <button class="chip" onclick="filterBsn('Preferred', this)">BSN Preferred</button>
+            <span class="chip-sep"></span>
+            <button class="chip chip-purple" onclick="filterCohort('jul-sep', this)">Jul-Sep <span class="chip-count">{cohort_jul_sep}</span></button>
+            <button class="chip chip-purple" onclick="filterCohort('oct-dec', this)">Oct-Dec <span class="chip-count">{cohort_oct_dec}</span></button>
         </div>
 
         <div class="sheet-wrapper">
@@ -760,6 +774,18 @@ function filterUpcoming(btn) {{
     showToast('Showing upcoming programs');
 }}
 
+function filterCohort(range, btn) {{
+    if (btn.classList.contains('chip-active')) {{
+        clearAllFilters();
+        return;
+    }}
+    resetFilters();
+    window._specialFilter = 'cohort-' + range;
+    filterTableSpecial();
+    btn.classList.add('chip-active');
+    showToast('Showing ' + range.replace('-', '\u2013').toUpperCase() + ' 2026 cohorts');
+}}
+
 function filterBsn(val, btn) {{
     if (btn.classList.contains('chip-active')) {{
         clearAllFilters();
@@ -800,6 +826,17 @@ function filterTableSpecial() {{
                 var closeDate2 = parseDate(closeRaw2);
                 if (closeDate2 && closeDate2 >= today) {{
                     show = true;
+                }}
+            }}
+        }} else if (window._specialFilter === 'cohort-jul-sep' || window._specialFilter === 'cohort-oct-dec') {{
+            if (dateCells.length >= 3) {{
+                var cohortRaw = dateCells[2].dataset.raw || '';
+                var cohortDate = parseDate(cohortRaw);
+                if (cohortDate) {{
+                    var m = cohortDate.getMonth() + 1;
+                    var y = cohortDate.getFullYear();
+                    if (window._specialFilter === 'cohort-jul-sep' && y === 2026 && m >= 7 && m <= 9) show = true;
+                    if (window._specialFilter === 'cohort-oct-dec' && y === 2026 && m >= 10 && m <= 12) show = true;
                 }}
             }}
         }}

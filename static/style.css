@@ -1015,6 +1015,27 @@ footer small {
     background: #fef3c7;
 }
 
+.chip-purple {
+    border-color: #c4b5fd;
+    color: #5b21b6;
+    background: #f5f3ff;
+}
+
+.chip-purple:hover {
+    background: #ede9fe;
+}
+
+.chip-purple .chip-count {
+    background: rgba(139, 92, 246, 0.15);
+}
+
+.chip-sep {
+    width: 1px;
+    height: 20px;
+    background: #d1d5db;
+    margin: 0 2px;
+}
+
 .chip-count {
     display: inline-flex;
     align-items: center;

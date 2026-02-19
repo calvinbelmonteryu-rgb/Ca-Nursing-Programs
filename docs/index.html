@@ -1025,6 +1025,27 @@ footer small {
     background: #fef3c7;
 }
 
+.chip-purple {
+    border-color: #c4b5fd;
+    color: #5b21b6;
+    background: #f5f3ff;
+}
+
+.chip-purple:hover {
+    background: #ede9fe;
+}
+
+.chip-purple .chip-count {
+    background: rgba(139, 92, 246, 0.15);
+}
+
+.chip-sep {
+    width: 1px;
+    height: 20px;
+    background: #d1d5db;
+    margin: 0 2px;
+}
+
 .chip-count {
     display: inline-flex;
     align-items: center;
@@ -1708,6 +1729,9 @@ footer small {
             <button class="chip chip-amber" onclick="filterUpcoming(this)">Upcoming <span class="chip-count">17</span></button>
             <button class="chip" onclick="filterBsn('No', this)">ADN OK</button>
             <button class="chip" onclick="filterBsn('Preferred', this)">BSN Preferred</button>
+            <span class="chip-sep"></span>
+            <button class="chip chip-purple" onclick="filterCohort('jul-sep', this)">Jul-Sep <span class="chip-count">29</span></button>
+            <button class="chip chip-purple" onclick="filterCohort('oct-dec', this)">Oct-Dec <span class="chip-count">1</span></button>
         </div>
 
         <div class="sheet-wrapper">
@@ -3202,6 +3226,18 @@ function filterUpcoming(btn) {
     showToast('Showing upcoming programs');
 }
 
+function filterCohort(range, btn) {
+    if (btn.classList.contains('chip-active')) {
+        clearAllFilters();
+        return;
+    }
+    resetFilters();
+    window._specialFilter = 'cohort-' + range;
+    filterTableSpecial();
+    btn.classList.add('chip-active');
+    showToast('Showing ' + range.replace('-', '–').toUpperCase() + ' 2026 cohorts');
+}
+
 function filterBsn(val, btn) {
     if (btn.classList.contains('chip-active')) {
         clearAllFilters();
@@ -3242,6 +3278,17 @@ function filterTableSpecial() {
                 var closeDate2 = parseDate(closeRaw2);
                 if (closeDate2 && closeDate2 >= today) {
                     show = true;
+                }
+            }
+        } else if (window._specialFilter === 'cohort-jul-sep' || window._specialFilter === 'cohort-oct-dec') {
+            if (dateCells.length >= 3) {
+                var cohortRaw = dateCells[2].dataset.raw || '';
+                var cohortDate = parseDate(cohortRaw);
+                if (cohortDate) {
+                    var m = cohortDate.getMonth() + 1;
+                    var y = cohortDate.getFullYear();
+                    if (window._specialFilter === 'cohort-jul-sep' && y === 2026 && m >= 7 && m <= 9) show = true;
+                    if (window._specialFilter === 'cohort-oct-dec' && y === 2026 && m >= 10 && m <= 12) show = true;
                 }
             }
         }
