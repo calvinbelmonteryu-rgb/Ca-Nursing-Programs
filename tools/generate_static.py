@@ -3768,6 +3768,63 @@ function goCompare() {{
     }});
 
     html += '</tbody></table></div>';
+
+    // Comparison insights
+    if (progs.length >= 2) {{
+        var insights = [];
+        // Pay comparison
+        var payVals = progs.map(function(p) {{
+            var m = (p.pay_range || '').match(/(\\d[\\d.,]+)\\/hr/);
+            return {{ name: p.hospital.split(' ')[0], val: m ? parseFloat(m[1].replace(',','')) : 0 }};
+        }}).filter(function(x) {{ return x.val > 0; }});
+        if (payVals.length >= 2) {{
+            payVals.sort(function(a,b) {{ return b.val - a.val; }});
+            var diff = ((payVals[0].val - payVals[payVals.length-1].val) / payVals[payVals.length-1].val * 100).toFixed(0);
+            if (parseInt(diff) > 0) {{
+                insights.push('\\uD83D\\uDCB0 <strong>' + payVals[0].name + '</strong> pays ' + diff + '% more than ' + payVals[payVals.length-1].name);
+            }}
+        }}
+        // Reputation comparison
+        var repVals = progs.map(function(p) {{ return {{ name: p.hospital.split(' ')[0], val: p.reputation || 0 }}; }});
+        repVals.sort(function(a,b) {{ return b.val - a.val; }});
+        if (repVals[0].val > repVals[repVals.length-1].val) {{
+            insights.push('\\u2B50 <strong>' + repVals[0].name + '</strong> has the highest reputation (' + repVals[0].val + '/5)');
+        }}
+        // Deadline comparison
+        var today2 = new Date(); today2.setHours(0,0,0,0);
+        var dlVals = progs.map(function(p) {{
+            var c = parseDate(p.app_close_date);
+            var d = c ? Math.ceil((c - today2) / 86400000) : 999;
+            return {{ name: p.hospital.split(' ')[0], days: d, open: parseDate(p.app_open_date) <= today2 && c >= today2 }};
+        }}).filter(function(x) {{ return x.days < 999; }});
+        dlVals.sort(function(a,b) {{ return a.days - b.days; }});
+        if (dlVals.length > 0 && dlVals[0].days <= 30) {{
+            var dlText = dlVals[0].open ? 'closes in ' + dlVals[0].days + ' days' : 'deadline in ' + dlVals[0].days + ' days';
+            insights.push('\\u23F0 <strong>' + dlVals[0].name + '</strong> has the nearest deadline (' + dlText + ')');
+        }}
+        // BSN comparison
+        var adnOk = progs.filter(function(p) {{ return p.bsn_required === 'No'; }});
+        var bsnReq = progs.filter(function(p) {{ return p.bsn_required === 'Yes'; }});
+        if (adnOk.length > 0 && bsnReq.length > 0) {{
+            insights.push('\\uD83C\\uDF93 ' + adnOk.map(function(p) {{ return '<strong>' + p.hospital.split(' ')[0] + '</strong>'; }}).join(', ') + ' accept ADN; ' + bsnReq.map(function(p) {{ return p.hospital.split(' ')[0]; }}).join(', ') + ' require BSN');
+        }}
+        // Length comparison
+        var lenVals = progs.map(function(p) {{ return {{ name: p.hospital.split(' ')[0], val: p.program_length_months || 0 }}; }}).filter(function(x) {{ return x.val > 0; }});
+        if (lenVals.length >= 2) {{
+            lenVals.sort(function(a,b) {{ return a.val - b.val; }});
+            if (lenVals[0].val !== lenVals[lenVals.length-1].val) {{
+                insights.push('\\uD83D\\uDCC5 Program length ranges from ' + lenVals[0].val + 'mo (' + lenVals[0].name + ') to ' + lenVals[lenVals.length-1].val + 'mo (' + lenVals[lenVals.length-1].name + ')');
+            }}
+        }}
+        if (insights.length > 0) {{
+            html += '<div class="compare-insights"><h3>Key Insights</h3>';
+            insights.forEach(function(ins) {{
+                html += '<div class="ci-item">' + ins + '</div>';
+            }});
+            html += '</div>';
+        }}
+    }}
+
     document.getElementById('compare-body').innerHTML = html;
     openModal('compare-modal');
 }}
