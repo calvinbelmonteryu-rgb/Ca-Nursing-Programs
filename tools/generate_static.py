@@ -294,7 +294,8 @@ def generate():
     </style>
 </head>
 <body>
-    <nav class="container-fluid">
+    <a href="#main-table" class="skip-link">Skip to programs table</a>
+    <nav class="container-fluid" role="navigation" aria-label="Main navigation">
         <ul>
             <li><strong>CA New Grad RN Tracker</strong></li>
         </ul>
@@ -309,7 +310,9 @@ def generate():
         </ul>
     </nav>
 
-    <main class="container-fluid sheet-page">
+    <div class="urgency-banner" id="urgency-banner" style="display:none"></div>
+
+    <main class="container-fluid sheet-page" role="main" id="main-table">
         <div class="sheet-toolbar">
             <div class="sheet-filters">
                 <input type="search" name="q" placeholder="Search... ( / )" value="">
@@ -349,6 +352,7 @@ def generate():
                         <button type="button" onclick="exportICS(); toggleMoreMenu();">Export Calendar</button>
                         <button type="button" onclick="backupData(); toggleMoreMenu();">Backup</button>
                         <button type="button" onclick="document.getElementById('restore-file').click(); toggleMoreMenu();">Restore</button>
+                        <button type="button" onclick="shareUrl(); toggleMoreMenu();">Share URL</button>
                     </div>
                     <div id="col-menu" class="col-menu" style="display:none">
                         <label><input type="checkbox" data-toggle-col="col-program" checked> Program</label>
@@ -856,6 +860,7 @@ document.addEventListener('DOMContentLoaded', function() {{
     updateFavCount();
     renderStatusSummary();
     renderRecentViewed();
+    renderUrgencyBanner();
 
     // Deep link: #program-5 opens detail modal for program 5
     var hash = window.location.hash;
@@ -1495,6 +1500,24 @@ function closeCompareModal() {{
     closeModalEl(document.getElementById('compare-modal'));
 }}
 
+function shareUrl() {{
+    var url = window.location.href;
+    if (navigator.clipboard) {{
+        navigator.clipboard.writeText(url).then(function() {{
+            showToast('URL copied to clipboard!');
+        }});
+    }} else {{
+        // Fallback
+        var input = document.createElement('input');
+        input.value = url;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        document.body.removeChild(input);
+        showToast('URL copied!');
+    }}
+}}
+
 function exportICS() {{
     var today = new Date();
     var lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//CA RN Tracker//EN', 'CALSCALE:GREGORIAN'];
@@ -1889,7 +1912,9 @@ function showDetail(id) {{
     }});
     html += '</ul>';
     var done = savedChecklist.length;
-    html += '<div class="checklist-progress">' + done + ' of ' + checklistItems.length + ' complete</div>';
+    var pct = Math.round(done / checklistItems.length * 100);
+    html += '<div class="checklist-progress-bar"><div class="checklist-progress-fill" style="width:' + pct + '%"></div></div>';
+    html += '<div class="checklist-progress">' + done + ' of ' + checklistItems.length + ' complete (' + pct + '%)</div>';
     html += '</div>';
 
     if (p.application_url) {{
@@ -1964,8 +1989,11 @@ function showDetail(id) {{
                 }}
                 var allCbs = checklist.querySelectorAll('input[type="checkbox"]');
                 var checkedCount = checklist.querySelectorAll('input[type="checkbox"]:checked').length;
+                var pctDone = Math.round(checkedCount / allCbs.length * 100);
                 var progDiv = checklist.parentElement.querySelector('.checklist-progress');
-                if (progDiv) progDiv.textContent = checkedCount + ' of ' + allCbs.length + ' complete';
+                if (progDiv) progDiv.textContent = checkedCount + ' of ' + allCbs.length + ' complete (' + pctDone + '%)';
+                var progBar = checklist.parentElement.querySelector('.checklist-progress-fill');
+                if (progBar) progBar.style.width = pctDone + '%';
             }}
         }});
     }}
@@ -1978,12 +2006,82 @@ function openModal(id) {{
     el.offsetHeight;
     el.classList.add('modal-visible');
     document.body.style.overflow = 'hidden';
+    // Focus first focusable element
+    setTimeout(function() {{
+        var focusable = el.querySelector('button, [href], input, select, textarea');
+        if (focusable) focusable.focus();
+    }}, 100);
 }}
 
 function closeModalEl(el) {{
     el.classList.remove('modal-visible');
     document.body.style.overflow = '';
     setTimeout(function() {{ el.style.display = 'none'; }}, 200);
+}}
+
+// Urgency banner
+function renderUrgencyBanner() {{
+    var banner = document.getElementById('urgency-banner');
+    if (!banner) return;
+    var today = new Date(); today.setHours(0,0,0,0);
+    var savedStatuses = loadSavedStatuses();
+    var urgent = [];
+    var opening = [];
+
+    PROGRAMS.forEach(function(p) {{
+        var status = savedStatuses[p.id] || p.application_status || 'Not Started';
+        if (status === 'Submitted' || status === 'Interview' || status === 'Offer' || status === 'Rejected') return;
+
+        var openD = parseDate(p.app_open_date);
+        var closeD = parseDate(p.app_close_date);
+        if (!closeD) return;
+
+        var daysLeft = Math.ceil((closeD - today) / (1000 * 60 * 60 * 24));
+
+        if (openD && openD <= today && closeD >= today) {{
+            if (daysLeft <= 7) {{
+                urgent.push({{ prog: p, days: daysLeft, type: 'closing' }});
+            }}
+        }}
+
+        // Opening soon
+        if (openD && openD > today) {{
+            var daysUntilOpen = Math.ceil((openD - today) / (1000 * 60 * 60 * 24));
+            if (daysUntilOpen <= 3) {{
+                opening.push({{ prog: p, days: daysUntilOpen, type: 'opening' }});
+            }}
+        }}
+    }});
+
+    if (urgent.length === 0 && opening.length === 0) {{
+        banner.style.display = 'none';
+        return;
+    }}
+
+    var html = '';
+    urgent.sort(function(a, b) {{ return a.days - b.days; }});
+    opening.sort(function(a, b) {{ return a.days - b.days; }});
+
+    if (urgent.length > 0) {{
+        html += '<div class="urgency-section urgency-critical">';
+        html += '<strong>&#9888; Closing Soon:</strong> ';
+        html += urgent.map(function(u) {{
+            return '<a href="#" onclick="showDetail(' + u.prog.id + '); return false;">' + escHtml(u.prog.hospital) + '</a> <span class="urgency-days">' + u.days + 'd</span>';
+        }}).join(' &bull; ');
+        html += '</div>';
+    }}
+
+    if (opening.length > 0) {{
+        html += '<div class="urgency-section urgency-opening">';
+        html += '<strong>&#128276; Opening Soon:</strong> ';
+        html += opening.map(function(o) {{
+            return '<a href="#" onclick="showDetail(' + o.prog.id + '); return false;">' + escHtml(o.prog.hospital) + '</a> <span class="urgency-days">in ' + o.days + 'd</span>';
+        }}).join(' &bull; ');
+        html += '</div>';
+    }}
+
+    banner.innerHTML = html;
+    banner.style.display = '';
 }}
 
 // Recently viewed
