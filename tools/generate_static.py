@@ -292,6 +292,13 @@ def generate():
             </div>
         </div>
 
+        <div class="quick-chips">
+            <button class="chip chip-green" onclick="filterOpen()">Open Now <span class="chip-count">{open_now}</span></button>
+            <button class="chip chip-amber" onclick="filterUpcoming()">Upcoming <span class="chip-count">{upcoming}</span></button>
+            <button class="chip" onclick="filterBsn('No')">ADN OK</button>
+            <button class="chip" onclick="filterBsn('Preferred')">BSN Preferred</button>
+        </div>
+
         <div class="sheet-wrapper">
             <table class="sheet">
                 <thead>
@@ -658,6 +665,15 @@ function filterUpcoming() {{
     window._specialFilter = 'upcoming';
     filterTableSpecial();
     showToast('Showing upcoming programs');
+}}
+
+function filterBsn(val) {{
+    clearAllFilters();
+    var bsnSelect = document.querySelector('[data-instant="bsn"]');
+    if (bsnSelect) bsnSelect.value = val;
+    filterTable();
+    updateUrlParams();
+    showToast('Showing ' + val + ' BSN programs');
 }}
 
 function filterTableSpecial() {{

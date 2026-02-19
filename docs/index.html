@@ -953,6 +953,75 @@ footer small {
     vertical-align: middle;
 }
 
+/* ===== QUICK CHIPS ===== */
+.quick-chips {
+    display: flex;
+    gap: 6px;
+    padding: 6px 4px;
+    flex-wrap: wrap;
+}
+
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    font-size: 0.72rem;
+    border: 1px solid #d1d5db;
+    border-radius: 16px;
+    background: white;
+    color: #374151;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.15s;
+}
+
+.chip:hover {
+    background: #f3f4f6;
+    border-color: #9ca3af;
+}
+
+.chip-green {
+    border-color: #86efac;
+    color: #065f46;
+    background: #f0fdf4;
+}
+
+.chip-green:hover {
+    background: #dcfce7;
+}
+
+.chip-amber {
+    border-color: #fcd34d;
+    color: #92400e;
+    background: #fffbeb;
+}
+
+.chip-amber:hover {
+    background: #fef3c7;
+}
+
+.chip-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    background: rgba(0,0,0,0.08);
+    border-radius: 9px;
+    font-size: 0.65rem;
+    font-weight: 700;
+}
+
+.chip-green .chip-count {
+    background: rgba(22, 163, 74, 0.15);
+}
+
+.chip-amber .chip-count {
+    background: rgba(245, 158, 11, 0.15);
+}
+
 /* ===== COLUMN TOGGLE ===== */
 .col-toggle-wrap {
     position: relative;
@@ -1515,6 +1584,13 @@ footer small {
                 <button type="button" id="compare-btn" disabled onclick="goCompare()">Compare</button>
                 <button type="button" onclick="exportCSV()" title="Export CSV">Export</button>
             </div>
+        </div>
+
+        <div class="quick-chips">
+            <button class="chip chip-green" onclick="filterOpen()">Open Now <span class="chip-count">2</span></button>
+            <button class="chip chip-amber" onclick="filterUpcoming()">Upcoming <span class="chip-count">17</span></button>
+            <button class="chip" onclick="filterBsn('No')">ADN OK</button>
+            <button class="chip" onclick="filterBsn('Preferred')">BSN Preferred</button>
         </div>
 
         <div class="sheet-wrapper">
@@ -2944,6 +3020,15 @@ function filterUpcoming() {
     window._specialFilter = 'upcoming';
     filterTableSpecial();
     showToast('Showing upcoming programs');
+}
+
+function filterBsn(val) {
+    clearAllFilters();
+    var bsnSelect = document.querySelector('[data-instant="bsn"]');
+    if (bsnSelect) bsnSelect.value = val;
+    filterTable();
+    updateUrlParams();
+    showToast('Showing ' + val + ' BSN programs');
 }
 
 function filterTableSpecial() {
