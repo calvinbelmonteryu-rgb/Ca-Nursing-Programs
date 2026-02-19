@@ -189,7 +189,7 @@ def generate():
 
         apply_cell = ""
         if p.get("application_url"):
-            apply_cell = f'<a href="{esc(p["application_url"])}" target="_blank" class="apply-link">Apply &rarr;</a>'
+            apply_cell = f'<a href="{esc(p["application_url"])}" target="_blank" class="apply-link">Apply &rarr;</a><button class="mark-applied-btn" data-id="{p["id"]}" data-url="{esc(p["application_url"])}" onclick="markApplied(this)" title="Open link & mark as Submitted">&#10003;</button>'
 
         notes_raw = p.get('personal_notes', '')
         notes_esc = esc(notes_raw)
@@ -246,9 +246,9 @@ def generate():
 <td class="col-fav"><button class="fav-btn" data-id="{p['id']}" onclick="toggleFav({p['id']})" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col">{comp_ring}<a href="#" class="hospital-link" data-id="{p['id']}">{esc(p['hospital'])}</a><button class="qnote-btn" data-id="{p['id']}" onclick="event.stopPropagation(); showQuickNote({p['id']}, this)" title="Quick note">&#9998;</button></td>
 <td class="col-program">{esc(p.get('program_name',''))}</td>
-<td class="col-region">{region_dot}{esc(p.get('region',''))}</td>
+<td class="col-region clickable-filter" onclick="filterByRegion('{esc(p.get('region',''))}')">{region_dot}{esc(p.get('region',''))}</td>
 <td class="col-city" title="{full_city}">{esc(city)}</td>
-<td class="col-bsn {bsn_cls}">{esc(bsn)}</td>
+<td class="col-bsn {bsn_cls} clickable-filter" onclick="filterByBsn('{esc(bsn)}')">{esc(bsn)}</td>
 <td class="col-date" data-raw="{esc(app_open_raw)}" title="{esc(open_title)}">{app_open_fmt}</td>
 <td class="col-date" data-raw="{esc(app_close_raw)}">{app_close_fmt}</td>
 <td class="col-date" data-raw="{esc(cohort_raw)}">{cohort_fmt}</td>
@@ -405,6 +405,7 @@ def generate():
                     <option value="opening">Opening Soon</option>
                     <option value="cohort">Cohort Start</option>
                     <option value="hospital">Hospital A-Z</option>
+                    <option value="smart">Smart Match</option>
                 </select>
                 <button type="button" id="compare-btn" disabled onclick="goCompare()">Compare</button>
                 <div class="more-actions-wrap">
@@ -864,6 +865,41 @@ function filterByStatus(status) {{
     filterTable();
     updateUrlParams();
     showToast('Showing ' + status);
+}}
+
+function markApplied(btn) {{
+    var id = parseInt(btn.dataset.id);
+    var url = btn.dataset.url;
+    window.open(url, '_blank');
+    saveStatus(id, 'Submitted');
+    logActivity(id, 'Marked as Submitted via Apply button');
+    var row = btn.closest('tr');
+    if (row) {{
+        applyRowStatus(row, 'Submitted');
+        row.dataset.status = 'Submitted';
+        var sel = row.querySelector('.status-select');
+        if (sel) sel.value = 'Submitted';
+    }}
+    renderStatusSummary();
+    showToast('Opened application & marked as Submitted');
+}}
+
+function filterByRegion(region) {{
+    resetFilters();
+    var regionSel = document.querySelector('[data-instant="region"]');
+    if (regionSel) regionSel.value = region;
+    filterTable();
+    updateUrlParams();
+    showToast('Showing ' + region);
+}}
+
+function filterByBsn(bsn) {{
+    resetFilters();
+    var bsnSel = document.querySelector('[data-instant="bsn"]');
+    if (bsnSel) bsnSel.value = bsn;
+    filterTable();
+    updateUrlParams();
+    showToast('Showing BSN: ' + bsn);
 }}
 
 function filterFavorites(btn) {{
@@ -2017,6 +2053,11 @@ function updateCompareBtn() {{
 
 function applySortPreset(preset) {{
     if (!preset) return;
+    if (preset === 'smart') {{
+        smartSort();
+        document.getElementById('sort-preset').value = '';
+        return;
+    }}
     var colMap = {{
         'deadline': {{ col: 8, label: 'App Close' }},
         'pay-high': {{ col: 11, label: 'Pay' }},
@@ -2036,6 +2077,61 @@ function applySortPreset(preset) {{
         sortTable(th);
     }}
     document.getElementById('sort-preset').value = '';
+}}
+
+function smartSort() {{
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+    var savedStatuses = loadSavedStatuses();
+    var tbody = document.querySelector('.sheet tbody');
+    var rows = Array.from(tbody.querySelectorAll('tr'));
+    rows.sort(function(a, b) {{
+        var aId = parseInt(a.dataset.id), bId = parseInt(b.dataset.id);
+        var aP = PROGRAMS.find(function(p) {{ return p.id === aId; }});
+        var bP = PROGRAMS.find(function(p) {{ return p.id === bId; }});
+        if (!aP || !bP) return 0;
+        var aScore = computeSmartScore(aP, savedStatuses, today);
+        var bScore = computeSmartScore(bP, savedStatuses, today);
+        return bScore - aScore;
+    }});
+    rows.forEach(function(r) {{ tbody.appendChild(r); }});
+    restripe();
+    showToast('Sorted by smart match score');
+}}
+
+function computeSmartScore(p, statuses, today) {{
+    var score = 0;
+    var status = statuses[p.id] || p.application_status || 'Not Started';
+    // Priority: unapplied programs with upcoming deadlines score highest
+    if (status === 'Rejected') return -100;
+    if (status === 'Offer') return -50; // Already got it, low priority
+    if (status === 'Interview') score += 40;
+    if (status === 'Submitted') score += 20;
+    if (status === 'In Progress') score += 30;
+    if (status === 'Not Started') score += 10;
+    // Reputation bonus
+    score += (p.reputation || 0) * 5;
+    // Pay bonus
+    var payMatch = (p.pay_range || '').match(/(\\d[\\d.,]+)/);
+    if (payMatch) score += Math.min(20, parseFloat(payMatch[1].replace(',','')) / 5);
+    // Deadline proximity — closer = higher (max 40 points)
+    var closeDate = parseDate(p.app_close_date);
+    if (closeDate) {{
+        var daysLeft = Math.ceil((closeDate - today) / (1000 * 60 * 60 * 24));
+        if (daysLeft < 0) score -= 30; // Closed
+        else if (daysLeft <= 7) score += 40;
+        else if (daysLeft <= 14) score += 30;
+        else if (daysLeft <= 30) score += 20;
+        else if (daysLeft <= 60) score += 10;
+    }}
+    // Open now bonus
+    var openDate = parseDate(p.app_open_date);
+    if (openDate && closeDate && openDate <= today && closeDate >= today) {{
+        score += 50;
+    }}
+    // Has apply URL
+    if (p.application_url) score += 5;
+    return score;
 }}
 
 function bulkSetStatus() {{

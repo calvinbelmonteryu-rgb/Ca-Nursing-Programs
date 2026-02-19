@@ -522,6 +522,8 @@ tbody tr:hover .col-check { background: #eff6ff; }
 .region-state { background: #6b7280; }
 .col-city { min-width: 100px; white-space: nowrap; }
 .col-bsn { width: 40px; text-align: center; }
+.clickable-filter { cursor: pointer; }
+.clickable-filter:hover { text-decoration: underline; text-decoration-style: dotted; }
 .col-rep { width: 70px; white-space: nowrap; }
 .col-len { width: 40px; text-align: center; white-space: nowrap; }
 .col-pay { min-width: 140px; white-space: nowrap; font-size: 0.74rem; }
@@ -607,6 +609,25 @@ tbody tr:hover .frozen-col {
 .apply-link:hover {
     text-decoration: underline;
 }
+
+.mark-applied-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #22c55e;
+    color: white;
+    border: none;
+    font-size: 0.7rem;
+    cursor: pointer;
+    margin-left: 4px;
+    vertical-align: middle;
+    opacity: 0.5;
+    transition: opacity 0.15s, transform 0.15s;
+}
+.mark-applied-btn:hover { opacity: 1; transform: scale(1.15); }
 
 /* Checkbox in sheet */
 .sheet input[type="checkbox"] {
