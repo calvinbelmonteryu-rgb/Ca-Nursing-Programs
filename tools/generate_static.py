@@ -472,6 +472,13 @@ def generate():
 
     <!-- Pipeline View -->
     <div id="pipeline-view" class="container-fluid" style="display:none">
+        <div class="pipeline-toolbar">
+            <input type="search" id="pipeline-search" placeholder="Filter programs..." class="pipeline-search-input">
+            <select id="pipeline-region-filter" class="pipeline-filter-select">
+                <option value="">All Regions</option>
+                {region_options}
+            </select>
+        </div>
         <div class="pipeline-container" id="pipeline-container"></div>
     </div>
 
@@ -487,6 +494,10 @@ def generate():
             <h2 id="cal-month-title"></h2>
             <button onclick="calNext()">&rarr;</button>
             <button onclick="calToday()" class="cal-today-btn">Today</button>
+            <select id="cal-region-filter" class="cal-filter-select" onchange="renderCalendar()">
+                <option value="">All Regions</option>
+                {region_options}
+            </select>
         </div>
         <div class="cal-grid" id="cal-grid"></div>
         <div class="cal-legend">
@@ -1026,6 +1037,16 @@ document.addEventListener('DOMContentLoaded', function() {{
             }}
         }}
     }});
+
+    // Pipeline search/filter
+    var pipeSearchInput = document.getElementById('pipeline-search');
+    var pipeRegionFilter = document.getElementById('pipeline-region-filter');
+    if (pipeSearchInput) {{
+        pipeSearchInput.addEventListener('input', debounce(function() {{ renderPipeline(); }}, 200));
+    }}
+    if (pipeRegionFilter) {{
+        pipeRegionFilter.addEventListener('change', function() {{ renderPipeline(); }});
+    }}
 
     // Sortable column headers
     document.querySelectorAll('.sortable').forEach(function(th) {{
@@ -2760,7 +2781,14 @@ function renderPipeline() {{
     var grouped = {{}};
     columns.forEach(function(c) {{ grouped[c] = []; }});
 
+    var pSearch = (document.getElementById('pipeline-search') || {{}}).value || '';
+    var pRegion = (document.getElementById('pipeline-region-filter') || {{}}).value || '';
+    pSearch = pSearch.toLowerCase().trim();
+
     PROGRAMS.forEach(function(p) {{
+        // Apply filters
+        if (pSearch && (p.hospital + ' ' + p.program_name + ' ' + p.region).toLowerCase().indexOf(pSearch) === -1) return;
+        if (pRegion && p.region !== pRegion) return;
         var status = savedStatuses[p.id] || p.application_status || 'Not Started';
         if (!grouped[status]) grouped[status] = [];
         grouped[status].push(p);
@@ -2922,6 +2950,72 @@ function renderStats() {{
     html += '<div class="stats-num-card"><span class="stats-big-num" style="color:#8b5cf6">' + favs.length + '</span><span>Favorites</span></div>';
     html += '</div></div>';
 
+    // Top recommendations
+    var recScores = [];
+    PROGRAMS.forEach(function(p) {{
+        var s = savedStatuses[p.id] || p.application_status || 'Not Started';
+        if (s === 'Offer' || s === 'Rejected') return;
+        var score = 0;
+        // Reputation weight (0-25)
+        score += (p.reputation || 1) * 5;
+        // Pay weight (0-20)
+        var payMatch = (p.pay_range || '').match(/(\\d[\\d.,]+)\\/hr/);
+        if (payMatch) {{
+            var payVal = parseFloat(payMatch[1].replace(',', ''));
+            score += Math.min(payVal / 5, 20);
+        }}
+        // Deadline proximity bonus (0-20) — closer = more urgent = higher score
+        var openD = parseDate(p.app_open_date);
+        var closeD = parseDate(p.app_close_date);
+        if (openD && closeD && openD <= today && closeD >= today) {{
+            var daysLeft = Math.ceil((closeD - today) / (1000*60*60*24));
+            score += Math.max(20 - daysLeft, 5);
+        }} else if (openD && openD > today) {{
+            var daysUntil = Math.ceil((openD - today) / (1000*60*60*24));
+            if (daysUntil <= 30) score += 10;
+        }}
+        // BSN bonus (no BSN = more accessible)
+        if (p.bsn_required === 'No') score += 5;
+        // Has apply URL
+        if (p.application_url) score += 3;
+        // Not yet started penalty
+        if (s === 'In Progress' || s === 'Submitted') score += 5;
+        recScores.push({{ prog: p, score: score, status: s }});
+    }});
+    recScores.sort(function(a, b) {{ return b.score - a.score; }});
+    var topRecs = recScores.slice(0, 5);
+    if (topRecs.length > 0) {{
+        html += '<div class="rec-section"><h3>Recommended Next Actions</h3>';
+        html += '<div class="rec-list">';
+        topRecs.forEach(function(r, i) {{
+            var p = r.prog;
+            var stars = '\\u2605'.repeat(p.reputation) + '\\u2606'.repeat(5 - p.reputation);
+            var openD = parseDate(p.app_open_date);
+            var closeD = parseDate(p.app_close_date);
+            var badge = '';
+            if (openD && closeD && openD <= today && closeD >= today) {{
+                badge = '<span class="rec-badge rec-badge-open">OPEN NOW</span>';
+            }} else if (openD && openD > today) {{
+                var du = Math.ceil((openD - today) / (1000*60*60*24));
+                if (du <= 14) badge = '<span class="rec-badge rec-badge-soon">Opens in ' + du + 'd</span>';
+            }}
+            html += '<div class="rec-card" onclick="showDetail(' + p.id + ')">';
+            html += '<span class="rec-rank">#' + (i+1) + '</span>';
+            html += '<div class="rec-info">';
+            html += '<div class="rec-name">' + escHtml(p.hospital) + ' ' + badge + '</div>';
+            html += '<div class="rec-meta"><span class="stars" style="font-size:0.65rem">' + stars + '</span>';
+            if (p.pay_range) {{
+                var pm = p.pay_range.match(/(\\$[\\d.,]+\\/hr)/);
+                if (pm) html += ' <span style="color:#6b7280;font-size:0.72rem">' + pm[1] + '</span>';
+            }}
+            html += ' <span style="color:#9ca3af;font-size:0.68rem">' + escHtml(p.region) + '</span>';
+            html += '</div></div>';
+            html += '<span class="rec-score">' + Math.round(r.score) + '</span>';
+            html += '</div>';
+        }});
+        html += '</div></div>';
+    }}
+
     html += '<div class="stats-grid">';
     html += barChart('Application Status', statusCounts, statusColors);
     html += barChart('By Region', regionCounts, regionColors);
@@ -2937,6 +3031,32 @@ function renderStats() {{
     var repData = {{}};
     [5,4,3,2,1].forEach(function(r) {{ repData['\u2605'.repeat(r) + '\u2606'.repeat(5-r)] = repCounts[r]; }});
     html += barChart('Reputation Distribution', repData, null);
+
+    // Application funnel
+    html += '<div class="stats-card"><h3>Application Funnel</h3>';
+    html += '<div class="funnel">';
+    var funnelStages = ['Not Started', 'In Progress', 'Submitted', 'Interview', 'Offer'];
+    var funnelColors = ['#9ca3af', '#f59e0b', '#3b82f6', '#8b5cf6', '#22c55e'];
+    var maxFunnel = Math.max.apply(null, funnelStages.map(function(s) {{ return statusCounts[s] || 0; }})) || 1;
+    funnelStages.forEach(function(stage, i) {{
+        var count = statusCounts[stage] || 0;
+        var widthPct = Math.max(Math.round(count / maxFunnel * 100), count > 0 ? 12 : 4);
+        html += '<div class="funnel-row">';
+        html += '<div class="funnel-bar" style="width:' + widthPct + '%;background:' + funnelColors[i] + '">';
+        html += '<span class="funnel-label">' + stage + '</span>';
+        html += '<span class="funnel-count">' + count + '</span>';
+        html += '</div>';
+        if (i < funnelStages.length - 1) {{
+            var nextCount = statusCounts[funnelStages[i+1]] || 0;
+            var convRate = count > 0 ? Math.round(nextCount / count * 100) : 0;
+            html += '<div class="funnel-arrow">' + convRate + '%</div>';
+        }}
+        html += '</div>';
+    }});
+    if (statusCounts['Rejected'] > 0) {{
+        html += '<div class="funnel-rejected"><span>Rejected: ' + statusCounts['Rejected'] + '</span></div>';
+    }}
+    html += '</div></div>';
 
     // Data quality card
     var missingPay = 0, missingDates = 0, missingUrl = 0, missingCohort = 0;
@@ -2994,8 +3114,10 @@ function renderCalendar() {{
     var today = new Date(); today.setHours(0,0,0,0);
 
     // Collect events for this month
+    var calRegion = (document.getElementById('cal-region-filter') || {{}}).value || '';
     var events = {{}};
     PROGRAMS.forEach(function(p) {{
+        if (calRegion && p.region !== calRegion) return;
         var openD = parseDate(p.app_open_date);
         var closeD = parseDate(p.app_close_date);
         var cohortD = parseDate(p.cohort_start);
