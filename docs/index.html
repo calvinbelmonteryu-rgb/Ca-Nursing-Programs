@@ -6797,6 +6797,18 @@ mark.search-highlight {
     line-height: 1.4;
 }
 
+/* Count-up animation */
+.stats-big-num[data-target] {
+    font-variant-numeric: tabular-nums;
+}
+.goal-fill {
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.goal-fill[data-pct="100"] {
+    background: linear-gradient(90deg, #22c55e, #16a34a) !important;
+    box-shadow: 0 0 8px rgba(34, 197, 94, 0.4);
+}
+
     </style>
 </head>
 <body>
@@ -12554,10 +12566,10 @@ function renderStats() {
     html += '<div class="stats-header">';
     html += '<h2>Program Analytics</h2>';
     html += '<div class="stats-summary-cards">';
-    html += '<div class="stats-num-card"><span class="stats-big-num">' + total + '</span><span>Total Programs</span></div>';
-    html += '<div class="stats-num-card"><span class="stats-big-num stat-green">' + openNow + '</span><span>Open Now</span></div>';
-    html += '<div class="stats-num-card"><span class="stats-big-num" style="color:#f59e0b">' + upcoming30 + '</span><span>Closing in 30d</span></div>';
-    html += '<div class="stats-num-card"><span class="stats-big-num" style="color:#8b5cf6">' + favs.length + '</span><span>Favorites</span></div>';
+    html += '<div class="stats-num-card"><span class="stats-big-num" data-target="' + total + '">' + total + '</span><span>Total Programs</span></div>';
+    html += '<div class="stats-num-card"><span class="stats-big-num stat-green" data-target="' + openNow + '">' + openNow + '</span><span>Open Now</span></div>';
+    html += '<div class="stats-num-card"><span class="stats-big-num" style="color:#f59e0b" data-target="' + upcoming30 + '">' + upcoming30 + '</span><span>Closing in 30d</span></div>';
+    html += '<div class="stats-num-card"><span class="stats-big-num" style="color:#8b5cf6" data-target="' + favs.length + '">' + favs.length + '</span><span>Favorites</span></div>';
     html += '</div>';
 
     // Goal tracker
@@ -12570,7 +12582,7 @@ function renderStats() {
     html += '<button class="goal-edit-btn" onclick="editGoal()">Edit</button>';
     html += '</div>';
     html += '<div class="goal-bar-wrap">';
-    html += '<div class="goal-bar"><div class="goal-fill" style="width:' + goalPct + '%"></div></div>';
+    html += '<div class="goal-bar"><div class="goal-fill" data-pct="' + goalPct + '" style="width:' + goalPct + '%"></div></div>';
     html += '<span class="goal-text">' + applied + ' / ' + goalTarget + ' applied (' + goalPct + '%)</span>';
     html += '</div>';
     html += '</div>';
@@ -12877,6 +12889,49 @@ function renderStats() {
     html += '</div>';
 
     document.getElementById('stats-dashboard').innerHTML = html;
+
+    // Animate stat numbers counting up
+    document.querySelectorAll('.stats-big-num[data-target]').forEach(function(el) {
+        animateCountUp(el, parseInt(el.getAttribute('data-target')), 800);
+    });
+
+    // Animate goal bar fill
+    var goalFill = document.querySelector('.goal-fill[data-pct]');
+    if (goalFill) {
+        var pct = parseInt(goalFill.getAttribute('data-pct'));
+        goalFill.style.width = '0%';
+        requestAnimationFrame(function() {
+            goalFill.style.transition = 'width 1s cubic-bezier(0.4, 0, 0.2, 1)';
+            goalFill.style.width = pct + '%';
+        });
+        // Goal completion celebration
+        if (pct >= 100) {
+            var goalCelebrated = localStorage.getItem('rn_tracker_goal_celebrated');
+            var goalTarget = localStorage.getItem('rn_tracker_goal') || '10';
+            if (goalCelebrated !== goalTarget) {
+                localStorage.setItem('rn_tracker_goal_celebrated', goalTarget);
+                setTimeout(function() {
+                    launchConfetti();
+                    showToast('Goal reached! You applied to ' + goalTarget + ' programs!');
+                }, 1100);
+            }
+        }
+    }
+}
+
+function animateCountUp(el, target, duration) {
+    var start = 0;
+    var startTime = null;
+    el.textContent = '0';
+    function step(timestamp) {
+        if (!startTime) startTime = timestamp;
+        var progress = Math.min((timestamp - startTime) / duration, 1);
+        var eased = 1 - Math.pow(1 - progress, 3); // easeOutCubic
+        var current = Math.round(eased * target);
+        el.textContent = current;
+        if (progress < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
 }
 
 // Calendar view
