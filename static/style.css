@@ -4902,6 +4902,89 @@ mark.search-highlight {
     font-size: 1rem !important;
 }
 
+/* ===== MOBILE BOTTOM NAV ===== */
+.mobile-bottom-nav {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 9000;
+    background: #fff;
+    border-top: 1px solid #e5e7eb;
+    padding: 4px 0 env(safe-area-inset-bottom, 4px);
+    justify-content: space-around;
+    align-items: center;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.08);
+}
+
+@media (max-width: 768px) {
+    .mobile-bottom-nav {
+        display: flex;
+    }
+    body {
+        padding-bottom: 64px;
+    }
+    .fab-wrap {
+        bottom: 72px !important;
+    }
+    .back-to-top {
+        bottom: 72px !important;
+    }
+}
+
+.mnav-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    border: none;
+    background: none;
+    color: #9ca3af;
+    font-size: 0.6rem;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: color 0.15s;
+    -webkit-tap-highlight-color: transparent;
+    min-width: 48px;
+}
+
+.mnav-icon {
+    font-size: 1.2rem;
+    line-height: 1;
+}
+
+.mnav-label {
+    font-weight: 500;
+    letter-spacing: 0.02em;
+}
+
+.mnav-btn.mnav-active {
+    color: var(--accent, #2563eb);
+}
+
+.mnav-btn.mnav-active .mnav-icon {
+    transform: scale(1.1);
+}
+
+.mnav-btn:active {
+    transform: scale(0.92);
+}
+
+[data-theme="dark"] .mobile-bottom-nav {
+    background: #1f2937;
+    border-top-color: #374151;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+}
+
+[data-theme="dark"] .mnav-btn {
+    color: #6b7280;
+}
+
+[data-theme="dark"] .mnav-btn.mnav-active {
+    color: var(--accent, #3b82f6);
+}
+
 /* ===== COMMAND PALETTE ===== */
 .cmd-overlay {
     position: fixed;
@@ -5104,7 +5187,7 @@ mark.search-highlight {
     nav, .sheet-toolbar, .col-check, .col-fav, .col-apply, footer, .modal-overlay,
     .toast, .back-to-top, .quick-chips, .urgency-banner, .recent-viewed,
     .summary-pills, .bulk-bar, .pipeline-page, .calendar-page, .stats-page,
-    .ctx-menu, .row-preview, .row-preview-card, .notif-panel, .skip-link, #back-to-top, .fab-wrap, .cmd-overlay {
+    .ctx-menu, .row-preview, .row-preview-card, .notif-panel, .skip-link, #back-to-top, .fab-wrap, .cmd-overlay, .mobile-bottom-nav {
         display: none !important;
     }
 

@@ -683,6 +683,15 @@ def generate():
         <button class="fab-btn" id="fab-btn" onclick="toggleFab()" title="Quick actions">+</button>
     </div>
 
+    <!-- Mobile Bottom Nav -->
+    <nav class="mobile-bottom-nav" id="mobile-bottom-nav">
+        <button class="mnav-btn mnav-active" data-view="table" onclick="showView('table')"><span class="mnav-icon">&#9783;</span><span class="mnav-label">Table</span></button>
+        <button class="mnav-btn" data-view="cards" onclick="showView('cards')"><span class="mnav-icon">&#9642;</span><span class="mnav-label">Cards</span></button>
+        <button class="mnav-btn" data-view="pipeline" onclick="showView('pipeline')"><span class="mnav-icon">&#9654;</span><span class="mnav-label">Pipeline</span></button>
+        <button class="mnav-btn" data-view="calendar" onclick="showView('calendar')"><span class="mnav-icon">&#128197;</span><span class="mnav-label">Calendar</span></button>
+        <button class="mnav-btn" data-view="stats" onclick="showView('stats')"><span class="mnav-icon">&#9733;</span><span class="mnav-label">Stats</span></button>
+    </nav>
+
     <!-- Command Palette -->
     <div class="cmd-overlay" id="cmd-overlay" style="display:none" onclick="closeCmdPalette()">
         <div class="cmd-palette" onclick="event.stopPropagation()">
@@ -2401,6 +2410,42 @@ function executeCmdItem(idx) {{
     }});
 }})();
 
+// Swipe gestures for mobile view switching
+(function() {{
+    var viewOrder = ['table', 'cards', 'pipeline', 'calendar', 'stats'];
+    var touchStartX = 0, touchStartY = 0, touchEndX = 0, touchEndY = 0;
+    var swipeThreshold = 80;
+
+    document.addEventListener('touchstart', function(e) {{
+        touchStartX = e.changedTouches[0].screenX;
+        touchStartY = e.changedTouches[0].screenY;
+    }}, {{ passive: true }});
+
+    document.addEventListener('touchend', function(e) {{
+        touchEndX = e.changedTouches[0].screenX;
+        touchEndY = e.changedTouches[0].screenY;
+        var dx = touchEndX - touchStartX;
+        var dy = touchEndY - touchStartY;
+        // Only trigger if horizontal swipe is dominant and exceeds threshold
+        if (Math.abs(dx) > swipeThreshold && Math.abs(dx) > Math.abs(dy) * 1.5) {{
+            // Don't swipe when inside scrollable containers or modals
+            if (e.target.closest('.sheet-wrapper') || e.target.closest('.modal-overlay') ||
+                e.target.closest('.cmd-palette') || e.target.closest('.pipeline-col-body')) return;
+            var current = window._currentView || 'table';
+            var idx = viewOrder.indexOf(current);
+            if (dx < 0 && idx < viewOrder.length - 1) {{
+                // Swipe left = next view
+                showView(viewOrder[idx + 1]);
+            }} else if (dx > 0 && idx > 0) {{
+                // Swipe right = previous view
+                showView(viewOrder[idx - 1]);
+            }}
+        }}
+    }}, {{ passive: true }});
+}})();
+
+window._currentView = 'table';
+
 function loadPins() {{
     try {{ return JSON.parse(localStorage.getItem('rn_tracker_pins') || '[]'); }} catch(e) {{ return []; }}
 }}
@@ -3621,6 +3666,12 @@ function showView(view) {{
         target.style.display = (target === tableView) ? '' : 'block';
         requestAnimationFrame(function() {{ target.classList.add('view-enter'); }});
     }}
+    // Update mobile bottom nav
+    document.querySelectorAll('.mnav-btn').forEach(function(btn) {{
+        btn.classList.toggle('mnav-active', btn.dataset.view === view);
+    }});
+    window._currentView = view;
+    window.scrollTo({{ top: 0, behavior: 'smooth' }});
 }}
 
 // Pipeline drag and drop
