@@ -6030,3 +6030,64 @@ mark.search-highlight {
     a { text-decoration: none !important; color: #000 !important; }
     a[href]::after { content: none !important; }
 }
+
+/* ===== PROGRESS CARD ===== */
+.progress-card-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+.pc-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    background: #f9fafb;
+    color: #374151;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.pc-btn:hover {
+    background: #f3f4f6;
+    border-color: #9ca3af;
+}
+
+.pc-btn-primary {
+    background: var(--accent, #2563eb);
+    color: #fff;
+    border-color: var(--accent, #2563eb);
+}
+
+.pc-btn-primary:hover {
+    background: var(--accent-dark, #1d4ed8);
+    border-color: var(--accent-dark, #1d4ed8);
+}
+
+/* Dark mode */
+[data-theme="dark"] .pc-btn {
+    background: #374151;
+    color: #e5e7eb;
+    border-color: #4b5563;
+}
+
+[data-theme="dark"] .pc-btn:hover {
+    background: #4b5563;
+}
+
+[data-theme="dark"] .pc-btn-primary {
+    background: var(--accent, #3b82f6);
+    color: #fff;
+    border-color: var(--accent, #3b82f6);
+}
+
+#progress-card-container canvas {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}

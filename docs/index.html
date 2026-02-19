@@ -6047,6 +6047,67 @@ mark.search-highlight {
     a[href]::after { content: none !important; }
 }
 
+/* ===== PROGRESS CARD ===== */
+.progress-card-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+.pc-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    background: #f9fafb;
+    color: #374151;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.pc-btn:hover {
+    background: #f3f4f6;
+    border-color: #9ca3af;
+}
+
+.pc-btn-primary {
+    background: var(--accent, #2563eb);
+    color: #fff;
+    border-color: var(--accent, #2563eb);
+}
+
+.pc-btn-primary:hover {
+    background: var(--accent-dark, #1d4ed8);
+    border-color: var(--accent-dark, #1d4ed8);
+}
+
+/* Dark mode */
+[data-theme="dark"] .pc-btn {
+    background: #374151;
+    color: #e5e7eb;
+    border-color: #4b5563;
+}
+
+[data-theme="dark"] .pc-btn:hover {
+    background: #4b5563;
+}
+
+[data-theme="dark"] .pc-btn-primary {
+    background: var(--accent, #3b82f6);
+    color: #fff;
+    border-color: var(--accent, #3b82f6);
+}
+
+#progress-card-container canvas {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
     </style>
 </head>
 <body>
@@ -6154,6 +6215,7 @@ mark.search-highlight {
                         <button type="button" onclick="exportSummary(); toggleMoreMenu();">Copy Summary</button>
                         <button type="button" onclick="showActivityFeed(); toggleMoreMenu();">Activity Feed</button>
                         <button type="button" onclick="batchApplyOpen(); toggleMoreMenu();">Batch Apply Open</button>
+                        <button type="button" onclick="showProgressCard(); toggleMoreMenu();">Progress Card</button>
                         <hr style="margin:4px 0;border-color:#e5e7eb">
                         <button type="button" onclick="saveFilterPreset(); toggleMoreMenu();">Save Current Filter</button>
                         <div id="saved-filters-menu"></div>
@@ -7549,6 +7611,19 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
             <button class="modal-close" onclick="closeModal('activity-modal')" aria-label="Close">&times;</button>
             <h2 style="margin-top:0">Activity Feed</h2>
             <div id="activity-feed-body"></div>
+        </div>
+    </div>
+
+    <div id="progress-card-modal" class="modal-overlay" style="display:none" role="dialog" aria-modal="true" aria-label="Progress Report Card">
+        <div class="modal-content modal-wide">
+            <button class="modal-close" onclick="closeModal('progress-card-modal')" aria-label="Close">&times;</button>
+            <h2 style="margin-top:0">Progress Report Card</h2>
+            <div id="progress-card-container" style="text-align:center"></div>
+            <div class="progress-card-actions">
+                <button onclick="downloadProgressCard()" class="pc-btn pc-btn-primary">&#11015; Download PNG</button>
+                <button onclick="copyProgressCard()" class="pc-btn">&#128203; Copy to Clipboard</button>
+                <button onclick="exportSummary(); closeModal('progress-card-modal')" class="pc-btn">&#128196; Copy as Text</button>
+            </div>
         </div>
     </div>
 
@@ -9520,7 +9595,9 @@ function renderCmdResults(query) {
         { label: 'Backup Data', action: function() { backupData(); }, icon: '\u2B07' },
         { label: 'Smart Sort', action: function() { smartSort(); }, icon: '\u2B50' },
         { label: 'Jump to Open Programs', action: function() { jumpToOpen(); }, icon: '\u2193' },
-        { label: 'Batch Apply All Open', action: function() { batchApplyOpen(); }, icon: '\u2197' }
+        { label: 'Batch Apply All Open', action: function() { batchApplyOpen(); }, icon: '\u2197' },
+        { label: 'Progress Card', action: function() { showProgressCard(); }, icon: '\u2588' },
+        { label: 'Download Progress Card', action: function() { downloadProgressCard(); }, icon: '\u21E9' }
     ];
 
     // Programs
@@ -11965,6 +12042,301 @@ function exportSummary() {
     navigator.clipboard.writeText(text).then(function() {
         showToast('Summary copied to clipboard!');
     });
+}
+
+function generateProgressCard() {
+    var savedStatuses = loadSavedStatuses();
+    var today = new Date();
+    var statusCounts = { 'Not Started': 0, 'In Progress': 0, 'Submitted': 0, 'Interview': 0, 'Offer': 0, 'Rejected': 0 };
+    PROGRAMS.forEach(function(p) {
+        var s = savedStatuses[p.id] || p.application_status || 'Not Started';
+        if (statusCounts[s] !== undefined) statusCounts[s]++;
+    });
+    var goalTarget = parseInt(localStorage.getItem('rn_tracker_goal') || '10');
+    var applied = statusCounts['Submitted'] + statusCounts['Interview'] + statusCounts['Offer'];
+    var goalPct = Math.min(Math.round(applied / goalTarget * 100), 100);
+
+    // NCLEX countdown
+    var nclexDate = new Date(2026, 4, 1);
+    var nclexDays = Math.max(0, Math.ceil((nclexDate - today) / 86400000));
+
+    // Find next deadline
+    var nextDeadline = null;
+    var nextDeadlineHospital = '';
+    PROGRAMS.forEach(function(p) {
+        var cd = parseDate(p.app_close_date);
+        if (cd && cd >= today) {
+            if (!nextDeadline || cd < nextDeadline) {
+                nextDeadline = cd;
+                nextDeadlineHospital = p.hospital;
+            }
+        }
+    });
+
+    var canvas = document.createElement('canvas');
+    var W = 800, H = 520;
+    canvas.width = W;
+    canvas.height = H;
+    var ctx = canvas.getContext('2d');
+
+    // Background gradient
+    var grad = ctx.createLinearGradient(0, 0, W, H);
+    grad.addColorStop(0, '#0f172a');
+    grad.addColorStop(1, '#1e293b');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, H);
+
+    // Decorative accent line at top
+    var accentGrad = ctx.createLinearGradient(0, 0, W, 0);
+    accentGrad.addColorStop(0, '#3b82f6');
+    accentGrad.addColorStop(0.5, '#8b5cf6');
+    accentGrad.addColorStop(1, '#ec4899');
+    ctx.fillStyle = accentGrad;
+    ctx.fillRect(0, 0, W, 4);
+
+    // Title
+    ctx.fillStyle = '#f8fafc';
+    ctx.font = 'bold 26px system-ui, -apple-system, sans-serif';
+    ctx.fillText('CA New Grad RN — Application Progress', 32, 48);
+
+    // Date
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '14px system-ui, -apple-system, sans-serif';
+    ctx.fillText(today.toLocaleDateString('en-US', {weekday:'long', year:'numeric', month:'long', day:'numeric'}), 32, 72);
+
+    // Goal progress arc
+    var cx = 130, cy = 170, r = 58;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.strokeStyle = '#334155';
+    ctx.lineWidth = 10;
+    ctx.stroke();
+
+    var startAngle = -Math.PI / 2;
+    var endAngle = startAngle + (goalPct / 100) * Math.PI * 2;
+    var arcGrad = ctx.createLinearGradient(cx - r, cy - r, cx + r, cy + r);
+    arcGrad.addColorStop(0, '#3b82f6');
+    arcGrad.addColorStop(1, '#8b5cf6');
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, startAngle, endAngle);
+    ctx.strokeStyle = arcGrad;
+    ctx.lineWidth = 10;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+    ctx.lineCap = 'butt';
+
+    ctx.fillStyle = '#f8fafc';
+    ctx.font = 'bold 32px system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(goalPct + '%', cx, cy + 8);
+    ctx.font = '12px system-ui, sans-serif';
+    ctx.fillStyle = '#94a3b8';
+    ctx.fillText(applied + '/' + goalTarget + ' applied', cx, cy + 28);
+    ctx.textAlign = 'left';
+
+    // Status boxes
+    var statuses = [
+        { label: 'Submitted', count: statusCounts['Submitted'], color: '#22c55e', bg: '#052e16' },
+        { label: 'Interview', count: statusCounts['Interview'], color: '#3b82f6', bg: '#172554' },
+        { label: 'Offer', count: statusCounts['Offer'], color: '#eab308', bg: '#422006' },
+        { label: 'In Progress', count: statusCounts['In Progress'], color: '#a78bfa', bg: '#2e1065' },
+        { label: 'Not Started', count: statusCounts['Not Started'], color: '#94a3b8', bg: '#1e293b' },
+        { label: 'Rejected', count: statusCounts['Rejected'], color: '#ef4444', bg: '#450a0a' }
+    ];
+
+    var boxW = 110, boxH = 70, boxGap = 12, startX = 240, startY = 110;
+    statuses.forEach(function(st, i) {
+        var col = i % 3;
+        var row = Math.floor(i / 3);
+        var bx = startX + col * (boxW + boxGap);
+        var by = startY + row * (boxH + boxGap);
+
+        ctx.fillStyle = st.bg;
+        roundRect(ctx, bx, by, boxW, boxH, 8);
+        ctx.fill();
+
+        ctx.fillStyle = st.color;
+        ctx.font = 'bold 28px system-ui, sans-serif';
+        ctx.fillText(st.count.toString(), bx + 12, by + 36);
+        ctx.font = '12px system-ui, sans-serif';
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillText(st.label, bx + 12, by + 56);
+    });
+
+    // NCLEX countdown card
+    var ncx = 640, ncy = 110;
+    ctx.fillStyle = '#1e1b4b';
+    roundRect(ctx, ncx, ncy, 130, 150, 10);
+    ctx.fill();
+    ctx.strokeStyle = '#4338ca';
+    ctx.lineWidth = 1;
+    roundRect(ctx, ncx, ncy, 130, 150, 10);
+    ctx.stroke();
+
+    ctx.fillStyle = '#818cf8';
+    ctx.font = '11px system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('NCLEX', ncx + 65, ncy + 28);
+    ctx.fillStyle = '#f8fafc';
+    ctx.font = 'bold 44px system-ui, sans-serif';
+    ctx.fillText(nclexDays.toString(), ncx + 65, ncy + 80);
+    ctx.fillStyle = '#818cf8';
+    ctx.font = '13px system-ui, sans-serif';
+    ctx.fillText('days to go', ncx + 65, ncy + 102);
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '11px system-ui, sans-serif';
+    ctx.fillText('May 2026', ncx + 65, ncy + 130);
+    ctx.textAlign = 'left';
+
+    // Divider
+    ctx.fillStyle = '#334155';
+    ctx.fillRect(32, 290, W - 64, 1);
+
+    // Status bar chart
+    var barY = 310;
+    ctx.fillStyle = '#f8fafc';
+    ctx.font = 'bold 15px system-ui, sans-serif';
+    ctx.fillText('Application Pipeline', 32, barY + 10);
+
+    var barStartX = 32, barMaxW = W - 64, barH = 24;
+    var total = PROGRAMS.length;
+    var barColors = ['#22c55e', '#3b82f6', '#eab308', '#a78bfa', '#475569', '#ef4444'];
+    var barCounts = [statusCounts['Submitted'], statusCounts['Interview'], statusCounts['Offer'], statusCounts['In Progress'], statusCounts['Not Started'], statusCounts['Rejected']];
+
+    var curX = barStartX;
+    barCounts.forEach(function(count, i) {
+        if (count === 0) return;
+        var w = (count / total) * barMaxW;
+        ctx.fillStyle = barColors[i];
+        if (i === 0) {
+            roundRectPartial(ctx, curX, barY + 22, w, barH, 6, true, false);
+        } else if (i === barCounts.length - 1 || barCounts.slice(i + 1).every(function(c) { return c === 0; })) {
+            roundRectPartial(ctx, curX, barY + 22, w, barH, 6, false, true);
+        } else {
+            ctx.fillRect(curX, barY + 22, w, barH);
+        }
+        ctx.fill();
+        curX += w;
+    });
+
+    // Bar legend
+    var legY = barY + 58;
+    var legX = 32;
+    var legItems = ['Submitted', 'Interview', 'Offer', 'In Progress', 'Not Started', 'Rejected'];
+    legItems.forEach(function(label, i) {
+        if (barCounts[i] === 0) return;
+        ctx.fillStyle = barColors[i];
+        ctx.fillRect(legX, legY, 10, 10);
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '11px system-ui, sans-serif';
+        ctx.fillText(label + ' (' + barCounts[i] + ')', legX + 15, legY + 9);
+        legX += ctx.measureText(label + ' (' + barCounts[i] + ')').width + 30;
+    });
+
+    // Upcoming deadline
+    if (nextDeadline) {
+        var dlDays = Math.ceil((nextDeadline - today) / 86400000);
+        ctx.fillStyle = '#f8fafc';
+        ctx.font = 'bold 15px system-ui, sans-serif';
+        ctx.fillText('Next Deadline', 32, 420);
+        ctx.fillStyle = dlDays <= 3 ? '#ef4444' : dlDays <= 7 ? '#f59e0b' : '#94a3b8';
+        ctx.font = '14px system-ui, sans-serif';
+        ctx.fillText(nextDeadlineHospital + ' — ' + dlDays + ' day' + (dlDays !== 1 ? 's' : '') + ' (' + nextDeadline.toLocaleDateString() + ')', 32, 442);
+    }
+
+    // Total programs tracked
+    ctx.fillStyle = '#475569';
+    ctx.font = '12px system-ui, sans-serif';
+    ctx.fillText('Tracking ' + PROGRAMS.length + ' CA new grad RN residency programs', 32, H - 28);
+
+    // Watermark
+    ctx.fillStyle = '#334155';
+    ctx.font = '11px system-ui, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('CA Nursing Tracker', W - 32, H - 28);
+    ctx.textAlign = 'left';
+
+    return canvas;
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+}
+
+function roundRectPartial(ctx, x, y, w, h, r, left, right) {
+    ctx.beginPath();
+    if (left) {
+        ctx.moveTo(x + r, y);
+    } else {
+        ctx.moveTo(x, y);
+    }
+    if (right) {
+        ctx.lineTo(x + w - r, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    } else {
+        ctx.lineTo(x + w, y);
+        ctx.lineTo(x + w, y + h);
+    }
+    if (left) {
+        ctx.lineTo(x + r, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+        ctx.lineTo(x, y + r);
+        ctx.quadraticCurveTo(x, y, x + r, y);
+    } else {
+        ctx.lineTo(x, y + h);
+        ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+}
+
+function showProgressCard() {
+    var canvas = generateProgressCard();
+    var modal = document.getElementById('progress-card-modal');
+    var container = document.getElementById('progress-card-container');
+    container.innerHTML = '';
+    canvas.style.maxWidth = '100%';
+    canvas.style.height = 'auto';
+    canvas.style.borderRadius = '12px';
+    container.appendChild(canvas);
+    openModal('progress-card-modal');
+}
+
+function downloadProgressCard() {
+    var canvas = generateProgressCard();
+    var link = document.createElement('a');
+    link.download = 'rn-progress-' + new Date().toISOString().slice(0, 10) + '.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    showToast('Progress card downloaded!');
+}
+
+function copyProgressCard() {
+    var canvas = generateProgressCard();
+    canvas.toBlob(function(blob) {
+        if (navigator.clipboard && navigator.clipboard.write) {
+            navigator.clipboard.write([
+                new ClipboardItem({ 'image/png': blob })
+            ]).then(function() {
+                showToast('Progress card copied to clipboard!');
+            }).catch(function() {
+                showToast('Copy failed — try downloading instead');
+            });
+        } else {
+            showToast('Clipboard API not supported — try downloading');
+        }
+    }, 'image/png');
 }
 
 function editGoal() {
