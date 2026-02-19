@@ -636,7 +636,7 @@ def generate():
                     <div class="shortcut-row"><kbd>f</kbd> <span>Toggle favorite (selected row)</span></div>
                     <div class="shortcut-row"><kbd>d</kbd> <span>Toggle dark mode</span></div>
                     <div class="shortcut-row"><kbd>n</kbd> <span>Toggle notifications</span></div>
-                    <div class="shortcut-row"><kbd>1</kbd>-<kbd>4</kbd> <span>Switch views</span></div>
+                    <div class="shortcut-row"><kbd>1</kbd>-<kbd>5</kbd> <span>Switch views (Table/Cards/Pipeline/Cal/Stats)</span></div>
                     <div class="shortcut-row"><kbd>?</kbd> <span>Show this help</span></div>
                 </div>
                 <div class="shortcut-group">
@@ -3278,28 +3278,25 @@ function showView(view) {{
     var navStats = document.getElementById('nav-stats');
 
     // Hide all
-    [tableView, pipelineView, cardsView, calendarView, statsView].forEach(function(v) {{ if (v) v.style.display = 'none'; }});
+    var allViews = [tableView, pipelineView, cardsView, calendarView, statsView];
+    allViews.forEach(function(v) {{ if (v) {{ v.style.display = 'none'; v.classList.remove('view-enter'); }} }});
     [navTable, navPipeline, navCards, navCalendar, navStats].forEach(function(n) {{ if (n) n.classList.remove('active'); }});
 
+    var target = null;
     if (view === 'cards') {{
-        cardsView.style.display = 'block';
-        navCards.classList.add('active');
-        renderCards();
+        target = cardsView; navCards.classList.add('active'); renderCards();
     }} else if (view === 'pipeline') {{
-        pipelineView.style.display = 'block';
-        navPipeline.classList.add('active');
-        renderPipeline();
+        target = pipelineView; navPipeline.classList.add('active'); renderPipeline();
     }} else if (view === 'calendar') {{
-        calendarView.style.display = 'block';
-        navCalendar.classList.add('active');
-        renderCalendar();
+        target = calendarView; navCalendar.classList.add('active'); renderCalendar();
     }} else if (view === 'stats') {{
-        statsView.style.display = 'block';
-        navStats.classList.add('active');
-        renderStats();
+        target = statsView; navStats.classList.add('active'); renderStats();
     }} else {{
-        tableView.style.display = '';
-        navTable.classList.add('active');
+        target = tableView; navTable.classList.add('active');
+    }}
+    if (target) {{
+        target.style.display = (target === tableView) ? '' : 'block';
+        requestAnimationFrame(function() {{ target.classList.add('view-enter'); }});
     }}
 }}
 

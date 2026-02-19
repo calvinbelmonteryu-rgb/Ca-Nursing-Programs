@@ -10,6 +10,15 @@ html {
     scroll-behavior: smooth;
 }
 
+/* View transition */
+.view-enter {
+    animation: viewFadeIn 0.2s ease;
+}
+@keyframes viewFadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 /* ===== SKIP LINK ===== */
 .skip-link {
     position: absolute;
