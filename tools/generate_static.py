@@ -2433,11 +2433,23 @@ function showSearchSuggestions(query) {{
             badge = '<span class="suggest-badge suggest-badge-closed">closed</span>';
         }}
         var stars = '\u2605'.repeat(p.reputation) + '\u2606'.repeat(5 - p.reputation);
+        // Highlight matched text in hospital name
+        var hospName = escHtml(p.hospital);
+        var matchIdx = hospName.toLowerCase().indexOf(q);
+        if (matchIdx !== -1) {{
+            hospName = hospName.substring(0, matchIdx) + '<mark class="suggest-hl">' + hospName.substring(matchIdx, matchIdx + q.length) + '</mark>' + hospName.substring(matchIdx + q.length);
+        }}
+        var payStr = '';
+        if (p.pay_range) {{
+            var payM = (p.pay_range || '').match(/(\\$[\\d.,]+\\/hr)/);
+            if (payM) payStr = ' <span class="suggest-pay">' + payM[1] + '</span>';
+        }}
         html += '<div class="suggest-item" onmousedown="showDetail(' + p.id + ')">';
-        html += '<div class="suggest-main"><strong>' + escHtml(p.hospital) + '</strong> ' + badge + '</div>';
+        html += '<div class="suggest-main">' + hospName + ' ' + badge + '</div>';
         html += '<div class="suggest-meta"><span class="suggest-st suggest-st-' + stCls + '">' + st + '</span>';
         html += ' <span class="suggest-region">' + escHtml(p.region) + '</span>';
         html += ' <span class="suggest-stars">' + stars + '</span>';
+        html += payStr;
         html += '</div>';
         html += '</div>';
     }});
