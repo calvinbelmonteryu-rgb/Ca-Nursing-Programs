@@ -10447,6 +10447,8 @@ document.addEventListener('DOMContentLoaded', function() {
     renderTableTags();
     applyPins();
     updateTableFooter();
+    updatePageTitle();
+    setInterval(updatePageTitle, 60000);
 
     // Close popups on outside click
     document.addEventListener('click', function(e) {
@@ -11764,6 +11766,43 @@ function restripe() {
             i++;
         }
     });
+}
+
+function updatePageTitle() {
+    var baseTitle = 'CA New Grad RN Tracker';
+    var today = new Date(); today.setHours(0,0,0,0);
+    var savedStatuses = loadSavedStatuses();
+    var urgent = [];
+    PROGRAMS.forEach(function(p) {
+        var st = savedStatuses[p.id] || p.application_status || 'Not Started';
+        if (st === 'Rejected' || st === 'Offer') return;
+        var closeD = parseDate(p.app_close_date);
+        var openD = parseDate(p.app_open_date);
+        if (closeD && openD && openD <= today && closeD >= today) {
+            var daysLeft = Math.ceil((closeD - today) / 86400000);
+            if (daysLeft <= 3) {
+                urgent.push({ name: p.hospital.split(' ')[0], days: daysLeft });
+            }
+        }
+    });
+    urgent.sort(function(a, b) { return a.days - b.days; });
+    if (urgent.length > 0) {
+        var u = urgent[0];
+        var warn = u.days === 0 ? 'LAST DAY' : u.days + 'd left';
+        document.title = '⚠️ ' + u.name + ' closes ' + warn + ' | ' + baseTitle;
+    } else {
+        // Show active application count
+        var activeCount = 0;
+        PROGRAMS.forEach(function(p) {
+            var s = savedStatuses[p.id] || p.application_status || 'Not Started';
+            if (s === 'Submitted' || s === 'Interview') activeCount++;
+        });
+        if (activeCount > 0) {
+            document.title = '(' + activeCount + ') ' + baseTitle;
+        } else {
+            document.title = baseTitle;
+        }
+    }
 }
 
 function updateTableFooter() {
