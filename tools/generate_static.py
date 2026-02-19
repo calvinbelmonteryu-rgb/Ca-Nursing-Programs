@@ -356,21 +356,61 @@ function applyRowStatus(row, status) {{
     if (statusClasses[status]) row.classList.add(statusClasses[status]);
 }}
 
+// localStorage helpers
+function loadSavedStatuses() {{
+    try {{
+        var saved = localStorage.getItem('rn_tracker_statuses');
+        return saved ? JSON.parse(saved) : {{}};
+    }} catch(e) {{ return {{}}; }}
+}}
+
+function saveStatus(id, status) {{
+    try {{
+        var all = loadSavedStatuses();
+        all[id] = status;
+        localStorage.setItem('rn_tracker_statuses', JSON.stringify(all));
+    }} catch(e) {{}}
+}}
+
+function loadSavedNotes() {{
+    try {{
+        var saved = localStorage.getItem('rn_tracker_notes');
+        return saved ? JSON.parse(saved) : {{}};
+    }} catch(e) {{ return {{}}; }}
+}}
+
+function saveNote(id, note) {{
+    try {{
+        var all = loadSavedNotes();
+        all[id] = note;
+        localStorage.setItem('rn_tracker_notes', JSON.stringify(all));
+    }} catch(e) {{}}
+}}
+
 document.addEventListener('DOMContentLoaded', function() {{
-    // Apply initial row colors
+    // Restore saved statuses from localStorage
+    var savedStatuses = loadSavedStatuses();
     document.querySelectorAll('.status-select').forEach(function(sel) {{
+        var id = sel.dataset.id;
+        if (savedStatuses[id]) {{
+            sel.value = savedStatuses[id];
+        }}
         var row = sel.closest('tr');
-        if (row) applyRowStatus(row, sel.value);
+        if (row) {{
+            applyRowStatus(row, sel.value);
+            row.dataset.status = sel.value;
+        }}
     }});
 
-    // Status dropdowns (local only, no backend)
+    // Status dropdowns — save to localStorage
     document.querySelectorAll('.status-select').forEach(function(sel) {{
         sel.addEventListener('change', function() {{
             var row = this.closest('tr');
             if (row) {{
                 applyRowStatus(row, this.value);
                 row.dataset.status = this.value;
-                showToast('Status updated (local only)');
+                saveStatus(this.dataset.id, this.value);
+                showToast('Status saved');
             }}
         }});
     }});
@@ -772,35 +812,37 @@ function closeCompareModal() {{
 }}
 
 function exportCSV() {{
-    // Build CSV from table data
-    var rows = document.querySelectorAll('.sheet tbody tr');
-    var csv = 'Hospital,Program,Region,City,App Open,App Close,Cohort,Rep,Pay,Length,Specialties,Status,Notes\\n';
-    rows.forEach(function(row) {{
-        var cells = row.querySelectorAll('td');
-        if (cells.length >= 14) {{
-            var vals = [
-                cells[1].textContent.trim(),
-                cells[2].textContent.trim(),
-                cells[3].textContent.trim(),
-                row.dataset.city || cells[4].textContent.trim(),
-                cells[5].textContent.trim(),
-                cells[6].textContent.trim(),
-                cells[7].textContent.trim(),
-                cells[8].textContent.trim(),
-                cells[9].textContent.trim(),
-                cells[10].textContent.trim(),
-                cells[11].textContent.trim(),
-                cells[12].querySelector('select') ? cells[12].querySelector('select').value : '',
-                cells[13].textContent.trim()
-            ];
-            csv += vals.map(function(v) {{ return '"' + v.replace(/"/g, '""') + '"'; }}).join(',') + '\\n';
-        }}
+    // Build CSV from PROGRAMS data (more complete than table)
+    var csv = 'Hospital,Program,Region,City,BSN Required,App Open,App Close,Cohort,Reputation,Pay,Length (mo),Specialties,Requirements,Status,Notes,URL\\n';
+    var savedStatuses = loadSavedStatuses();
+    PROGRAMS.forEach(function(p) {{
+        var status = savedStatuses[p.id] || p.application_status || 'Not Started';
+        var vals = [
+            p.hospital,
+            p.program_name,
+            p.region,
+            p.city,
+            p.bsn_required,
+            p.app_open_date,
+            p.app_close_date,
+            p.cohort_start,
+            p.reputation,
+            p.pay_range,
+            p.program_length_months,
+            (p.specialty_units || []).join('; '),
+            p.requirements,
+            status,
+            (p.personal_notes || '').replace(/\\n/g, ' '),
+            p.application_url
+        ];
+        csv += vals.map(function(v) {{ return '"' + String(v || '').replace(/"/g, '""') + '"'; }}).join(',') + '\\n';
     }});
     var blob = new Blob([csv], {{type: 'text/csv'}});
     var a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = 'ca_rn_programs.csv';
     a.click();
+    showToast('CSV exported');
 }}
 
 function escHtml(str) {{
@@ -853,9 +895,13 @@ function showDetail(id) {{
         html += '<div class="detail-section"><h3>Reputation Notes</h3><p class="detail-rep-notes">' + repNotes + '</p></div>';
     }}
 
-    if (notes) {{
-        html += '<div class="detail-section"><h3>Personal Notes</h3><p class="detail-notes">' + notes + '</p></div>';
-    }}
+    // Editable notes — load saved notes from localStorage
+    var savedNotes = loadSavedNotes();
+    var currentNotes = savedNotes[p.id] !== undefined ? savedNotes[p.id] : (p.personal_notes || '');
+    html += '<div class="detail-section"><h3>Your Notes</h3>';
+    html += '<textarea id="modal-notes" class="modal-notes-input" rows="4" placeholder="Add your notes here...">' + escHtml(currentNotes) + '</textarea>';
+    html += '<small class="notes-hint">Notes are saved to your browser automatically.</small>';
+    html += '</div>';
 
     if (p.application_url) {{
         html += '<div class="detail-actions"><a href="' + escHtml(p.application_url) + '" target="_blank" class="apply-btn-modal">Apply Now &rarr;</a></div>';
@@ -864,6 +910,18 @@ function showDetail(id) {{
     document.getElementById('modal-body').innerHTML = html;
     document.getElementById('detail-modal').style.display = 'flex';
     document.body.style.overflow = 'hidden';
+
+    // Auto-save notes on input
+    var notesArea = document.getElementById('modal-notes');
+    if (notesArea) {{
+        var saveTimer;
+        notesArea.addEventListener('input', function() {{
+            clearTimeout(saveTimer);
+            saveTimer = setTimeout(function() {{
+                saveNote(p.id, notesArea.value);
+            }}, 500);
+        }});
+    }}
 }}
 
 function closeModal() {{

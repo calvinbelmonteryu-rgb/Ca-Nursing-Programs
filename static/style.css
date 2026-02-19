@@ -81,6 +81,9 @@ nav a.active {
     border-bottom: 2px solid #d1d5db;
     background: #f9fafb;
     flex-wrap: wrap;
+    position: sticky;
+    top: 0;
+    z-index: 20;
 }
 
 .sheet-title {
@@ -1090,6 +1093,29 @@ footer {
 
 .apply-btn-modal:hover {
     background: #1e40af;
+}
+
+.modal-notes-input {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    resize: vertical;
+    font-family: inherit;
+    line-height: 1.5;
+    margin-bottom: 4px;
+}
+
+.modal-notes-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59,130,246,0.2);
+}
+
+.notes-hint {
+    color: #9ca3af;
+    font-size: 0.72rem;
 }
 
 /* Compare modal */
