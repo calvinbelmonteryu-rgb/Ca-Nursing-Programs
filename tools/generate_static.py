@@ -872,8 +872,21 @@ document.addEventListener('DOMContentLoaded', function() {{
         }});
     }}
 
-    document.querySelectorAll('.compare-check').forEach(function(cb) {{
+    var lastCheckedIdx = -1;
+    var allCheckboxes = Array.from(document.querySelectorAll('.compare-check'));
+    allCheckboxes.forEach(function(cb, idx) {{
         cb.addEventListener('change', updateCompareBtn);
+        cb.addEventListener('click', function(e) {{
+            if (e.shiftKey && lastCheckedIdx >= 0) {{
+                var start = Math.min(lastCheckedIdx, idx);
+                var end = Math.max(lastCheckedIdx, idx);
+                for (var i = start; i <= end; i++) {{
+                    allCheckboxes[i].checked = cb.checked;
+                }}
+                updateCompareBtn();
+            }}
+            lastCheckedIdx = idx;
+        }});
     }});
 
     // Restore filters from URL params
@@ -3070,7 +3083,81 @@ function renderStats() {{
     var bsnColors = {{ 'No': '#22c55e', 'Preferred': '#f59e0b', 'Yes': '#ef4444', 'Unknown': '#9ca3af' }};
     var payColors = {{ 'Under $50/hr': '#ef4444', '$50-60/hr': '#f59e0b', '$60-70/hr': '#3b82f6', '$70-80/hr': '#8b5cf6', '$80+/hr': '#22c55e', 'Unknown': '#9ca3af' }};
 
-    var html = '<div class="stats-header">';
+    // Weekly digest
+    var weekStart = new Date(today);
+    weekStart.setDate(weekStart.getDate() - weekStart.getDay()); // Sunday
+    var weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekEnd.getDate() + 6);
+    var nextWeekEnd = new Date(weekEnd);
+    nextWeekEnd.setDate(nextWeekEnd.getDate() + 7);
+
+    var closingThisWeek = [];
+    var openingThisWeek = [];
+    var closingNextWeek = [];
+    var openingNextWeek = [];
+
+    PROGRAMS.forEach(function(p) {{
+        var s = savedStatuses[p.id] || p.application_status || 'Not Started';
+        if (s === 'Rejected' || s === 'Offer') return;
+        var openD = parseDate(p.app_open_date);
+        var closeD = parseDate(p.app_close_date);
+        if (closeD && closeD >= weekStart && closeD <= weekEnd) closingThisWeek.push(p);
+        if (openD && openD >= weekStart && openD <= weekEnd) openingThisWeek.push(p);
+        if (closeD && closeD > weekEnd && closeD <= nextWeekEnd) closingNextWeek.push(p);
+        if (openD && openD > weekEnd && openD <= nextWeekEnd) openingNextWeek.push(p);
+    }});
+
+    var recentLog = getActivityLog().filter(function(e) {{
+        var t = new Date(e.time);
+        return t >= weekStart;
+    }});
+
+    var html = '';
+    if (closingThisWeek.length > 0 || openingThisWeek.length > 0 || closingNextWeek.length > 0 || recentLog.length > 0) {{
+        html += '<div class="weekly-digest">';
+        html += '<h3>This Week\'s Digest</h3>';
+        html += '<div class="digest-grid">';
+
+        if (closingThisWeek.length > 0) {{
+            html += '<div class="digest-card digest-urgent"><span class="digest-icon">\\u26A0\\uFE0F</span><div><strong>Closing This Week</strong>';
+            closingThisWeek.forEach(function(p) {{
+                var cd = parseDate(p.app_close_date);
+                var dleft = cd ? Math.ceil((cd - today) / (1000*60*60*24)) : 0;
+                html += '<div><a href="#" onclick="showDetail(' + p.id + '); return false;">' + escHtml(p.hospital) + '</a> <small>(' + dleft + 'd)</small></div>';
+            }});
+            html += '</div></div>';
+        }}
+
+        if (openingThisWeek.length > 0) {{
+            html += '<div class="digest-card digest-opening"><span class="digest-icon">\\uD83D\\uDCC5</span><div><strong>Opening This Week</strong>';
+            openingThisWeek.forEach(function(p) {{
+                html += '<div><a href="#" onclick="showDetail(' + p.id + '); return false;">' + escHtml(p.hospital) + '</a></div>';
+            }});
+            html += '</div></div>';
+        }}
+
+        if (closingNextWeek.length > 0) {{
+            html += '<div class="digest-card digest-upcoming"><span class="digest-icon">\\uD83D\\uDD52</span><div><strong>Closing Next Week</strong>';
+            closingNextWeek.forEach(function(p) {{
+                html += '<div><a href="#" onclick="showDetail(' + p.id + '); return false;">' + escHtml(p.hospital) + '</a></div>';
+            }});
+            html += '</div></div>';
+        }}
+
+        if (recentLog.length > 0) {{
+            html += '<div class="digest-card digest-activity"><span class="digest-icon">\\uD83D\\uDCDD</span><div><strong>Your Activity (' + recentLog.length + ')</strong>';
+            recentLog.slice(0, 3).forEach(function(e) {{
+                var prog = PROGRAMS.find(function(p) {{ return p.id === e.id; }});
+                html += '<div>' + (prog ? escHtml(prog.hospital) : 'Unknown') + ': ' + escHtml(e.action) + '</div>';
+            }});
+            if (recentLog.length > 3) html += '<div style="color:#9ca3af">+' + (recentLog.length - 3) + ' more</div>';
+            html += '</div></div>';
+        }}
+
+        html += '</div></div>';
+    }}
+
+    html += '<div class="stats-header">';
     html += '<h2>Program Analytics</h2>';
     html += '<div class="stats-summary-cards">';
     html += '<div class="stats-num-card"><span class="stats-big-num">' + total + '</span><span>Total Programs</span></div>';

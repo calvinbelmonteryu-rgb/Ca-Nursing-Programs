@@ -3137,6 +3137,62 @@ mark.search-highlight {
     color: var(--text);
 }
 
+/* Weekly digest */
+.weekly-digest {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 16px;
+}
+.weekly-digest h3 {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #374151;
+    margin: 0 0 12px;
+}
+.digest-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+}
+.digest-card {
+    display: flex;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.76rem;
+}
+.digest-card strong {
+    display: block;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-bottom: 4px;
+}
+.digest-card a {
+    color: #1e40af;
+    text-decoration: none;
+}
+.digest-card a:hover { text-decoration: underline; }
+.digest-icon { font-size: 1.2rem; flex-shrink: 0; }
+.digest-urgent { background: #fef2f2; border: 1px solid #fecaca; }
+.digest-urgent strong { color: #dc2626; }
+.digest-opening { background: #f0fdf4; border: 1px solid #bbf7d0; }
+.digest-opening strong { color: #16a34a; }
+.digest-upcoming { background: #eff6ff; border: 1px solid #bfdbfe; }
+.digest-upcoming strong { color: #2563eb; }
+.digest-activity { background: #f5f3ff; border: 1px solid #ddd6fe; }
+.digest-activity strong { color: #7c3aed; }
+
+[data-theme="dark"] .weekly-digest { background: var(--surface); border-color: var(--border); }
+[data-theme="dark"] .weekly-digest h3 { color: var(--text); }
+[data-theme="dark"] .digest-card a { color: #60a5fa; }
+[data-theme="dark"] .digest-urgent { background: #450a0a; border-color: #7f1d1d; }
+[data-theme="dark"] .digest-opening { background: #052e16; border-color: #064e3b; }
+[data-theme="dark"] .digest-upcoming { background: #1e3a5f; border-color: #1e40af; }
+[data-theme="dark"] .digest-activity { background: #2e1065; border-color: #4c1d95; }
+
 /* Goal tracker */
 .goal-widget {
     background: linear-gradient(135deg, #eff6ff, #f0fdf4);
