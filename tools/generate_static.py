@@ -3886,6 +3886,19 @@ function showDetail(id) {{
     if (coD) {{
         html += '<div class="mini-tl-cohort" style="left:' + tlPct(coD) + '%" title="Cohort start"></div>';
     }}
+    // Status change markers on timeline
+    var sHist = getStatusHistory(p.id);
+    var statusColors2 = {{ 'In Progress': '#f59e0b', 'Submitted': '#22c55e', 'Interview': '#8b5cf6', 'Offer': '#eab308', 'Rejected': '#ef4444' }};
+    sHist.forEach(function(entry) {{
+        var eDate = new Date(entry.time);
+        if (eDate >= tlStart && eDate <= tlEnd && statusColors2[entry.status]) {{
+            var ePct = tlPct(eDate);
+            html += '<div class="mini-tl-event" style="left:' + ePct + '%;background:' + statusColors2[entry.status] + '" title="' + entry.status + ' — ' + eDate.toLocaleDateString() + '"></div>';
+        }}
+    }});
+    // NCLEX marker
+    var nclexD = new Date(2026, 4, 1);
+    html += '<div class="mini-tl-nclex" style="left:' + tlPct(nclexD) + '%" title="NCLEX target"></div>';
     html += '</div></div>';
 
     html += '<div class="detail-section"><h3>Specialties</h3><p>' + escHtml(specs) + '</p></div>';
