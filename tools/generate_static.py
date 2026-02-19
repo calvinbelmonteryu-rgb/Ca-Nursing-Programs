@@ -1164,6 +1164,7 @@ document.addEventListener('DOMContentLoaded', function() {{
     renderSavedFilters();
     initRowPreview();
     renderTableTags();
+    applyPins();
 
     // Close popups on outside click
     document.addEventListener('click', function(e) {{
@@ -1306,6 +1307,9 @@ document.addEventListener('DOMContentLoaded', function() {{
         }}
         html += '<div class="ctx-divider"></div>';
         html += '<button onclick="navigator.clipboard.writeText(\\\'' + escHtml(p.hospital).replace(/'/g, "\\\\'") + '\\\'); hideCtxMenu(); showToast(\\\'Copied!\\\');">Copy Hospital Name</button>';
+        var pins = loadPins();
+        var isPinned = pins.indexOf(id) !== -1;
+        html += '<button onclick="togglePin(' + id + '); hideCtxMenu();">' + (isPinned ? 'Unpin from Top' : 'Pin to Top') + '</button>';
         ctxMenu.innerHTML = html;
         var x = e.clientX, y = e.clientY;
         ctxMenu.style.display = 'block';
@@ -2269,6 +2273,48 @@ function clearSelection() {{
     updateCompareBtn();
 }}
 
+function loadPins() {{
+    try {{ return JSON.parse(localStorage.getItem('rn_tracker_pins') || '[]'); }} catch(e) {{ return []; }}
+}}
+
+function togglePin(id) {{
+    var pins = loadPins();
+    var idx = pins.indexOf(id);
+    if (idx !== -1) {{
+        pins.splice(idx, 1);
+        showToast('Unpinned');
+    }} else {{
+        pins.push(id);
+        showToast('Pinned to top');
+    }}
+    localStorage.setItem('rn_tracker_pins', JSON.stringify(pins));
+    applyPins();
+}}
+
+function applyPins() {{
+    var pins = loadPins();
+    if (pins.length === 0) return;
+    var tbody = document.querySelector('.sheet tbody');
+    if (!tbody) return;
+    var rows = Array.from(tbody.querySelectorAll('tr'));
+    // Move pinned rows to top in order
+    pins.slice().reverse().forEach(function(pinId) {{
+        var row = rows.find(function(r) {{ return parseInt(r.dataset.id) === pinId; }});
+        if (row) {{
+            tbody.insertBefore(row, tbody.firstChild);
+            row.classList.add('pinned-row');
+        }}
+    }});
+    // Mark pinned rows
+    rows.forEach(function(r) {{
+        if (pins.indexOf(parseInt(r.dataset.id)) !== -1) {{
+            r.classList.add('pinned-row');
+        }} else {{
+            r.classList.remove('pinned-row');
+        }}
+    }});
+}}
+
 function toggleFab() {{
     var wrap = document.getElementById('fab-wrap');
     wrap.classList.toggle('open');
@@ -2645,6 +2691,7 @@ function backupData() {{
         cols: JSON.parse(localStorage.getItem('rn_tracker_cols') || '{{}}'),
         accent: localStorage.getItem('rn_tracker_accent') || null,
         recentSearches: JSON.parse(localStorage.getItem('rn_tracker_recent_searches') || '[]'),
+        pins: JSON.parse(localStorage.getItem('rn_tracker_pins') || '[]'),
         exported: new Date().toISOString()
     }};
     var blob = new Blob([JSON.stringify(data, null, 2)], {{type: 'application/json'}});
@@ -2674,6 +2721,7 @@ function restoreData(input) {{
             if (data.cols) localStorage.setItem('rn_tracker_cols', JSON.stringify(data.cols));
             if (data.accent) localStorage.setItem('rn_tracker_accent', data.accent);
             if (data.recentSearches) localStorage.setItem('rn_tracker_recent_searches', JSON.stringify(data.recentSearches));
+            if (data.pins) localStorage.setItem('rn_tracker_pins', JSON.stringify(data.pins));
             showToast('Data restored! Reloading...');
             setTimeout(function() {{ window.location.reload(); }}, 1000);
         }} catch(ex) {{

@@ -779,6 +779,17 @@ tbody tr:hover .frozen-col {
 /* ===== URGENT / WARNING ROWS ===== */
 .urgent-row { border-left: 4px solid #ef4444; }
 .warning-row { border-left: 4px solid #f59e0b; }
+.pinned-row { background: #fffbeb !important; }
+.pinned-row .frozen-col,
+.pinned-row .col-check { background: #fffbeb !important; }
+.pinned-row .col-hospital::before {
+    content: '\1F4CC';
+    font-size: 0.65rem;
+    margin-right: 2px;
+}
+[data-theme="dark"] .pinned-row { background: #292524 !important; }
+[data-theme="dark"] .pinned-row .frozen-col,
+[data-theme="dark"] .pinned-row .col-check { background: #292524 !important; }
 
 /* ===== BADGE ===== */
 .badge-open {
