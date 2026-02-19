@@ -380,6 +380,7 @@ def generate():
 
     <div class="urgency-banner" id="urgency-banner" style="display:none"></div>
     <div class="deadline-ticker" id="deadline-ticker" style="display:none"></div>
+    <div class="next-action-card" id="next-action" style="display:none"></div>
 
     <main class="container-fluid sheet-page" role="main" id="main-table">
         <div class="sheet-toolbar">
@@ -1338,6 +1339,121 @@ function renderDeadlineTicker() {{
     ticker.style.display = '';
 }}
 
+function renderNextAction() {{
+    var card = document.getElementById('next-action');
+    if (!card) return;
+    var savedStatuses = loadSavedStatuses();
+    var today = new Date(); today.setHours(0,0,0,0);
+    var actions = [];
+
+    // Priority 1: Programs closing very soon (not yet applied)
+    PROGRAMS.forEach(function(p) {{
+        var st = savedStatuses[p.id] || p.application_status || 'Not Started';
+        if (st === 'Submitted' || st === 'Offer' || st === 'Rejected') return;
+        var close = parseDate(p.app_close_date);
+        var open = parseDate(p.app_open_date);
+        if (open && close && open <= today && close >= today) {{
+            var daysLeft = Math.ceil((close - today) / 86400000);
+            if (daysLeft <= 3) {{
+                actions.push({{
+                    priority: 100 - daysLeft,
+                    icon: '&#128680;',
+                    text: escHtml(p.hospital) + ' closes in <strong>' + daysLeft + ' day' + (daysLeft !== 1 ? 's' : '') + '</strong>!',
+                    action: p.application_url ? 'Apply now' : 'View details',
+                    onclick: p.application_url ? 'window.open(\\\'' + escHtml(p.application_url) + '\\\', \\\'_blank\\\')' : 'showDetail(' + p.id + ')',
+                    type: 'critical'
+                }});
+            }}
+        }}
+    }});
+
+    // Priority 2: Programs opening today/tomorrow
+    PROGRAMS.forEach(function(p) {{
+        var st = savedStatuses[p.id] || p.application_status || 'Not Started';
+        if (st === 'Submitted' || st === 'Offer' || st === 'Rejected') return;
+        var open = parseDate(p.app_open_date);
+        if (open) {{
+            var daysUntil = Math.ceil((open - today) / 86400000);
+            if (daysUntil >= 0 && daysUntil <= 1) {{
+                actions.push({{
+                    priority: 80,
+                    icon: '&#127775;',
+                    text: escHtml(p.hospital) + (daysUntil === 0 ? ' opens <strong>today</strong>!' : ' opens <strong>tomorrow</strong>!'),
+                    action: 'View details',
+                    onclick: 'showDetail(' + p.id + ')',
+                    type: 'highlight'
+                }});
+            }}
+        }}
+    }});
+
+    // Priority 3: Interviews with no prep
+    var interviewCount = 0;
+    PROGRAMS.forEach(function(p) {{
+        var st = savedStatuses[p.id] || p.application_status || 'Not Started';
+        if (st === 'Interview') interviewCount++;
+    }});
+    if (interviewCount > 0) {{
+        var prepData = JSON.parse(localStorage.getItem('rn_tracker_interview_prep') || '{{}}');
+        var unprepared = 0;
+        PROGRAMS.forEach(function(p) {{
+            var st = savedStatuses[p.id] || p.application_status || 'Not Started';
+            if (st === 'Interview' && !prepData[p.id]) unprepared++;
+        }});
+        if (unprepared > 0) {{
+            actions.push({{
+                priority: 60,
+                icon: '&#127919;',
+                text: 'You have <strong>' + unprepared + ' interview' + (unprepared > 1 ? 's' : '') + '</strong> without prep notes',
+                action: 'Prepare now',
+                onclick: 'filterByStatus(\\\'Interview\\\')',
+                type: 'info'
+            }});
+        }}
+    }}
+
+    // Priority 4: Submitted with long wait
+    var longWait = 0;
+    var statusHistory = JSON.parse(localStorage.getItem('rn_tracker_status_history') || '{{}}');
+    PROGRAMS.forEach(function(p) {{
+        var st = savedStatuses[p.id] || p.application_status || 'Not Started';
+        if (st !== 'Submitted') return;
+        var hist = statusHistory[p.id] || [];
+        var submitDate = null;
+        hist.forEach(function(h) {{
+            if (h.status === 'Submitted' && h.date) submitDate = new Date(h.date);
+        }});
+        if (submitDate) {{
+            var waiting = Math.ceil((today - submitDate) / 86400000);
+            if (waiting >= 21) longWait++;
+        }}
+    }});
+    if (longWait > 0) {{
+        actions.push({{
+            priority: 40,
+            icon: '&#128276;',
+            text: '<strong>' + longWait + '</strong> application' + (longWait > 1 ? 's' : '') + ' waiting 3+ weeks — consider following up',
+            action: 'View submitted',
+            onclick: 'filterByStatus(\\\'Submitted\\\')',
+            type: 'info'
+        }});
+    }}
+
+    if (actions.length === 0) {{
+        card.style.display = 'none';
+        return;
+    }}
+
+    actions.sort(function(a, b) {{ return b.priority - a.priority; }});
+    var top = actions[0];
+    card.className = 'next-action-card na-' + top.type;
+    card.innerHTML = '<span class="na-icon">' + top.icon + '</span>' +
+        '<span class="na-text">' + top.text + '</span>' +
+        '<button class="na-btn" onclick="' + top.onclick + '">' + top.action + '</button>' +
+        '<button class="na-dismiss" onclick="this.parentElement.style.display=\\\'none\\\'">&#10005;</button>';
+    card.style.display = '';
+}}
+
 function filterByStatus(status) {{
     resetFilters();
     var statusSel = document.querySelector('[data-instant="status"]');
@@ -1734,6 +1850,7 @@ document.addEventListener('DOMContentLoaded', function() {{
     renderUrgencyBanner();
     renderNotifications();
     renderDeadlineTicker();
+    renderNextAction();
     updateMiniDonuts();
     renderWaitingBadges();
     updateNavBadges();

@@ -7525,6 +7525,92 @@ mark.search-highlight {
     background: #374151;
 }
 
+/* Next action card */
+.next-action-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    border-radius: 10px;
+    margin: 6px auto;
+    max-width: 900px;
+    font-size: 0.85rem;
+    animation: na-slide 0.3s ease-out;
+}
+@keyframes na-slide {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.na-critical {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+}
+.na-highlight {
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    color: #92400e;
+}
+.na-info {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #1e40af;
+}
+.na-icon {
+    font-size: 1.3rem;
+    flex-shrink: 0;
+}
+.na-text {
+    flex: 1;
+}
+.na-btn {
+    background: #1e293b;
+    color: #fff;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.78rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s;
+}
+.na-btn:hover {
+    background: #0f172a;
+}
+.na-critical .na-btn { background: #dc2626; }
+.na-critical .na-btn:hover { background: #b91c1c; }
+.na-highlight .na-btn { background: #d97706; }
+.na-highlight .na-btn:hover { background: #b45309; }
+.na-dismiss {
+    background: none;
+    border: none;
+    color: inherit;
+    opacity: 0.4;
+    cursor: pointer;
+    font-size: 0.8rem;
+    padding: 4px;
+}
+.na-dismiss:hover { opacity: 0.8; }
+[data-theme="dark"] .na-critical {
+    background: #1c0a0a;
+    border-color: #7f1d1d;
+    color: #fca5a5;
+}
+[data-theme="dark"] .na-highlight {
+    background: #1c1917;
+    border-color: #78350f;
+    color: #fcd34d;
+}
+[data-theme="dark"] .na-info {
+    background: #0c1929;
+    border-color: #1e3a5f;
+    color: #93c5fd;
+}
+@media print {
+    .next-action-card { display: none !important; }
+}
+
 /* Application funnel chart */
 .funnel-chart {
     position: relative;
@@ -7633,6 +7719,7 @@ mark.search-highlight {
 
     <div class="urgency-banner" id="urgency-banner" style="display:none"></div>
     <div class="deadline-ticker" id="deadline-ticker" style="display:none"></div>
+    <div class="next-action-card" id="next-action" style="display:none"></div>
 
     <main class="container-fluid sheet-page" role="main" id="main-table">
         <div class="sheet-toolbar">
@@ -9709,6 +9796,121 @@ function renderDeadlineTicker() {
     ticker.style.display = '';
 }
 
+function renderNextAction() {
+    var card = document.getElementById('next-action');
+    if (!card) return;
+    var savedStatuses = loadSavedStatuses();
+    var today = new Date(); today.setHours(0,0,0,0);
+    var actions = [];
+
+    // Priority 1: Programs closing very soon (not yet applied)
+    PROGRAMS.forEach(function(p) {
+        var st = savedStatuses[p.id] || p.application_status || 'Not Started';
+        if (st === 'Submitted' || st === 'Offer' || st === 'Rejected') return;
+        var close = parseDate(p.app_close_date);
+        var open = parseDate(p.app_open_date);
+        if (open && close && open <= today && close >= today) {
+            var daysLeft = Math.ceil((close - today) / 86400000);
+            if (daysLeft <= 3) {
+                actions.push({
+                    priority: 100 - daysLeft,
+                    icon: '&#128680;',
+                    text: escHtml(p.hospital) + ' closes in <strong>' + daysLeft + ' day' + (daysLeft !== 1 ? 's' : '') + '</strong>!',
+                    action: p.application_url ? 'Apply now' : 'View details',
+                    onclick: p.application_url ? 'window.open(\'' + escHtml(p.application_url) + '\', \'_blank\')' : 'showDetail(' + p.id + ')',
+                    type: 'critical'
+                });
+            }
+        }
+    });
+
+    // Priority 2: Programs opening today/tomorrow
+    PROGRAMS.forEach(function(p) {
+        var st = savedStatuses[p.id] || p.application_status || 'Not Started';
+        if (st === 'Submitted' || st === 'Offer' || st === 'Rejected') return;
+        var open = parseDate(p.app_open_date);
+        if (open) {
+            var daysUntil = Math.ceil((open - today) / 86400000);
+            if (daysUntil >= 0 && daysUntil <= 1) {
+                actions.push({
+                    priority: 80,
+                    icon: '&#127775;',
+                    text: escHtml(p.hospital) + (daysUntil === 0 ? ' opens <strong>today</strong>!' : ' opens <strong>tomorrow</strong>!'),
+                    action: 'View details',
+                    onclick: 'showDetail(' + p.id + ')',
+                    type: 'highlight'
+                });
+            }
+        }
+    });
+
+    // Priority 3: Interviews with no prep
+    var interviewCount = 0;
+    PROGRAMS.forEach(function(p) {
+        var st = savedStatuses[p.id] || p.application_status || 'Not Started';
+        if (st === 'Interview') interviewCount++;
+    });
+    if (interviewCount > 0) {
+        var prepData = JSON.parse(localStorage.getItem('rn_tracker_interview_prep') || '{}');
+        var unprepared = 0;
+        PROGRAMS.forEach(function(p) {
+            var st = savedStatuses[p.id] || p.application_status || 'Not Started';
+            if (st === 'Interview' && !prepData[p.id]) unprepared++;
+        });
+        if (unprepared > 0) {
+            actions.push({
+                priority: 60,
+                icon: '&#127919;',
+                text: 'You have <strong>' + unprepared + ' interview' + (unprepared > 1 ? 's' : '') + '</strong> without prep notes',
+                action: 'Prepare now',
+                onclick: 'filterByStatus(\'Interview\')',
+                type: 'info'
+            });
+        }
+    }
+
+    // Priority 4: Submitted with long wait
+    var longWait = 0;
+    var statusHistory = JSON.parse(localStorage.getItem('rn_tracker_status_history') || '{}');
+    PROGRAMS.forEach(function(p) {
+        var st = savedStatuses[p.id] || p.application_status || 'Not Started';
+        if (st !== 'Submitted') return;
+        var hist = statusHistory[p.id] || [];
+        var submitDate = null;
+        hist.forEach(function(h) {
+            if (h.status === 'Submitted' && h.date) submitDate = new Date(h.date);
+        });
+        if (submitDate) {
+            var waiting = Math.ceil((today - submitDate) / 86400000);
+            if (waiting >= 21) longWait++;
+        }
+    });
+    if (longWait > 0) {
+        actions.push({
+            priority: 40,
+            icon: '&#128276;',
+            text: '<strong>' + longWait + '</strong> application' + (longWait > 1 ? 's' : '') + ' waiting 3+ weeks — consider following up',
+            action: 'View submitted',
+            onclick: 'filterByStatus(\'Submitted\')',
+            type: 'info'
+        });
+    }
+
+    if (actions.length === 0) {
+        card.style.display = 'none';
+        return;
+    }
+
+    actions.sort(function(a, b) { return b.priority - a.priority; });
+    var top = actions[0];
+    card.className = 'next-action-card na-' + top.type;
+    card.innerHTML = '<span class="na-icon">' + top.icon + '</span>' +
+        '<span class="na-text">' + top.text + '</span>' +
+        '<button class="na-btn" onclick="' + top.onclick + '">' + top.action + '</button>' +
+        '<button class="na-dismiss" onclick="this.parentElement.style.display=\'none\'">&#10005;</button>';
+    card.style.display = '';
+}
+
 function filterByStatus(status) {
     resetFilters();
     var statusSel = document.querySelector('[data-instant="status"]');
@@ -10105,6 +10307,7 @@ document.addEventListener('DOMContentLoaded', function() {
     renderUrgencyBanner();
     renderNotifications();
     renderDeadlineTicker();
+    renderNextAction();
     updateMiniDonuts();
     renderWaitingBadges();
     updateNavBadges();
