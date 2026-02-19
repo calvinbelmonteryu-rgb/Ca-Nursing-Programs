@@ -338,7 +338,8 @@ def generate():
     </div>
 
     <footer class="container">
-        <small>CA New Grad RN Program Tracker &bull; NCLEX Target: May 2026 &bull; Updated {today.strftime("%b %d, %Y")}</small>
+        <small>CA New Grad RN Program Tracker &bull; Updated {today.strftime("%b %d, %Y")}</small>
+        <small class="shortcuts-hint"><kbd>/</kbd> Search &bull; <kbd>j</kbd><kbd>k</kbd> Navigate &bull; <kbd>Enter</kbd> Details &bull; <kbd>Esc</kbd> Close</small>
     </footer>
 
     <script>
@@ -461,6 +462,12 @@ document.addEventListener('DOMContentLoaded', function() {{
         if (co) co.value = params.get('cohort');
     }}
     if (params.toString()) filterTable();
+
+    // Default sort by App Close (soonest first) unless URL has params
+    if (!params.toString()) {{
+        var closeHeader = document.querySelector('[data-label="App Close"]');
+        if (closeHeader) sortTable(closeHeader);
+    }}
 
     // Search
     if (searchInput) {{
