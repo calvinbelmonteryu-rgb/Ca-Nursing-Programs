@@ -12648,7 +12648,17 @@ function renderCmdResults(query) {
         { label: 'Jump to Open Programs', action: function() { jumpToOpen(); }, icon: '\u2193' },
         { label: 'Batch Apply All Open', action: function() { batchApplyOpen(); }, icon: '\u2197' },
         { label: 'Progress Card', action: function() { showProgressCard(); }, icon: '\u2588' },
-        { label: 'Download Progress Card', action: function() { downloadProgressCard(); }, icon: '\u21E9' }
+        { label: 'Download Progress Card', action: function() { downloadProgressCard(); }, icon: '\u21E9' },
+        { label: 'Show Favorites Only', action: function() { filterFavorites(document.getElementById('fav-chip')); }, icon: '\u2605' },
+        { label: 'Show My Applications', action: function() { filterMyApps(document.getElementById('myapps-chip')); }, icon: '\uD83D\uDCCB' },
+        { label: 'Show Open Programs', action: function() { filterOpen(); }, icon: '\u2714' },
+        { label: 'Clear All Filters', action: function() { clearAllFilters(); }, icon: '\u2715' },
+        { label: 'Keyboard Shortcuts Help', action: function() { toggleShortcutHelp(); }, icon: '?' },
+        { label: 'Restore Backup', action: function() { restoreData(); }, icon: '\u2B06' },
+        { label: 'Edit Application Goal', action: function() { editGoal(); showView('stats'); }, icon: '\uD83C\uDFAF' },
+        { label: 'Export Calendar (ICS)', action: function() { exportICS(); }, icon: '\uD83D\uDCC5' },
+        { label: 'Toggle Compact Density', action: function() { toggleDensity(); }, icon: '\u2261' },
+        { label: 'Share Current URL', action: function() { shareUrl(); }, icon: '\uD83D\uDD17' }
     ];
 
     // Programs
