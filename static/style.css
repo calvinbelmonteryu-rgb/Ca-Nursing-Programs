@@ -7775,3 +7775,80 @@ mark.search-highlight {
     background: #1c0a0a;
     border-color: #7f1d1d;
 }
+
+/* Quick Status Picker */
+.quick-status-picker {
+    position: absolute;
+    z-index: 1200;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    padding: 8px;
+    min-width: 180px;
+    animation: qspSlideIn 0.15s ease-out;
+}
+@keyframes qspSlideIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.qsp-title {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 2px 8px 6px;
+}
+.qsp-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    padding: 6px 8px;
+    border: none;
+    background: none;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    text-align: left;
+    color: #374151;
+    transition: background 0.1s;
+}
+.qsp-btn:hover { background: #f3f4f6; }
+.qsp-btn.qsp-active {
+    background: #eff6ff;
+    color: var(--accent);
+    font-weight: 600;
+}
+.qsp-key {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    background: #f3f4f6;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #6b7280;
+    flex-shrink: 0;
+}
+.qsp-hint {
+    font-size: 0.6rem;
+    color: #9ca3af;
+    padding: 4px 8px 2px;
+    border-top: 1px solid #f3f4f6;
+    margin-top: 4px;
+}
+[data-theme="dark"] .quick-status-picker {
+    background: #1f2937;
+    border-color: #374151;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+[data-theme="dark"] .qsp-title { color: #9ca3af; }
+[data-theme="dark"] .qsp-btn { color: #d1d5db; }
+[data-theme="dark"] .qsp-btn:hover { background: #374151; }
+[data-theme="dark"] .qsp-btn.qsp-active { background: #1e3a5f; color: #60a5fa; }
+[data-theme="dark"] .qsp-key { background: #374151; color: #9ca3af; }
+[data-theme="dark"] .qsp-hint { color: #6b7280; border-color: #374151; }

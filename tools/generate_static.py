@@ -1770,6 +1770,8 @@ document.addEventListener('DOMContentLoaded', function() {{
         }}
 
         if (!isEditing(e.target)) {{
+            // Skip when quick status picker is active
+            if (window._qspActive) return;
             // Keyboard shortcuts
             if (e.key === 'n') {{ toggleNotifications(); return; }}
             if (e.key === 'd') {{ toggleTheme(); return; }}
@@ -1830,15 +1832,12 @@ document.addEventListener('DOMContentLoaded', function() {{
                     if (url) window.open(url, '_blank');
                 }}
             }}
-            // 'e' — cycle status for selected row
+            // 'e' — open quick status picker for selected row
             if (e.key === 'e' && selectedRowIdx >= 0 && selectedRowIdx < visibleRows.length) {{
-                var statusSel = visibleRows[selectedRowIdx].querySelector('.status-select');
-                if (statusSel) {{
-                    var opts = Array.from(statusSel.options).map(function(o) {{ return o.value; }});
-                    var curIdx = opts.indexOf(statusSel.value);
-                    statusSel.value = opts[(curIdx + 1) % opts.length];
-                    statusSel.dispatchEvent(new Event('change'));
-                }}
+                e.preventDefault();
+                var qspRow = visibleRows[selectedRowIdx];
+                var qspId = parseInt(qspRow.dataset.id);
+                showQuickStatusPicker(qspRow, qspId);
             }}
             // 'x' — toggle favorite for selected row
             if (e.key === 'x' && selectedRowIdx >= 0 && selectedRowIdx < visibleRows.length) {{
@@ -6791,6 +6790,68 @@ function showActivityFeed() {{
     html += '</div>';
     body.innerHTML = html;
     openModal('activity-modal');
+}}
+
+function showQuickStatusPicker(row, progId) {{
+    var existing = document.querySelector('.quick-status-picker');
+    if (existing) existing.remove();
+    var savedStatuses = loadSavedStatuses();
+    var currentStatus = savedStatuses[progId] || 'Not Started';
+    var statuses = ['Not Started', 'In Progress', 'Submitted', 'Interview', 'Offer', 'Rejected'];
+    var icons = {{ 'Not Started': '\\u25CB', 'In Progress': '\\u270F', 'Submitted': '\\u2709', 'Interview': '\\uD83C\\uDF99', 'Offer': '\\u2705', 'Rejected': '\\u274C' }};
+    var picker = document.createElement('div');
+    picker.className = 'quick-status-picker';
+    var html = '<div class="qsp-title">Set Status</div>';
+    statuses.forEach(function(s, i) {{
+        var activeCls = s === currentStatus ? ' qsp-active' : '';
+        html += '<button class="qsp-btn' + activeCls + '" data-status="' + s + '" data-key="' + (i + 1) + '">';
+        html += '<span class="qsp-key">' + (i + 1) + '</span> ' + icons[s] + ' ' + s;
+        html += '</button>';
+    }});
+    html += '<div class="qsp-hint">Press 1-6 or click &middot; Esc to cancel</div>';
+    picker.innerHTML = html;
+    // Position near the row
+    var rect = row.getBoundingClientRect();
+    picker.style.top = (rect.bottom + window.scrollY + 4) + 'px';
+    picker.style.left = Math.max(8, rect.left + 40) + 'px';
+    document.body.appendChild(picker);
+    // Handle clicks
+    picker.querySelectorAll('.qsp-btn').forEach(function(btn) {{
+        btn.addEventListener('click', function() {{
+            quickSetStatus(progId, btn.dataset.status);
+            picker.remove();
+            window._qspActive = false;
+        }});
+    }});
+    // Handle keyboard
+    window._qspActive = true;
+    window._qspHandler = function(e) {{
+        if (e.key === 'Escape') {{
+            picker.remove();
+            window._qspActive = false;
+            document.removeEventListener('keydown', window._qspHandler, true);
+        }} else if (e.key >= '1' && e.key <= '6') {{
+            e.preventDefault();
+            e.stopPropagation();
+            var idx = parseInt(e.key) - 1;
+            quickSetStatus(progId, statuses[idx]);
+            picker.remove();
+            window._qspActive = false;
+            document.removeEventListener('keydown', window._qspHandler, true);
+        }}
+    }};
+    document.addEventListener('keydown', window._qspHandler, true);
+    // Close on outside click
+    setTimeout(function() {{
+        document.addEventListener('click', function closeQsp(e) {{
+            if (!e.target.closest('.quick-status-picker')) {{
+                picker.remove();
+                window._qspActive = false;
+                document.removeEventListener('click', closeQsp);
+                document.removeEventListener('keydown', window._qspHandler, true);
+            }}
+        }});
+    }}, 50);
 }}
 
 function hideCtxMenu() {{
