@@ -16,6 +16,10 @@
     <style>
 /* CA New Grad RN Tracker — Custom Styles */
 
+html {
+    scroll-behavior: smooth;
+}
+
 /* ===== SKIP LINK ===== */
 .skip-link {
     position: absolute;
@@ -1049,6 +1053,58 @@ a.bar-link:hover { background: #f3f4f6; }
     .back-to-top {
         width: 40px;
         height: 40px;
+    }
+
+    /* New features mobile */
+    .notif-panel {
+        width: calc(100vw - 16px);
+        right: -60px;
+    }
+
+    .ctx-menu {
+        min-width: 180px;
+    }
+
+    .pipeline-toolbar {
+        flex-wrap: wrap;
+    }
+    .pipeline-search-input {
+        width: 100%;
+    }
+
+    .progress-pipeline {
+        padding: 10px 4px;
+        overflow-x: auto;
+    }
+    .pp-step { min-width: 48px; }
+    .pp-label { font-size: 0.5rem; }
+
+    .digest-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .rec-list .rec-card {
+        padding: 8px 10px;
+    }
+
+    .activity-feed {
+        max-height: 300px;
+    }
+
+    .funnel-bar {
+        padding: 6px 10px;
+        font-size: 0.68rem;
+    }
+
+    .weekly-digest {
+        padding: 12px;
+    }
+    .weekly-digest h3 {
+        font-size: 0.8rem;
+    }
+
+    .goal-widget {
+        padding: 10px 14px;
     }
 }
 
@@ -2732,6 +2788,27 @@ tbody tr:hover .col-fav { background: #eff6ff; }
     background: #fef2f2 !important;
 }
 
+.jump-btn {
+    background: #dbeafe !important;
+    color: #1e40af !important;
+    font-size: 0.7rem !important;
+    border: 1px solid #93c5fd !important;
+    border-radius: 4px !important;
+    padding: 2px 8px !important;
+    cursor: pointer;
+    white-space: nowrap;
+    height: 28px;
+    margin: 0;
+}
+.jump-btn:hover {
+    background: #bfdbfe !important;
+}
+[data-theme="dark"] .jump-btn {
+    background: #1e3a5f !important;
+    color: #60a5fa !important;
+    border-color: #1e40af !important;
+}
+
 /* ===== SEARCH HIGHLIGHT ===== */
 mark.search-highlight {
     background: #fef08a;
@@ -4249,6 +4326,7 @@ mark.search-highlight {
                 </select>
                 <span class="sheet-count">57 rows</span>
                 <button type="button" class="clear-filter" id="clear-all-btn" onclick="clearAllFilters()" style="display:none">Clear All</button>
+                <button type="button" class="jump-btn" onclick="jumpToOpen()" title="Jump to first open program">&darr; Open</button>
                 <span class="filter-spacer"></span>
                 <select id="sort-preset" onchange="applySortPreset(this.value)" style="height:28px;font-size:0.75rem;padding:4px 8px;margin:0;border:1px solid #d1d5db;border-radius:3px">
                     <option value="">Sort by...</option>
@@ -6638,6 +6716,31 @@ function highlightDeadlines() {
             }
         }
     });
+}
+
+function jumpToOpen() {
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+    var rows = document.querySelectorAll('.sheet tbody tr');
+    for (var i = 0; i < rows.length; i++) {
+        var row = rows[i];
+        if (row.style.display === 'none') continue;
+        var dateCells = row.querySelectorAll('.col-date');
+        if (dateCells.length >= 2) {
+            var openRaw = dateCells[0].dataset.raw || '';
+            var closeRaw = dateCells[1].dataset.raw || '';
+            var openDate = parseDate(openRaw);
+            var closeDate = parseDate(closeRaw);
+            if (openDate && closeDate && openDate <= today && closeDate >= today) {
+                row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                row.classList.add('selected-row');
+                setTimeout(function() { row.classList.remove('selected-row'); }, 2000);
+                showToast('Jumped to: ' + (row.querySelector('.hospital-link') || {}).textContent);
+                return;
+            }
+        }
+    }
+    showToast('No open programs visible');
 }
 
 function markNotesIndicators() {

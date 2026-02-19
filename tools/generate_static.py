@@ -366,6 +366,7 @@ def generate():
                 </select>
                 <span class="sheet-count">{total} rows</span>
                 <button type="button" class="clear-filter" id="clear-all-btn" onclick="clearAllFilters()" style="display:none">Clear All</button>
+                <button type="button" class="jump-btn" onclick="jumpToOpen()" title="Jump to first open program">&darr; Open</button>
                 <span class="filter-spacer"></span>
                 <select id="sort-preset" onchange="applySortPreset(this.value)" style="height:28px;font-size:0.75rem;padding:4px 8px;margin:0;border:1px solid #d1d5db;border-radius:3px">
                     <option value="">Sort by...</option>
@@ -1637,6 +1638,31 @@ function highlightDeadlines() {{
             }}
         }}
     }});
+}}
+
+function jumpToOpen() {{
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+    var rows = document.querySelectorAll('.sheet tbody tr');
+    for (var i = 0; i < rows.length; i++) {{
+        var row = rows[i];
+        if (row.style.display === 'none') continue;
+        var dateCells = row.querySelectorAll('.col-date');
+        if (dateCells.length >= 2) {{
+            var openRaw = dateCells[0].dataset.raw || '';
+            var closeRaw = dateCells[1].dataset.raw || '';
+            var openDate = parseDate(openRaw);
+            var closeDate = parseDate(closeRaw);
+            if (openDate && closeDate && openDate <= today && closeDate >= today) {{
+                row.scrollIntoView({{ behavior: 'smooth', block: 'center' }});
+                row.classList.add('selected-row');
+                setTimeout(function() {{ row.classList.remove('selected-row'); }}, 2000);
+                showToast('Jumped to: ' + (row.querySelector('.hospital-link') || {{}}).textContent);
+                return;
+            }}
+        }}
+    }}
+    showToast('No open programs visible');
 }}
 
 function markNotesIndicators() {{
