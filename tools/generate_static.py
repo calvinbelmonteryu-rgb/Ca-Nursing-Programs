@@ -169,6 +169,19 @@ def generate():
         app_close_fmt = format_date(app_close_raw)
         cohort_fmt = format_date(cohort_raw) if parse_date(cohort_raw) else esc(cohort_raw)
 
+        # Compute tooltip for open date
+        open_d = parse_date(app_open_raw)
+        close_d = parse_date(app_close_raw)
+        open_title = app_open_raw
+        if open_d and close_d:
+            if open_d > today:
+                days_until = (open_d - today).days
+                open_title = f"Opens in {days_until} days ({app_open_raw})"
+            elif close_d >= today:
+                open_title = f"Currently open ({app_open_raw})"
+            else:
+                open_title = f"Closed ({app_open_raw})"
+
         bsn = p.get("bsn_required", "")
         bsn_cls = "bsn-no" if bsn == "No" else "bsn-pref" if bsn == "Preferred" else "bsn-req" if bsn == "Yes" else ""
 
@@ -189,7 +202,7 @@ def generate():
 <td class="col-region">{region_dot}{esc(p.get('region',''))}</td>
 <td class="col-city" title="{full_city}">{esc(city)}</td>
 <td class="col-bsn {bsn_cls}">{esc(bsn)}</td>
-<td class="col-date" data-raw="{esc(app_open_raw)}">{app_open_fmt}</td>
+<td class="col-date" data-raw="{esc(app_open_raw)}" title="{esc(open_title)}">{app_open_fmt}</td>
 <td class="col-date" data-raw="{esc(app_close_raw)}">{app_close_fmt}</td>
 <td class="col-date" data-raw="{esc(cohort_raw)}">{cohort_fmt}</td>
 <td class="col-rep stars">{stars}</td>
@@ -724,6 +737,10 @@ function clearChipActive() {{
 }}
 
 function filterOpen(btn) {{
+    if (btn.classList.contains('chip-active')) {{
+        clearAllFilters();
+        return;
+    }}
     resetFilters();
     window._specialFilter = 'open';
     filterTableSpecial();
@@ -732,6 +749,10 @@ function filterOpen(btn) {{
 }}
 
 function filterUpcoming(btn) {{
+    if (btn.classList.contains('chip-active')) {{
+        clearAllFilters();
+        return;
+    }}
     resetFilters();
     window._specialFilter = 'upcoming';
     filterTableSpecial();
@@ -740,6 +761,10 @@ function filterUpcoming(btn) {{
 }}
 
 function filterBsn(val, btn) {{
+    if (btn.classList.contains('chip-active')) {{
+        clearAllFilters();
+        return;
+    }}
     resetFilters();
     var bsnSelect = document.querySelector('[data-instant="bsn"]');
     if (bsnSelect) bsnSelect.value = val;
