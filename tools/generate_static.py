@@ -147,6 +147,16 @@ def generate():
     bsn_values = sorted(set(p.get("bsn_required", "") for p in programs if p.get("bsn_required")))
     statuses = ["Not Started", "In Progress", "Submitted", "Interview", "Offer", "Rejected"]
 
+    # Compute pay range for bars
+    pay_values = []
+    for p in programs:
+        m = re.search(r'(\d[\d.,]+)/hr', p.get("pay_range", ""))
+        if m:
+            pay_values.append(float(m.group(1).replace(',', '')))
+    min_pay = min(pay_values) if pay_values else 0
+    max_pay = max(pay_values) if pay_values else 1
+    pay_range_span = max_pay - min_pay if max_pay > min_pay else 1
+
     # Build table rows
     rows_html = []
     for p in programs:
@@ -196,6 +206,16 @@ def generate():
         bsn = p.get("bsn_required", "")
         bsn_cls = "bsn-no" if bsn == "No" else "bsn-pref" if bsn == "Preferred" else "bsn-req" if bsn == "Yes" else ""
 
+        # Compute pay bar
+        pay_bar_html = ""
+        pay_match = re.search(r'(\d[\d.,]+)/hr', p.get("pay_range", ""))
+        if pay_match:
+            pay_val = float(pay_match.group(1).replace(',', ''))
+            pct = int(((pay_val - min_pay) / pay_range_span) * 100)
+            pct = max(5, min(100, pct))  # clamp between 5-100
+            tier = "high" if pct >= 70 else "mid" if pct >= 40 else "low"
+            pay_bar_html = f'<span class="pay-bar pay-bar-{tier}"><span class="pay-bar-fill" style="width:{pct}%"></span></span>'
+
         region = p.get("region", "")
         region_cls = ""
         if "Bay" in region: region_cls = "region-bay"
@@ -217,7 +237,7 @@ def generate():
 <td class="col-date" data-raw="{esc(app_close_raw)}">{app_close_fmt}</td>
 <td class="col-date" data-raw="{esc(cohort_raw)}">{cohort_fmt}</td>
 <td class="col-rep stars">{stars}</td>
-<td class="col-pay" title="{esc(p.get('pay_range', ''))}">{esc(pay)}</td>
+<td class="col-pay" title="{esc(p.get('pay_range', ''))}">{esc(pay)}{pay_bar_html}</td>
 <td class="col-len">{p.get('program_length_months','')}mo</td>
 <td class="col-specialties" title="{esc(specs)}">{esc(specs)}</td>
 <td class="col-status"><select class="status-select" data-id="{p['id']}">{status_options}</select></td>
@@ -458,6 +478,30 @@ function saveNote(id, note) {{
         var all = loadSavedNotes();
         all[id] = note;
         localStorage.setItem('rn_tracker_notes', JSON.stringify(all));
+    }} catch(e) {{}}
+}}
+
+function loadChecklist(id) {{
+    try {{
+        var all = JSON.parse(localStorage.getItem('rn_tracker_checklists') || '{{}}');
+        return all[id] || [];
+    }} catch(e) {{ return []; }}
+}}
+
+function addChecklistItem(id, idx) {{
+    try {{
+        var all = JSON.parse(localStorage.getItem('rn_tracker_checklists') || '{{}}');
+        if (!all[id]) all[id] = [];
+        if (all[id].indexOf(idx) === -1) all[id].push(idx);
+        localStorage.setItem('rn_tracker_checklists', JSON.stringify(all));
+    }} catch(e) {{}}
+}}
+
+function removeChecklistItem(id, idx) {{
+    try {{
+        var all = JSON.parse(localStorage.getItem('rn_tracker_checklists') || '{{}}');
+        if (all[id]) all[id] = all[id].filter(function(i) {{ return i !== idx; }});
+        localStorage.setItem('rn_tracker_checklists', JSON.stringify(all));
     }} catch(e) {{}}
 }}
 
@@ -1301,6 +1345,21 @@ function showDetail(id) {{
     html += '<small class="notes-hint">Notes are saved to your browser automatically.</small>';
     html += '</div>';
 
+    // Application checklist
+    var checklistItems = ['Review requirements', 'Prepare resume/CV', 'Write cover letter', 'Gather references', 'Submit application', 'Follow up'];
+    var savedChecklist = loadChecklist(p.id);
+    html += '<div class="detail-section"><h3>Application Checklist</h3>';
+    html += '<ul class="app-checklist" id="modal-checklist">';
+    checklistItems.forEach(function(item, i) {{
+        var checked = savedChecklist.indexOf(i) !== -1;
+        var cls = checked ? ' checked-label' : '';
+        html += '<li><input type="checkbox" data-idx="' + i + '"' + (checked ? ' checked' : '') + '><span class="' + cls + '">' + item + '</span></li>';
+    }});
+    html += '</ul>';
+    var done = savedChecklist.length;
+    html += '<div class="checklist-progress">' + done + ' of ' + checklistItems.length + ' complete</div>';
+    html += '</div>';
+
     if (p.application_url) {{
         html += '<div class="detail-actions"><a href="' + escHtml(p.application_url) + '" target="_blank" class="apply-btn-modal">Apply Now &rarr;</a></div>';
     }}
@@ -1317,6 +1376,28 @@ function showDetail(id) {{
             saveTimer = setTimeout(function() {{
                 saveNote(p.id, notesArea.value);
             }}, 500);
+        }});
+    }}
+
+    // Checklist change handler
+    var checklist = document.getElementById('modal-checklist');
+    if (checklist) {{
+        checklist.addEventListener('change', function(e) {{
+            if (e.target.type === 'checkbox') {{
+                var idx = parseInt(e.target.dataset.idx);
+                var span = e.target.nextElementSibling;
+                if (e.target.checked) {{
+                    span.classList.add('checked-label');
+                    addChecklistItem(p.id, idx);
+                }} else {{
+                    span.classList.remove('checked-label');
+                    removeChecklistItem(p.id, idx);
+                }}
+                var allCbs = checklist.querySelectorAll('input[type="checkbox"]');
+                var checkedCount = checklist.querySelectorAll('input[type="checkbox"]:checked').length;
+                var progDiv = checklist.parentElement.querySelector('.checklist-progress');
+                if (progDiv) progDiv.textContent = checkedCount + ' of ' + allCbs.length + ' complete';
+            }}
         }});
     }}
 }}

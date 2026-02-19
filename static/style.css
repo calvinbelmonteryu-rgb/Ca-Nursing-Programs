@@ -1375,6 +1375,44 @@ footer small {
     font-size: 0.72rem;
 }
 
+/* Application checklist */
+.app-checklist {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.app-checklist li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.app-checklist li:last-child {
+    border-bottom: none;
+}
+
+.app-checklist input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.app-checklist .checked-label {
+    text-decoration: line-through;
+    color: #9ca3af;
+}
+
+.checklist-progress {
+    font-size: 0.72rem;
+    color: #6b7280;
+    margin-top: 4px;
+}
+
 /* Compare modal */
 .compare-scroll {
     overflow-x: auto;
@@ -1419,6 +1457,23 @@ footer small {
 
 /* ===== PAY CELL ===== */
 .pay-cell { font-size: 0.85rem; white-space: nowrap; }
+.pay-bar {
+    display: block;
+    height: 3px;
+    background: #e5e7eb;
+    border-radius: 2px;
+    margin-top: 2px;
+    overflow: hidden;
+}
+.pay-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    background: #3b82f6;
+    transition: width 0.3s ease;
+}
+.pay-bar-high .pay-bar-fill { background: #22c55e; }
+.pay-bar-mid .pay-bar-fill { background: #3b82f6; }
+.pay-bar-low .pay-bar-fill { background: #f59e0b; }
 
 /* ===== DASHBOARD ===== */
 .dash-header {

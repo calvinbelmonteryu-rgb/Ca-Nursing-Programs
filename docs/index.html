@@ -1385,6 +1385,44 @@ footer small {
     font-size: 0.72rem;
 }
 
+/* Application checklist */
+.app-checklist {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.app-checklist li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.app-checklist li:last-child {
+    border-bottom: none;
+}
+
+.app-checklist input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.app-checklist .checked-label {
+    text-decoration: line-through;
+    color: #9ca3af;
+}
+
+.checklist-progress {
+    font-size: 0.72rem;
+    color: #6b7280;
+    margin-top: 4px;
+}
+
 /* Compare modal */
 .compare-scroll {
     overflow-x: auto;
@@ -1429,6 +1467,23 @@ footer small {
 
 /* ===== PAY CELL ===== */
 .pay-cell { font-size: 0.85rem; white-space: nowrap; }
+.pay-bar {
+    display: block;
+    height: 3px;
+    background: #e5e7eb;
+    border-radius: 2px;
+    margin-top: 2px;
+    overflow: hidden;
+}
+.pay-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    background: #3b82f6;
+    transition: width 0.3s ease;
+}
+.pay-bar-high .pay-bar-fill { background: #22c55e; }
+.pay-bar-mid .pay-bar-fill { background: #3b82f6; }
+.pay-bar-low .pay-bar-fill { background: #f59e0b; }
 
 /* ===== DASHBOARD ===== */
 .dash-header {
@@ -1768,7 +1823,7 @@ footer small {
 <td class="col-date" data-raw="2026-03-31">Mar 31</td>
 <td class="col-date" data-raw="2026-07-27">Jul 27</td>
 <td class="col-rep stars">★★★★★</td>
-<td class="col-pay" title="$81.21/hr (NorCal rate)">$81.21/hr</td>
+<td class="col-pay" title="$81.21/hr (NorCal rate)">$81.21/hr<span class="pay-bar pay-bar-mid"><span class="pay-bar-fill" style="width:69%"></span></span></td>
 <td class="col-len">12mo</td>
 <td class="col-specialties" title="Med-Surg, Telemetry, ICU, ED, L&amp;D, Pediatrics, OR">Med-Surg, Telemetry, ICU, ED, L&amp;D, Pediatrics, OR</td>
 <td class="col-status"><select class="status-select" data-id="1"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -1795,7 +1850,7 @@ Both Cohort 2 and 3 viable for May 2026 NCLEX taker. Apply via kaiserpermanentej
 <td class="col-date" data-raw="2026-03-09">Mar 9</td>
 <td class="col-date" data-raw="2026-07-01">Jul 1</td>
 <td class="col-rep stars">★★★★★</td>
-<td class="col-pay" title="$52-62/hr">$52-62/hr</td>
+<td class="col-pay" title="$52-62/hr">$52-62/hr<span class="pay-bar pay-bar-low"><span class="pay-bar-fill" style="width:29%"></span></span></td>
 <td class="col-len">12mo</td>
 <td class="col-specialties" title="Med-Surg, Oncology, Cardiac, Neuro, ICU, ED">Med-Surg, Oncology, Cardiac, Neuro, ICU, ED</td>
 <td class="col-status"><select class="status-select" data-id="2"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -1812,7 +1867,7 @@ Both Cohort 2 and 3 viable for May 2026 NCLEX taker. Apply via kaiserpermanentej
 <td class="col-date" data-raw="2026-06-28">Jun 28</td>
 <td class="col-date" data-raw="2026-08-24">Aug 24</td>
 <td class="col-rep stars">★★★★★</td>
-<td class="col-pay" title="$48.50-51.50/hr (ADN $48.50, BSN $50, MSN $51.50) + shift differentials ($5/hr wknd, $7/hr M-Th nights, $9/hr F-Sun nights)">$48.50-51.50/hr</td>
+<td class="col-pay" title="$48.50-51.50/hr (ADN $48.50, BSN $50, MSN $51.50) + shift differentials ($5/hr wknd, $7/hr M-Th nights, $9/hr F-Sun nights)">$48.50-51.50/hr<span class="pay-bar pay-bar-low"><span class="pay-bar-fill" style="width:7%"></span></span></td>
 <td class="col-len">12mo</td>
 <td class="col-specialties" title="Med-Surg, Cardiac, Neuro, Oncology, OR, ICU">Med-Surg, Cardiac, Neuro, Oncology, OR, ICU</td>
 <td class="col-status"><select class="status-select" data-id="3"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -1829,7 +1884,7 @@ Both Cohort 2 and 3 viable for May 2026 NCLEX taker. Apply via kaiserpermanentej
 <td class="col-date" data-raw=""></td>
 <td class="col-date" data-raw="Not Released (~Sep 2026)">Not Released (~Sep 2026)</td>
 <td class="col-rep stars">★★★★★</td>
-<td class="col-pay" title="$89.20/hr + differentials (10% eve, 18% nights, 5% weekends)">$89.20/hr</td>
+<td class="col-pay" title="$89.20/hr + differentials (10% eve, 18% nights, 5% weekends)">$89.20/hr<span class="pay-bar pay-bar-high"><span class="pay-bar-fill" style="width:86%"></span></span></td>
 <td class="col-len">12mo</td>
 <td class="col-specialties" title="Med-Surg, ICU, Cardiac, Transplant, Oncology, ED, OR, Psychiatry">Med-Surg, ICU, Cardiac, Transplant, Oncology, ED, OR, Psychiatry</td>
 <td class="col-status"><select class="status-select" data-id="4"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -1846,7 +1901,7 @@ Both Cohort 2 and 3 viable for May 2026 NCLEX taker. Apply via kaiserpermanentej
 <td class="col-date" data-raw=""></td>
 <td class="col-date" data-raw="Program Paused">Program Paused</td>
 <td class="col-rep stars">★★★★★</td>
-<td class="col-pay" title="$72-85/hr">$72-85/hr</td>
+<td class="col-pay" title="$72-85/hr">$72-85/hr<span class="pay-bar pay-bar-high"><span class="pay-bar-fill" style="width:77%"></span></span></td>
 <td class="col-len">12mo</td>
 <td class="col-specialties" title="Med-Surg, ICU, Oncology, Transplant, Pediatrics, L&amp;D">Med-Surg, ICU, Oncology, Transplant, Pediatrics, L&amp;D</td>
 <td class="col-status"><select class="status-select" data-id="5"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -1863,7 +1918,7 @@ Both Cohort 2 and 3 viable for May 2026 NCLEX taker. Apply via kaiserpermanentej
 <td class="col-date" data-raw=""></td>
 <td class="col-date" data-raw="Not Released (~Aug 2026)">Not Released (~Aug 2026)</td>
 <td class="col-rep stars">★★★★☆</td>
-<td class="col-pay" title="$48-65/hr">$48-65/hr</td>
+<td class="col-pay" title="$48-65/hr">$48-65/hr<span class="pay-bar pay-bar-low"><span class="pay-bar-fill" style="width:35%"></span></span></td>
 <td class="col-len">12mo</td>
 <td class="col-specialties" title="Med-Surg, ICU, ED, Pediatrics, Trauma, Burn">Med-Surg, ICU, ED, Pediatrics, Trauma, Burn</td>
 <td class="col-status"><select class="status-select" data-id="6"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -1880,7 +1935,7 @@ Both Cohort 2 and 3 viable for May 2026 NCLEX taker. Apply via kaiserpermanentej
 <td class="col-date" data-raw=""></td>
 <td class="col-date" data-raw="2026-08-24">Aug 24</td>
 <td class="col-rep stars">★★★☆☆</td>
-<td class="col-pay" title="$45-55/hr">$45-55/hr</td>
+<td class="col-pay" title="$45-55/hr">$45-55/hr<span class="pay-bar pay-bar-low"><span class="pay-bar-fill" style="width:14%"></span></span></td>
 <td class="col-len">12mo</td>
 <td class="col-specialties" title="Med-Surg, Telemetry, ICU, ED, L&amp;D">Med-Surg, Telemetry, ICU, ED, L&amp;D</td>
 <td class="col-status"><select class="status-select" data-id="7"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -1897,7 +1952,7 @@ Both Cohort 2 and 3 viable for May 2026 NCLEX taker. Apply via kaiserpermanentej
 <td class="col-date" data-raw=""></td>
 <td class="col-date" data-raw="2026-07-01">Jul 1</td>
 <td class="col-rep stars">★★☆☆☆</td>
-<td class="col-pay" title="$41-57/hr (Glassdoor avg ~$49/hr)">$41-57/hr</td>
+<td class="col-pay" title="$41-57/hr (Glassdoor avg ~$49/hr)">$41-57/hr<span class="pay-bar pay-bar-low"><span class="pay-bar-fill" style="width:18%"></span></span></td>
 <td class="col-len">4mo</td>
 <td class="col-specialties" title="Med-Surg, Telemetry, ICU, ED, Behavioral Health, Critical Care">Med-Surg, Telemetry, ICU, ED, Behavioral Health, Critical Care</td>
 <td class="col-status"><select class="status-select" data-id="8"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -1914,7 +1969,7 @@ Both Cohort 2 and 3 viable for May 2026 NCLEX taker. Apply via kaiserpermanentej
 <td class="col-date" data-raw=""></td>
 <td class="col-date" data-raw="Rolling">Rolling</td>
 <td class="col-rep stars">★★★★☆</td>
-<td class="col-pay" title="$63-74/hr">$63-74/hr</td>
+<td class="col-pay" title="$63-74/hr">$63-74/hr<span class="pay-bar pay-bar-mid"><span class="pay-bar-fill" style="width:54%"></span></span></td>
 <td class="col-len">12mo</td>
 <td class="col-specialties" title="Med-Surg, Telemetry, ICU, ED, L&amp;D, OR">Med-Surg, Telemetry, ICU, ED, L&amp;D, OR</td>
 <td class="col-status"><select class="status-select" data-id="9"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -1931,7 +1986,7 @@ Both Cohort 2 and 3 viable for May 2026 NCLEX taker. Apply via kaiserpermanentej
 <td class="col-date" data-raw=""></td>
 <td class="col-date" data-raw="2026-07-20">Jul 20</td>
 <td class="col-rep stars">★★★☆☆</td>
-<td class="col-pay" title="$45-58/hr">$45-58/hr</td>
+<td class="col-pay" title="$45-58/hr">$45-58/hr<span class="pay-bar pay-bar-low"><span class="pay-bar-fill" style="width:20%"></span></span></td>
 <td class="col-len">12mo</td>
 <td class="col-specialties" title="Med-Surg, Telemetry, ICU, ED">Med-Surg, Telemetry, ICU, ED</td>
 <td class="col-status"><select class="status-select" data-id="10"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -1964,7 +2019,7 @@ ADN accepted (BSN preferred). NCLEX not required at app time but valid license n
 <td class="col-date" data-raw=""></td>
 <td class="col-date" data-raw="Not Released (~Oct 2026)">Not Released (~Oct 2026)</td>
 <td class="col-rep stars">★★★★★</td>
-<td class="col-pay" title="$48-58/hr">$48-58/hr</td>
+<td class="col-pay" title="$48-58/hr">$48-58/hr<span class="pay-bar pay-bar-low"><span class="pay-bar-fill" style="width:20%"></span></span></td>
 <td class="col-len">12mo</td>
 <td class="col-specialties" title="Pediatric Med-Surg, PICU, NICU, Pediatric ED, Hematology/Oncology">Pediatric Med-Surg, PICU, NICU, Pediatric ED, Hematology/Oncology</td>
 <td class="col-status"><select class="status-select" data-id="11"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -1981,7 +2036,7 @@ ADN accepted (BSN preferred). NCLEX not required at app time but valid license n
 <td class="col-date" data-raw=""></td>
 <td class="col-date" data-raw="2026-08-24">Aug 24</td>
 <td class="col-rep stars">★★★★☆</td>
-<td class="col-pay" title="$52-62/hr">$52-62/hr</td>
+<td class="col-pay" title="$52-62/hr">$52-62/hr<span class="pay-bar pay-bar-low"><span class="pay-bar-fill" style="width:29%"></span></span></td>
 <td class="col-len">12mo</td>
 <td class="col-specialties" title="Med-Surg, ICU, ED, Trauma, Neuro, Cardiac">Med-Surg, ICU, ED, Trauma, Neuro, Cardiac</td>
 <td class="col-status"><select class="status-select" data-id="12"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -1998,7 +2053,7 @@ ADN accepted (BSN preferred). NCLEX not required at app time but valid license n
 <td class="col-date" data-raw=""></td>
 <td class="col-date" data-raw="Not Released (~Aug 2026)">Not Released (~Aug 2026)</td>
 <td class="col-rep stars">★★★☆☆</td>
-<td class="col-pay" title="$37-48/hr (new grad); ~$53/hr avg in LA">$37-48/hr</td>
+<td class="col-pay" title="$37-48/hr (new grad); ~$53/hr avg in LA">$37-48/hr<span class="pay-bar pay-bar-low"><span class="pay-bar-fill" style="width:5%"></span></span></td>
 <td class="col-len">12mo</td>
 <td class="col-specialties" title="Med-Surg, Telemetry, ICU, ED, L&amp;D">Med-Surg, Telemetry, ICU, ED, L&amp;D</td>
 <td class="col-status"><select class="status-select" data-id="13"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -2015,7 +2070,7 @@ ADN accepted (BSN preferred). NCLEX not required at app time but valid license n
 <td class="col-date" data-raw="2026-03-17">Mar 17</td>
 <td class="col-date" data-raw="2026-07-01">Jul 1</td>
 <td class="col-rep stars">★★★★☆</td>
-<td class="col-pay" title="$48-58/hr">$48-58/hr</td>
+<td class="col-pay" title="$48-58/hr">$48-58/hr<span class="pay-bar pay-bar-low"><span class="pay-bar-fill" style="width:20%"></span></span></td>
 <td class="col-len">12mo</td>
 <td class="col-specialties" title="Med-Surg, Telemetry, ICU, ED, L&amp;D, OR">Med-Surg, Telemetry, ICU, ED, L&amp;D, OR</td>
 <td class="col-status"><select class="status-select" data-id="14"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -2043,7 +2098,7 @@ ADN accepted (BSN preferred). NCLEX not required at app time but valid license n
 <td class="col-date" data-raw="2026-06-23">Jun 23</td>
 <td class="col-date" data-raw="2026-10-01">Oct 1</td>
 <td class="col-rep stars">★★★★☆</td>
-<td class="col-pay" title="$48-58/hr">$48-58/hr</td>
+<td class="col-pay" title="$48-58/hr">$48-58/hr<span class="pay-bar pay-bar-low"><span class="pay-bar-fill" style="width:20%"></span></span></td>
 <td class="col-len">12mo</td>
 <td class="col-specialties" title="Med-Surg, Telemetry, ICU, Cardiac, ED">Med-Surg, Telemetry, ICU, Cardiac, ED</td>
 <td class="col-status"><select class="status-select" data-id="15"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -2070,7 +2125,7 @@ HireVue video interview required (72-hr expiration, 10 questions, self-paced). 4
 <td class="col-date" data-raw="2026-03-06">Mar 6</td>
 <td class="col-date" data-raw="2026-06-08">Jun 8</td>
 <td class="col-rep stars">★★★★☆</td>
-<td class="col-pay" title="$50-66/hr">$50-66/hr</td>
+<td class="col-pay" title="$50-66/hr">$50-66/hr<span class="pay-bar pay-bar-low"><span class="pay-bar-fill" style="width:37%"></span></span></td>
 <td class="col-len">12mo</td>
 <td class="col-specialties" title="Med-Surg, ICU, Cardiac, Neuro, Oncology, ED, L&amp;D, OR">Med-Surg, ICU, Cardiac, Neuro, Oncology, ED, L&amp;D, OR</td>
 <td class="col-status"><select class="status-select" data-id="16"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -2096,7 +2151,7 @@ BSN required. &lt;12 months RN experience. 1-year program + 2-year employment co
 <td class="col-date" data-raw="2026-06-16">Jun 16</td>
 <td class="col-date" data-raw="2026-09-01">Sep 1</td>
 <td class="col-rep stars">★★★★☆</td>
-<td class="col-pay" title="$48-55/hr">$48-55/hr</td>
+<td class="col-pay" title="$48-55/hr">$48-55/hr<span class="pay-bar pay-bar-low"><span class="pay-bar-fill" style="width:14%"></span></span></td>
 <td class="col-len">5mo</td>
 <td class="col-specialties" title="Telemetry, ICU, Stepdown">Telemetry, ICU, Stepdown</td>
 <td class="col-status"><select class="status-select" data-id="17"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -2113,7 +2168,7 @@ BSN required. &lt;12 months RN experience. 1-year program + 2-year employment co
 <td class="col-date" data-raw=""></td>
 <td class="col-date" data-raw="Not Released">Not Released</td>
 <td class="col-rep stars">★★★★☆</td>
-<td class="col-pay" title="$67.98/hr">$67.98/hr</td>
+<td class="col-pay" title="$67.98/hr">$67.98/hr<span class="pay-bar pay-bar-mid"><span class="pay-bar-fill" style="width:41%"></span></span></td>
 <td class="col-len">12mo</td>
 <td class="col-specialties" title="Med-Surg, Telemetry, ICU, ED">Med-Surg, Telemetry, ICU, ED</td>
 <td class="col-status"><select class="status-select" data-id="18"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -2130,7 +2185,7 @@ BSN required. &lt;12 months RN experience. 1-year program + 2-year employment co
 <td class="col-date" data-raw=""></td>
 <td class="col-date" data-raw="Rolling">Rolling</td>
 <td class="col-rep stars">★★★★☆</td>
-<td class="col-pay" title="$44-62/hr">$44-62/hr</td>
+<td class="col-pay" title="$44-62/hr">$44-62/hr<span class="pay-bar pay-bar-low"><span class="pay-bar-fill" style="width:29%"></span></span></td>
 <td class="col-len">12mo</td>
 <td class="col-specialties" title="Med-Surg, Telemetry, ICU, ED, Cardiac, OR, L&amp;D, Oncology">Med-Surg, Telemetry, ICU, ED, Cardiac, OR, L&amp;D, Oncology</td>
 <td class="col-status"><select class="status-select" data-id="19"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -2147,7 +2202,7 @@ BSN required. &lt;12 months RN experience. 1-year program + 2-year employment co
 <td class="col-date" data-raw=""></td>
 <td class="col-date" data-raw="2026-08-03">Aug 3</td>
 <td class="col-rep stars">★★★★★</td>
-<td class="col-pay" title="$62.12/hr + shift differentials">$62.12/hr</td>
+<td class="col-pay" title="$62.12/hr + shift differentials">$62.12/hr<span class="pay-bar pay-bar-low"><span class="pay-bar-fill" style="width:29%"></span></span></td>
 <td class="col-len">12mo</td>
 <td class="col-specialties" title="CTICU, NICU, PICU, Hematology/Oncology, Medical Unit, Medical Behavioral Unit, Surgical Unit, CAPS (Psych), Emergency Care">CTICU, NICU, PICU, Hematology/Oncology, Medical Unit, Medical Behavioral Unit, Surgical Unit, CAPS (Psych), Emergency Care</td>
 <td class="col-status"><select class="status-select" data-id="20"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -2164,7 +2219,7 @@ BSN required. &lt;12 months RN experience. 1-year program + 2-year employment co
 <td class="col-date" data-raw=""></td>
 <td class="col-date" data-raw="Rolling">Rolling</td>
 <td class="col-rep stars">★★★☆☆</td>
-<td class="col-pay" title="$46-59/hr">$46-59/hr</td>
+<td class="col-pay" title="$46-59/hr">$46-59/hr<span class="pay-bar pay-bar-low"><span class="pay-bar-fill" style="width:22%"></span></span></td>
 <td class="col-len">12mo</td>
 <td class="col-specialties" title="Med-Surg, Telemetry, ICU, ED">Med-Surg, Telemetry, ICU, ED</td>
 <td class="col-status"><select class="status-select" data-id="21"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -2181,7 +2236,7 @@ BSN required. &lt;12 months RN experience. 1-year program + 2-year employment co
 <td class="col-date" data-raw=""></td>
 <td class="col-date" data-raw="Rolling">Rolling</td>
 <td class="col-rep stars">★★★☆☆</td>
-<td class="col-pay" title="$48/hr avg starting (county pay scale, county benefits; Glassdoor reports higher total comp)">$48/hr</td>
+<td class="col-pay" title="$48/hr avg starting (county pay scale, county benefits; Glassdoor reports higher total comp)">$48/hr<span class="pay-bar pay-bar-low"><span class="pay-bar-fill" style="width:5%"></span></span></td>
 <td class="col-len">2mo</td>
 <td class="col-specialties" title="Med-Surg, ICU, ED, Trauma, L&amp;D, OR">Med-Surg, ICU, ED, Trauma, L&amp;D, OR</td>
 <td class="col-status"><select class="status-select" data-id="22"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -2200,7 +2255,7 @@ Contact: LAC_USC_NursingRecruitment@dhs.lacounty.gov or (323) 409-4663. Also che
 <td class="col-date" data-raw=""></td>
 <td class="col-date" data-raw="Rolling">Rolling</td>
 <td class="col-rep stars">★★★★☆</td>
-<td class="col-pay" title="$71.96-95.86/hr ($164,840-$230,698/yr; depends on verified experience up to 21 years)">$71.96-95.86/hr</td>
+<td class="col-pay" title="$71.96-95.86/hr ($164,840-$230,698/yr; depends on verified experience up to 21 years)">$71.96-95.86/hr<span class="pay-bar pay-bar-high"><span class="pay-bar-fill" style="width:100%"></span></span></td>
 <td class="col-len">4mo</td>
 <td class="col-specialties" title="Med-Surg, ICU/Critical Care, ED/Trauma, Perinatal, Neonatal, Perioperative, Psychiatric Care">Med-Surg, ICU/Critical Care, ED/Trauma, Perinatal, Neonatal, Perioperative, Psychiatric Care</td>
 <td class="col-status"><select class="status-select" data-id="23"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -2217,7 +2272,7 @@ Contact: LAC_USC_NursingRecruitment@dhs.lacounty.gov or (323) 409-4663. Also che
 <td class="col-date" data-raw="2026-06-15">Jun 15</td>
 <td class="col-date" data-raw="2026-09-28">Sep 28</td>
 <td class="col-rep stars">★★★★☆</td>
-<td class="col-pay" title="$83.20/hr">$83.20/hr</td>
+<td class="col-pay" title="$83.20/hr">$83.20/hr<span class="pay-bar pay-bar-high"><span class="pay-bar-fill" style="width:73%"></span></span></td>
 <td class="col-len">12mo</td>
 <td class="col-specialties" title="Med-Surg, Oncology, Telemetry, Tele-Stroke, Float Pool, L&amp;D, ED">Med-Surg, Oncology, Telemetry, Tele-Stroke, Float Pool, L&amp;D, ED</td>
 <td class="col-status"><select class="status-select" data-id="24"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -2234,7 +2289,7 @@ Contact: LAC_USC_NursingRecruitment@dhs.lacounty.gov or (323) 409-4663. Also che
 <td class="col-date" data-raw=""></td>
 <td class="col-date" data-raw="2026-07-01">Jul 1</td>
 <td class="col-rep stars">★★★★☆</td>
-<td class="col-pay" title="$42-58/hr">$42-58/hr</td>
+<td class="col-pay" title="$42-58/hr">$42-58/hr<span class="pay-bar pay-bar-low"><span class="pay-bar-fill" style="width:20%"></span></span></td>
 <td class="col-len">12mo</td>
 <td class="col-specialties" title="Pediatric Med-Surg, PICU, NICU, Pediatric ED, Perioperative, Rehab">Pediatric Med-Surg, PICU, NICU, Pediatric ED, Perioperative, Rehab</td>
 <td class="col-status"><select class="status-select" data-id="25"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -2251,7 +2306,7 @@ Contact: LAC_USC_NursingRecruitment@dhs.lacounty.gov or (323) 409-4663. Also che
 <td class="col-date" data-raw="2026-02-22">Feb 22</td>
 <td class="col-date" data-raw="2026-05-18">May 18</td>
 <td class="col-rep stars">★★★☆☆</td>
-<td class="col-pay" title="$48-58/hr">$48-58/hr</td>
+<td class="col-pay" title="$48-58/hr">$48-58/hr<span class="pay-bar pay-bar-low"><span class="pay-bar-fill" style="width:20%"></span></span></td>
 <td class="col-len">8mo</td>
 <td class="col-specialties" title="Med-Surg, ICU, ED, L&amp;D, OR, Cardiac">Med-Surg, ICU, ED, L&amp;D, OR, Cardiac</td>
 <td class="col-status"><select class="status-select" data-id="26"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -2280,7 +2335,7 @@ Contact: LAC_USC_NursingRecruitment@dhs.lacounty.gov or (323) 409-4663. Also che
 <td class="col-date" data-raw=""></td>
 <td class="col-date" data-raw="Rolling">Rolling</td>
 <td class="col-rep stars">★★★☆☆</td>
-<td class="col-pay" title="$45-55/hr">$45-55/hr</td>
+<td class="col-pay" title="$45-55/hr">$45-55/hr<span class="pay-bar pay-bar-low"><span class="pay-bar-fill" style="width:14%"></span></span></td>
 <td class="col-len">12mo</td>
 <td class="col-specialties" title="Telemetry, Orthopedic, Neuro, Hospitalist, ICU">Telemetry, Orthopedic, Neuro, Hospitalist, ICU</td>
 <td class="col-status"><select class="status-select" data-id="27"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -2297,7 +2352,7 @@ Contact: LAC_USC_NursingRecruitment@dhs.lacounty.gov or (323) 409-4663. Also che
 <td class="col-date" data-raw=""></td>
 <td class="col-date" data-raw="Not Released (~Jul 2026)">Not Released (~Jul 2026)</td>
 <td class="col-rep stars">★★★☆☆</td>
-<td class="col-pay" title="$42-52/hr (county pay scale)">$42-52/hr</td>
+<td class="col-pay" title="$42-52/hr (county pay scale)">$42-52/hr<span class="pay-bar pay-bar-low"><span class="pay-bar-fill" style="width:8%"></span></span></td>
 <td class="col-len">7mo</td>
 <td class="col-specialties" title="Critical Care, Med-Surg/Telemetry, ED, NICU, L&amp;D, Postpartum, OR">Critical Care, Med-Surg/Telemetry, ED, NICU, L&amp;D, Postpartum, OR</td>
 <td class="col-status"><select class="status-select" data-id="28"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -2314,7 +2369,7 @@ Contact: LAC_USC_NursingRecruitment@dhs.lacounty.gov or (323) 409-4663. Also che
 <td class="col-date" data-raw=""></td>
 <td class="col-date" data-raw="2026-08-01">Aug 1</td>
 <td class="col-rep stars">★★★★☆</td>
-<td class="col-pay" title="$48-60/hr">$48-60/hr</td>
+<td class="col-pay" title="$48-60/hr">$48-60/hr<span class="pay-bar pay-bar-low"><span class="pay-bar-fill" style="width:25%"></span></span></td>
 <td class="col-len">12mo</td>
 <td class="col-specialties" title="Med-Surg, Telemetry, ICU, ED, L&amp;D, Pediatrics, OR">Med-Surg, Telemetry, ICU, ED, L&amp;D, Pediatrics, OR</td>
 <td class="col-status"><select class="status-select" data-id="29"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -2331,7 +2386,7 @@ Contact: LAC_USC_NursingRecruitment@dhs.lacounty.gov or (323) 409-4663. Also che
 <td class="col-date" data-raw=""></td>
 <td class="col-date" data-raw="2026-08-01">Aug 1</td>
 <td class="col-rep stars">★★★☆☆</td>
-<td class="col-pay" title="$45-56/hr">$45-56/hr</td>
+<td class="col-pay" title="$45-56/hr">$45-56/hr<span class="pay-bar pay-bar-low"><span class="pay-bar-fill" style="width:16%"></span></span></td>
 <td class="col-len">12mo</td>
 <td class="col-specialties" title="Med-Surg, Telemetry, ICU, ED">Med-Surg, Telemetry, ICU, ED</td>
 <td class="col-status"><select class="status-select" data-id="30"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -2348,7 +2403,7 @@ Contact: LAC_USC_NursingRecruitment@dhs.lacounty.gov or (323) 409-4663. Also che
 <td class="col-date" data-raw=""></td>
 <td class="col-date" data-raw="2026-08-18">Aug 18</td>
 <td class="col-rep stars">★★★☆☆</td>
-<td class="col-pay" title="$48-58/hr">$48-58/hr</td>
+<td class="col-pay" title="$48-58/hr">$48-58/hr<span class="pay-bar pay-bar-low"><span class="pay-bar-fill" style="width:20%"></span></span></td>
 <td class="col-len">12mo</td>
 <td class="col-specialties" title="Med-Surg, Telemetry, ICU, ED, L&amp;D, OR">Med-Surg, Telemetry, ICU, ED, L&amp;D, OR</td>
 <td class="col-status"><select class="status-select" data-id="31"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -2365,7 +2420,7 @@ Contact: LAC_USC_NursingRecruitment@dhs.lacounty.gov or (323) 409-4663. Also che
 <td class="col-date" data-raw="2026-04-26">Apr 26</td>
 <td class="col-date" data-raw="2026-08-17">Aug 17</td>
 <td class="col-rep stars">★★★★★</td>
-<td class="col-pay" title="$58-72/hr (SoCal rate)">$58-72/hr</td>
+<td class="col-pay" title="$58-72/hr (SoCal rate)">$58-72/hr<span class="pay-bar pay-bar-mid"><span class="pay-bar-fill" style="width:50%"></span></span></td>
 <td class="col-len">12mo</td>
 <td class="col-specialties" title="Med-Surg, Telemetry, ICU, ED, L&amp;D, Pediatrics, OR">Med-Surg, Telemetry, ICU, ED, L&amp;D, Pediatrics, OR</td>
 <td class="col-status"><select class="status-select" data-id="32"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -2392,7 +2447,7 @@ Both Cohort 2 and 3 viable for May 2026 NCLEX taker. Apply via kaiserpermanentej
 <td class="col-date" data-raw=""></td>
 <td class="col-date" data-raw="2026-09-01">Sep 1</td>
 <td class="col-rep stars">★★★★★</td>
-<td class="col-pay" title="$52-65/hr">$52-65/hr</td>
+<td class="col-pay" title="$52-65/hr">$52-65/hr<span class="pay-bar pay-bar-low"><span class="pay-bar-fill" style="width:35%"></span></span></td>
 <td class="col-len">12mo</td>
 <td class="col-specialties" title="Med-Surg, ICU, ED, Cardiac, Neuro, Trauma, Oncology, Transplant">Med-Surg, ICU, ED, Cardiac, Neuro, Trauma, Oncology, Transplant</td>
 <td class="col-status"><select class="status-select" data-id="33"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -2409,7 +2464,7 @@ Both Cohort 2 and 3 viable for May 2026 NCLEX taker. Apply via kaiserpermanentej
 <td class="col-date" data-raw="2026-03-13">Mar 13</td>
 <td class="col-date" data-raw="2026-08-17">Aug 17</td>
 <td class="col-rep stars">★★★★★</td>
-<td class="col-pay" title="$89.20/hr + differentials (10% eve, 18% nights, 5% weekends)">$89.20/hr</td>
+<td class="col-pay" title="$89.20/hr + differentials (10% eve, 18% nights, 5% weekends)">$89.20/hr<span class="pay-bar pay-bar-high"><span class="pay-bar-fill" style="width:86%"></span></span></td>
 <td class="col-len">12mo</td>
 <td class="col-specialties" title="NICU, PICU, Pediatric Med-Surg, Pediatric Cardiac, Pediatric ED, Pediatric Oncology, Pediatric Transplant">NICU, PICU, Pediatric Med-Surg, Pediatric Cardiac, Pediatric ED, Pediatric Oncology, Pediatric Transplant</td>
 <td class="col-status"><select class="status-select" data-id="34"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -2426,7 +2481,7 @@ Both Cohort 2 and 3 viable for May 2026 NCLEX taker. Apply via kaiserpermanentej
 <td class="col-date" data-raw="2026-05-19">May 19</td>
 <td class="col-date" data-raw="2026-08-01">Aug 1</td>
 <td class="col-rep stars">★★★★★</td>
-<td class="col-pay" title="$39-63/hr">$39-63/hr</td>
+<td class="col-pay" title="$39-63/hr">$39-63/hr<span class="pay-bar pay-bar-low"><span class="pay-bar-fill" style="width:31%"></span></span></td>
 <td class="col-len">16mo</td>
 <td class="col-specialties" title="NICU, PICU, Pediatric Med-Surg, Pediatric ED, Pediatric Cardiac, Pediatric Hematology/Oncology">NICU, PICU, Pediatric Med-Surg, Pediatric ED, Pediatric Cardiac, Pediatric Hematology/Oncology</td>
 <td class="col-status"><select class="status-select" data-id="35"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -2443,7 +2498,7 @@ Both Cohort 2 and 3 viable for May 2026 NCLEX taker. Apply via kaiserpermanentej
 <td class="col-date" data-raw="2026-03-27">Mar 27</td>
 <td class="col-date" data-raw="2026-05-18">May 18</td>
 <td class="col-rep stars">★★★☆☆</td>
-<td class="col-pay" title="ADN $50.50/hr, BSN $51.50/hr, MSN $52.50/hr">$50.50/hr</td>
+<td class="col-pay" title="ADN $50.50/hr, BSN $51.50/hr, MSN $52.50/hr">$50.50/hr<span class="pay-bar pay-bar-low"><span class="pay-bar-fill" style="width:5%"></span></span></td>
 <td class="col-len">12mo</td>
 <td class="col-specialties" title="Med-Surg, Telemetry, ICU, ED, L&amp;D, OR">Med-Surg, Telemetry, ICU, ED, L&amp;D, OR</td>
 <td class="col-status"><select class="status-select" data-id="36"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -2470,7 +2525,7 @@ Current cohort started 2/23/2026. ~25-30 nurses per cohort. Apply via jobs.pihhe
 <td class="col-date" data-raw=""></td>
 <td class="col-date" data-raw="2026-09-01">Sep 1</td>
 <td class="col-rep stars">★★★☆☆</td>
-<td class="col-pay" title="$48-58/hr">$48-58/hr</td>
+<td class="col-pay" title="$48-58/hr">$48-58/hr<span class="pay-bar pay-bar-low"><span class="pay-bar-fill" style="width:20%"></span></span></td>
 <td class="col-len">12mo</td>
 <td class="col-specialties" title="Med-Surg, Telemetry, ICU, ED, Cardiac">Med-Surg, Telemetry, ICU, ED, Cardiac</td>
 <td class="col-status"><select class="status-select" data-id="37"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -2487,7 +2542,7 @@ Current cohort started 2/23/2026. ~25-30 nurses per cohort. Apply via jobs.pihhe
 <td class="col-date" data-raw=""></td>
 <td class="col-date" data-raw="2026-09-01">Sep 1</td>
 <td class="col-rep stars">★★★☆☆</td>
-<td class="col-pay" title="$45-55/hr">$45-55/hr</td>
+<td class="col-pay" title="$45-55/hr">$45-55/hr<span class="pay-bar pay-bar-low"><span class="pay-bar-fill" style="width:14%"></span></span></td>
 <td class="col-len">12mo</td>
 <td class="col-specialties" title="Med-Surg, Telemetry, ICU, ED, L&amp;D, NICU">Med-Surg, Telemetry, ICU, ED, L&amp;D, NICU</td>
 <td class="col-status"><select class="status-select" data-id="38"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -2504,7 +2559,7 @@ Current cohort started 2/23/2026. ~25-30 nurses per cohort. Apply via jobs.pihhe
 <td class="col-date" data-raw="2026-08-28">Aug 28</td>
 <td class="col-date" data-raw="2026-09-01">Sep 1</td>
 <td class="col-rep stars">★★★★☆</td>
-<td class="col-pay" title="$50-62/hr">$50-62/hr</td>
+<td class="col-pay" title="$50-62/hr">$50-62/hr<span class="pay-bar pay-bar-low"><span class="pay-bar-fill" style="width:29%"></span></span></td>
 <td class="col-len">12mo</td>
 <td class="col-specialties" title="Oncology, BMT/Stem Cell Transplant, Surgical Oncology, ICU, Infusion">Oncology, BMT/Stem Cell Transplant, Surgical Oncology, ICU, Infusion</td>
 <td class="col-status"><select class="status-select" data-id="39"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -2521,7 +2576,7 @@ Current cohort started 2/23/2026. ~25-30 nurses per cohort. Apply via jobs.pihhe
 <td class="col-date" data-raw="2026-04-07">Apr 7</td>
 <td class="col-date" data-raw="2026-09-01">Sep 1</td>
 <td class="col-rep stars">★★★★☆</td>
-<td class="col-pay" title="~$62K/yr stipend (PB-RNR) or regular GS nurse pay ~$55-70/hr (TTP)">~$62K/yr stipend (PB-RNR) or regular GS nurse pay ~$55-70/hr (TTP)</td>
+<td class="col-pay" title="~$62K/yr stipend (PB-RNR) or regular GS nurse pay ~$55-70/hr (TTP)">~$62K/yr stipend (PB-RNR) or regular GS nurse pay ~$55-70/hr (TTP)<span class="pay-bar pay-bar-mid"><span class="pay-bar-fill" style="width:45%"></span></span></td>
 <td class="col-len">12mo</td>
 <td class="col-specialties" title="Med-Surg, ICU, ED, Mental Health, Spinal Cord Injury, Geriatrics">Med-Surg, ICU, ED, Mental Health, Spinal Cord Injury, Geriatrics</td>
 <td class="col-status"><select class="status-select" data-id="40"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -2538,7 +2593,7 @@ Current cohort started 2/23/2026. ~25-30 nurses per cohort. Apply via jobs.pihhe
 <td class="col-date" data-raw=""></td>
 <td class="col-date" data-raw="2026-08-01">Aug 1</td>
 <td class="col-rep stars">★★★★☆</td>
-<td class="col-pay" title="$65-80/hr (Santa Clara County pay scale)">$65-80/hr</td>
+<td class="col-pay" title="$65-80/hr (Santa Clara County pay scale)">$65-80/hr<span class="pay-bar pay-bar-mid"><span class="pay-bar-fill" style="width:66%"></span></span></td>
 <td class="col-len">12mo</td>
 <td class="col-specialties" title="Med-Surg, ICU, ED, Trauma, Burn, Rehab, Psychiatric">Med-Surg, ICU, ED, Trauma, Burn, Rehab, Psychiatric</td>
 <td class="col-status"><select class="status-select" data-id="41"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -2555,7 +2610,7 @@ Current cohort started 2/23/2026. ~25-30 nurses per cohort. Apply via jobs.pihhe
 <td class="col-date" data-raw=""></td>
 <td class="col-date" data-raw="Rolling">Rolling</td>
 <td class="col-rep stars">★★★☆☆</td>
-<td class="col-pay" title="$45-55/hr">$45-55/hr</td>
+<td class="col-pay" title="$45-55/hr">$45-55/hr<span class="pay-bar pay-bar-low"><span class="pay-bar-fill" style="width:14%"></span></span></td>
 <td class="col-len">12mo</td>
 <td class="col-specialties" title="Med-Surg, Telemetry, ICU, ED, L&amp;D">Med-Surg, Telemetry, ICU, ED, L&amp;D</td>
 <td class="col-status"><select class="status-select" data-id="42"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -2574,7 +2629,7 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
 <td class="col-date" data-raw=""></td>
 <td class="col-date" data-raw="Not Released (~Summer 2026)">Not Released (~Summer 2026)</td>
 <td class="col-rep stars">★★★☆☆</td>
-<td class="col-pay" title="$48-62/hr (county pay scale)">$48-62/hr</td>
+<td class="col-pay" title="$48-62/hr (county pay scale)">$48-62/hr<span class="pay-bar pay-bar-low"><span class="pay-bar-fill" style="width:29%"></span></span></td>
 <td class="col-len">12mo</td>
 <td class="col-specialties" title="Med-Surg, ICU, ED, L&amp;D, Behavioral Health">Med-Surg, ICU, ED, L&amp;D, Behavioral Health</td>
 <td class="col-status"><select class="status-select" data-id="43"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -2591,7 +2646,7 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
 <td class="col-date" data-raw=""></td>
 <td class="col-date" data-raw="Rolling">Rolling</td>
 <td class="col-rep stars">★★★☆☆</td>
-<td class="col-pay" title="$42-52/hr">$42-52/hr</td>
+<td class="col-pay" title="$42-52/hr">$42-52/hr<span class="pay-bar pay-bar-low"><span class="pay-bar-fill" style="width:8%"></span></span></td>
 <td class="col-len">6mo</td>
 <td class="col-specialties" title="Med-Surg, Telemetry, ICU, ED, L&amp;D">Med-Surg, Telemetry, ICU, ED, L&amp;D</td>
 <td class="col-status"><select class="status-select" data-id="44"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -2608,7 +2663,7 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
 <td class="col-date" data-raw=""></td>
 <td class="col-date" data-raw="Not Released (~Aug 2026)">Not Released (~Aug 2026)</td>
 <td class="col-rep stars">★★★☆☆</td>
-<td class="col-pay" title="$84.54/hr">$84.54/hr</td>
+<td class="col-pay" title="$84.54/hr">$84.54/hr<span class="pay-bar pay-bar-high"><span class="pay-bar-fill" style="width:76%"></span></span></td>
 <td class="col-len">12mo</td>
 <td class="col-specialties" title="Med-Surg, Telemetry, ICU, ED">Med-Surg, Telemetry, ICU, ED</td>
 <td class="col-status"><select class="status-select" data-id="45"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -2625,7 +2680,7 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
 <td class="col-date" data-raw=""></td>
 <td class="col-date" data-raw="Not Released (~Fall 2026)">Not Released (~Fall 2026)</td>
 <td class="col-rep stars">★★★☆☆</td>
-<td class="col-pay" title="$55-68/hr">$55-68/hr</td>
+<td class="col-pay" title="$55-68/hr">$55-68/hr<span class="pay-bar pay-bar-mid"><span class="pay-bar-fill" style="width:41%"></span></span></td>
 <td class="col-len">12mo</td>
 <td class="col-specialties" title="Med-Surg, Telemetry, ICU, ED">Med-Surg, Telemetry, ICU, ED</td>
 <td class="col-status"><select class="status-select" data-id="46"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -2642,7 +2697,7 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
 <td class="col-date" data-raw=""></td>
 <td class="col-date" data-raw="Rolling">Rolling</td>
 <td class="col-rep stars">★★★☆☆</td>
-<td class="col-pay" title="$42-52/hr (county pay scale)">$42-52/hr</td>
+<td class="col-pay" title="$42-52/hr (county pay scale)">$42-52/hr<span class="pay-bar pay-bar-low"><span class="pay-bar-fill" style="width:8%"></span></span></td>
 <td class="col-len">12mo</td>
 <td class="col-specialties" title="Med-Surg, ICU, ED, L&amp;D, Behavioral Health">Med-Surg, ICU, ED, L&amp;D, Behavioral Health</td>
 <td class="col-status"><select class="status-select" data-id="47"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -2659,7 +2714,7 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
 <td class="col-date" data-raw=""></td>
 <td class="col-date" data-raw="2026-08-01">Aug 1</td>
 <td class="col-rep stars">★★★☆☆</td>
-<td class="col-pay" title="$42-52/hr">$42-52/hr</td>
+<td class="col-pay" title="$42-52/hr">$42-52/hr<span class="pay-bar pay-bar-low"><span class="pay-bar-fill" style="width:8%"></span></span></td>
 <td class="col-len">6mo</td>
 <td class="col-specialties" title="Med-Surg, Telemetry, ICU, ED">Med-Surg, Telemetry, ICU, ED</td>
 <td class="col-status"><select class="status-select" data-id="48"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -2676,7 +2731,7 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
 <td class="col-date" data-raw=""></td>
 <td class="col-date" data-raw="2026-09-01">Sep 1</td>
 <td class="col-rep stars">★★★☆☆</td>
-<td class="col-pay" title="$48-58/hr">$48-58/hr</td>
+<td class="col-pay" title="$48-58/hr">$48-58/hr<span class="pay-bar pay-bar-low"><span class="pay-bar-fill" style="width:20%"></span></span></td>
 <td class="col-len">12mo</td>
 <td class="col-specialties" title="Med-Surg, Telemetry, ICU, ED">Med-Surg, Telemetry, ICU, ED</td>
 <td class="col-status"><select class="status-select" data-id="49"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -2693,7 +2748,7 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
 <td class="col-date" data-raw=""></td>
 <td class="col-date" data-raw="2026-07-01">Jul 1</td>
 <td class="col-rep stars">★★★☆☆</td>
-<td class="col-pay" title="$45-58/hr (county pay scale)">$45-58/hr</td>
+<td class="col-pay" title="$45-58/hr (county pay scale)">$45-58/hr<span class="pay-bar pay-bar-low"><span class="pay-bar-fill" style="width:20%"></span></span></td>
 <td class="col-len">12mo</td>
 <td class="col-specialties" title="Med-Surg, ICU, ED, L&amp;D">Med-Surg, ICU, ED, L&amp;D</td>
 <td class="col-status"><select class="status-select" data-id="50"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -2710,7 +2765,7 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
 <td class="col-date" data-raw="2026-06-05">Jun 5</td>
 <td class="col-date" data-raw="2026-08-01">Aug 1</td>
 <td class="col-rep stars">★★★★☆</td>
-<td class="col-pay" title="$48-60/hr">$48-60/hr</td>
+<td class="col-pay" title="$48-60/hr">$48-60/hr<span class="pay-bar pay-bar-low"><span class="pay-bar-fill" style="width:25%"></span></span></td>
 <td class="col-len">12mo</td>
 <td class="col-specialties" title="Med-Surg, Telemetry, ICU, ED, L&amp;D, OR">Med-Surg, Telemetry, ICU, ED, L&amp;D, OR</td>
 <td class="col-status"><select class="status-select" data-id="51"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -2727,7 +2782,7 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
 <td class="col-date" data-raw="2026-06-05">Jun 5</td>
 <td class="col-date" data-raw="2026-08-01">Aug 1</td>
 <td class="col-rep stars">★★★★☆</td>
-<td class="col-pay" title="$48-60/hr">$48-60/hr</td>
+<td class="col-pay" title="$48-60/hr">$48-60/hr<span class="pay-bar pay-bar-low"><span class="pay-bar-fill" style="width:25%"></span></span></td>
 <td class="col-len">12mo</td>
 <td class="col-specialties" title="Med-Surg, Telemetry, ICU, ED, L&amp;D, OR">Med-Surg, Telemetry, ICU, ED, L&amp;D, OR</td>
 <td class="col-status"><select class="status-select" data-id="52"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -2744,7 +2799,7 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
 <td class="col-date" data-raw=""></td>
 <td class="col-date" data-raw="Not Released (~May 2026)">Not Released (~May 2026)</td>
 <td class="col-rep stars">★★★☆☆</td>
-<td class="col-pay" title="$45-55/hr">$45-55/hr</td>
+<td class="col-pay" title="$45-55/hr">$45-55/hr<span class="pay-bar pay-bar-low"><span class="pay-bar-fill" style="width:14%"></span></span></td>
 <td class="col-len">12mo</td>
 <td class="col-specialties" title="Med-Surg, Telemetry, ICU, ED, DOU, Float Pool">Med-Surg, Telemetry, ICU, ED, DOU, Float Pool</td>
 <td class="col-status"><select class="status-select" data-id="53"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -2761,7 +2816,7 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
 <td class="col-date" data-raw=""></td>
 <td class="col-date" data-raw="Not Released (~May 2026)">Not Released (~May 2026)</td>
 <td class="col-rep stars">★★★☆☆</td>
-<td class="col-pay" title="$45-55/hr">$45-55/hr</td>
+<td class="col-pay" title="$45-55/hr">$45-55/hr<span class="pay-bar pay-bar-low"><span class="pay-bar-fill" style="width:14%"></span></span></td>
 <td class="col-len">12mo</td>
 <td class="col-specialties" title="Med-Surg, Telemetry, ICU, ED, L&amp;D, Acute Rehab, CVDOU, DOU">Med-Surg, Telemetry, ICU, ED, L&amp;D, Acute Rehab, CVDOU, DOU</td>
 <td class="col-status"><select class="status-select" data-id="54"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -2778,7 +2833,7 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
 <td class="col-date" data-raw=""></td>
 <td class="col-date" data-raw="Not Released">Not Released</td>
 <td class="col-rep stars">★★★☆☆</td>
-<td class="col-pay" title="$45-55/hr">$45-55/hr</td>
+<td class="col-pay" title="$45-55/hr">$45-55/hr<span class="pay-bar pay-bar-low"><span class="pay-bar-fill" style="width:14%"></span></span></td>
 <td class="col-len">12mo</td>
 <td class="col-specialties" title="Med-Surg, Telemetry, ICU, ED, L&amp;D">Med-Surg, Telemetry, ICU, ED, L&amp;D</td>
 <td class="col-status"><select class="status-select" data-id="55"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -2795,7 +2850,7 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
 <td class="col-date" data-raw=""></td>
 <td class="col-date" data-raw="Not Released">Not Released</td>
 <td class="col-rep stars">★★★☆☆</td>
-<td class="col-pay" title="$42-52/hr">$42-52/hr</td>
+<td class="col-pay" title="$42-52/hr">$42-52/hr<span class="pay-bar pay-bar-low"><span class="pay-bar-fill" style="width:8%"></span></span></td>
 <td class="col-len">12mo</td>
 <td class="col-specialties" title="Med-Surg, Telemetry, ICU, ED">Med-Surg, Telemetry, ICU, ED</td>
 <td class="col-status"><select class="status-select" data-id="56"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -2812,7 +2867,7 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
 <td class="col-date" data-raw=""></td>
 <td class="col-date" data-raw="Not Released">Not Released</td>
 <td class="col-rep stars">★★★☆☆</td>
-<td class="col-pay" title="$37-48/hr">$37-48/hr</td>
+<td class="col-pay" title="$37-48/hr">$37-48/hr<span class="pay-bar pay-bar-low"><span class="pay-bar-fill" style="width:5%"></span></span></td>
 <td class="col-len">12mo</td>
 <td class="col-specialties" title="Med-Surg, Telemetry, ICU, ED, L&amp;D">Med-Surg, Telemetry, ICU, ED, L&amp;D</td>
 <td class="col-status"><select class="status-select" data-id="57"><option value="Not Started" selected>Not Started</option><option value="In Progress">In Progress</option><option value="Submitted">Submitted</option><option value="Interview">Interview</option><option value="Offer">Offer</option><option value="Rejected">Rejected</option></select></td>
@@ -2910,6 +2965,30 @@ function saveNote(id, note) {
         var all = loadSavedNotes();
         all[id] = note;
         localStorage.setItem('rn_tracker_notes', JSON.stringify(all));
+    } catch(e) {}
+}
+
+function loadChecklist(id) {
+    try {
+        var all = JSON.parse(localStorage.getItem('rn_tracker_checklists') || '{}');
+        return all[id] || [];
+    } catch(e) { return []; }
+}
+
+function addChecklistItem(id, idx) {
+    try {
+        var all = JSON.parse(localStorage.getItem('rn_tracker_checklists') || '{}');
+        if (!all[id]) all[id] = [];
+        if (all[id].indexOf(idx) === -1) all[id].push(idx);
+        localStorage.setItem('rn_tracker_checklists', JSON.stringify(all));
+    } catch(e) {}
+}
+
+function removeChecklistItem(id, idx) {
+    try {
+        var all = JSON.parse(localStorage.getItem('rn_tracker_checklists') || '{}');
+        if (all[id]) all[id] = all[id].filter(function(i) { return i !== idx; });
+        localStorage.setItem('rn_tracker_checklists', JSON.stringify(all));
     } catch(e) {}
 }
 
@@ -3753,6 +3832,21 @@ function showDetail(id) {
     html += '<small class="notes-hint">Notes are saved to your browser automatically.</small>';
     html += '</div>';
 
+    // Application checklist
+    var checklistItems = ['Review requirements', 'Prepare resume/CV', 'Write cover letter', 'Gather references', 'Submit application', 'Follow up'];
+    var savedChecklist = loadChecklist(p.id);
+    html += '<div class="detail-section"><h3>Application Checklist</h3>';
+    html += '<ul class="app-checklist" id="modal-checklist">';
+    checklistItems.forEach(function(item, i) {
+        var checked = savedChecklist.indexOf(i) !== -1;
+        var cls = checked ? ' checked-label' : '';
+        html += '<li><input type="checkbox" data-idx="' + i + '"' + (checked ? ' checked' : '') + '><span class="' + cls + '">' + item + '</span></li>';
+    });
+    html += '</ul>';
+    var done = savedChecklist.length;
+    html += '<div class="checklist-progress">' + done + ' of ' + checklistItems.length + ' complete</div>';
+    html += '</div>';
+
     if (p.application_url) {
         html += '<div class="detail-actions"><a href="' + escHtml(p.application_url) + '" target="_blank" class="apply-btn-modal">Apply Now &rarr;</a></div>';
     }
@@ -3769,6 +3863,28 @@ function showDetail(id) {
             saveTimer = setTimeout(function() {
                 saveNote(p.id, notesArea.value);
             }, 500);
+        });
+    }
+
+    // Checklist change handler
+    var checklist = document.getElementById('modal-checklist');
+    if (checklist) {
+        checklist.addEventListener('change', function(e) {
+            if (e.target.type === 'checkbox') {
+                var idx = parseInt(e.target.dataset.idx);
+                var span = e.target.nextElementSibling;
+                if (e.target.checked) {
+                    span.classList.add('checked-label');
+                    addChecklistItem(p.id, idx);
+                } else {
+                    span.classList.remove('checked-label');
+                    removeChecklistItem(p.id, idx);
+                }
+                var allCbs = checklist.querySelectorAll('input[type="checkbox"]');
+                var checkedCount = checklist.querySelectorAll('input[type="checkbox"]:checked').length;
+                var progDiv = checklist.parentElement.querySelector('.checklist-progress');
+                if (progDiv) progDiv.textContent = checkedCount + ' of ' + allCbs.length + ' complete';
+            }
         });
     }
 }
