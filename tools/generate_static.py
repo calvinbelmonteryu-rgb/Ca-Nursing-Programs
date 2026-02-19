@@ -456,6 +456,7 @@ def generate():
         </div>
 
         <div class="recent-viewed" id="recent-viewed" style="display:none"></div>
+        <div class="weekly-digest" id="weekly-digest" style="display:none"></div>
         <div class="status-summary" id="status-summary"></div>
         <div class="streak-badge" id="streak-badge" style="display:none"></div>
         <div class="fav-dashboard" id="fav-dashboard" style="display:none"></div>
@@ -1103,6 +1104,89 @@ function renderStreak() {{
     badge.className = 'streak-badge' + (streak >= 7 ? ' streak-hot' : streak >= 3 ? ' streak-warm' : '');
 }}
 
+function renderWeeklyDigest() {{
+    var container = document.getElementById('weekly-digest');
+    if (!container) return;
+    var log = JSON.parse(localStorage.getItem('rn_tracker_log') || '[]');
+    var savedStatuses = loadSavedStatuses();
+    var today = new Date(); today.setHours(0,0,0,0);
+    var weekAgo = new Date(today); weekAgo.setDate(weekAgo.getDate() - 7);
+    var weekAhead = new Date(today); weekAhead.setDate(weekAhead.getDate() + 7);
+
+    // This week's activity
+    var weekLog = log.filter(function(e) {{
+        var t = new Date(e.time || e.timestamp || 0);
+        return t >= weekAgo && t <= new Date();
+    }});
+
+    // Upcoming deadlines (next 7 days)
+    var upcoming = [];
+    PROGRAMS.forEach(function(p) {{
+        var st = savedStatuses[p.id] || p.application_status || 'Not Started';
+        if (st === 'Submitted' || st === 'Offer' || st === 'Rejected') return;
+        var open = parseDate(p.app_open_date);
+        var close = parseDate(p.app_close_date);
+        if (open && open >= today && open <= weekAhead) {{
+            upcoming.push({{ prog: p, type: 'opens', date: open }});
+        }}
+        if (close && close >= today && close <= weekAhead) {{
+            upcoming.push({{ prog: p, type: 'closes', date: close }});
+        }}
+    }});
+    upcoming.sort(function(a, b) {{ return a.date - b.date; }});
+
+    if (weekLog.length === 0 && upcoming.length === 0) {{
+        container.style.display = 'none';
+        return;
+    }}
+
+    // Count actions this week
+    var statusChanges = 0, notesAdded = 0, appsOpened = 0;
+    var progsTouched = {{}};
+    weekLog.forEach(function(e) {{
+        if (e.action && e.action.indexOf('Status') !== -1) statusChanges++;
+        if (e.action && (e.action.indexOf('note') !== -1 || e.action.indexOf('tag') !== -1)) notesAdded++;
+        if (e.action && e.action.indexOf('Submitted') !== -1) appsOpened++;
+        if (e.id) progsTouched[e.id] = true;
+    }});
+
+    var html = '<div class="digest-header"><span class="digest-title">&#128197; This Week</span><button class="digest-dismiss" onclick="this.closest(\\\'.weekly-digest\\\').style.display=\\\'none\\\'" title="Dismiss">&#10005;</button></div>';
+    html += '<div class="digest-body">';
+
+    // Activity recap
+    if (weekLog.length > 0) {{
+        html += '<div class="digest-section">';
+        html += '<div class="digest-stats">';
+        html += '<span class="digest-stat"><strong>' + Object.keys(progsTouched).length + '</strong> programs touched</span>';
+        if (statusChanges > 0) html += '<span class="digest-stat"><strong>' + statusChanges + '</strong> status changes</span>';
+        if (appsOpened > 0) html += '<span class="digest-stat"><strong>' + appsOpened + '</strong> applications</span>';
+        if (notesAdded > 0) html += '<span class="digest-stat"><strong>' + notesAdded + '</strong> notes/tags</span>';
+        html += '</div></div>';
+    }}
+
+    // Upcoming this week
+    if (upcoming.length > 0) {{
+        html += '<div class="digest-section">';
+        html += '<div class="digest-upcoming">';
+        upcoming.slice(0, 4).forEach(function(item) {{
+            var days = Math.ceil((item.date - today) / 86400000);
+            var dayLabel = days === 0 ? 'Today' : days === 1 ? 'Tomorrow' : 'in ' + days + 'd';
+            var typeClass = item.type === 'closes' ? 'digest-closes' : 'digest-opens';
+            html += '<div class="digest-event ' + typeClass + '" onclick="showDetail(' + item.prog.id + ')">';
+            html += '<span class="digest-event-type">' + (item.type === 'opens' ? 'Opens' : 'Closes') + '</span>';
+            html += '<span class="digest-event-name">' + escHtml(item.prog.hospital) + '</span>';
+            html += '<span class="digest-event-when">' + dayLabel + '</span>';
+            html += '</div>';
+        }});
+        if (upcoming.length > 4) html += '<div class="digest-more">+' + (upcoming.length - 4) + ' more</div>';
+        html += '</div></div>';
+    }}
+
+    html += '</div>';
+    container.innerHTML = html;
+    container.style.display = '';
+}}
+
 function renderFavDashboard() {{
     var container = document.getElementById('fav-dashboard');
     if (!container) return;
@@ -1590,6 +1674,7 @@ document.addEventListener('DOMContentLoaded', function() {{
     renderFavButtons();
     updateFavCount();
     renderStatusSummary();
+    renderWeeklyDigest();
     renderStreak();
     renderFavDashboard();
     renderRecentViewed();
