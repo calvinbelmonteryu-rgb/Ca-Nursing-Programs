@@ -4004,6 +4004,46 @@ function renderStats() {{
 
     html += '</div>';
 
+    // My Journey timeline
+    var allLog = JSON.parse(localStorage.getItem('rn_tracker_log') || '[]');
+    if (allLog.length > 0) {{
+        html += '<div class="stats-card"><h3>My Application Journey</h3>';
+        html += '<div class="journey-timeline">';
+        // Group by date
+        var grouped = {{}};
+        allLog.slice().reverse().forEach(function(entry) {{
+            var dateStr = entry.timestamp ? entry.timestamp.substring(0, 10) : 'Unknown';
+            if (!grouped[dateStr]) grouped[dateStr] = [];
+            grouped[dateStr].push(entry);
+        }});
+        var dates = Object.keys(grouped).sort().reverse().slice(0, 14); // Last 14 days
+        dates.forEach(function(date) {{
+            html += '<div class="journey-date">';
+            html += '<div class="journey-date-label">' + date + '</div>';
+            html += '<div class="journey-entries">';
+            grouped[date].slice(0, 8).forEach(function(e) {{
+                var prog = PROGRAMS.find(function(p) {{ return p.id === e.programId; }});
+                var progName = prog ? prog.hospital : 'Program #' + e.programId;
+                var icon = '&#9679;';
+                if (e.action && e.action.indexOf('Status') !== -1) icon = '&#9654;';
+                if (e.action && e.action.indexOf('note') !== -1) icon = '&#9998;';
+                if (e.action && e.action.indexOf('tag') !== -1) icon = '&#9733;';
+                if (e.action && e.action.indexOf('fav') !== -1) icon = '&#9829;';
+                html += '<div class="journey-entry">';
+                html += '<span class="journey-icon">' + icon + '</span>';
+                html += '<span class="journey-prog">' + progName + '</span>';
+                html += '<span class="journey-action">' + (e.action || '') + '</span>';
+                if (e.timestamp) html += '<span class="journey-time">' + e.timestamp.substring(11, 16) + '</span>';
+                html += '</div>';
+            }});
+            if (grouped[date].length > 8) html += '<div class="journey-more">+' + (grouped[date].length - 8) + ' more</div>';
+            html += '</div></div>';
+        }});
+        html += '</div></div>';
+    }}
+
+    html += '</div>';
+
     document.getElementById('stats-dashboard').innerHTML = html;
 }}
 

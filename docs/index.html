@@ -3987,6 +3987,40 @@ mark.search-highlight {
 }
 [data-theme="dark"] .funnel-arrow { color: #6b7280; }
 
+/* Journey timeline */
+.journey-timeline {
+    max-height: 400px;
+    overflow-y: auto;
+}
+.journey-date {
+    margin-bottom: 12px;
+}
+.journey-date-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #6b7280;
+    padding: 2px 0;
+    border-bottom: 1px solid #e5e7eb;
+    margin-bottom: 4px;
+}
+.journey-entries {
+    padding-left: 8px;
+}
+.journey-entry {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 0;
+    font-size: 0.75rem;
+}
+.journey-icon { font-size: 0.65rem; color: var(--accent, #2563eb); flex-shrink: 0; }
+.journey-prog { font-weight: 600; white-space: nowrap; }
+.journey-action { color: #6b7280; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.journey-time { color: #9ca3af; font-size: 0.65rem; font-family: monospace; flex-shrink: 0; }
+.journey-more { color: #9ca3af; font-size: 0.68rem; padding: 2px 0 2px 20px; }
+[data-theme="dark"] .journey-date-label { color: #94a3b8; border-color: #334155; }
+[data-theme="dark"] .journey-action { color: #94a3b8; }
+
 /* Data quality */
 .dq-score {
     display: flex;
@@ -9727,6 +9761,46 @@ function renderStats() {
         html += '</div>';
     }
     html += '</div>';
+
+    html += '</div>';
+
+    // My Journey timeline
+    var allLog = JSON.parse(localStorage.getItem('rn_tracker_log') || '[]');
+    if (allLog.length > 0) {
+        html += '<div class="stats-card"><h3>My Application Journey</h3>';
+        html += '<div class="journey-timeline">';
+        // Group by date
+        var grouped = {};
+        allLog.slice().reverse().forEach(function(entry) {
+            var dateStr = entry.timestamp ? entry.timestamp.substring(0, 10) : 'Unknown';
+            if (!grouped[dateStr]) grouped[dateStr] = [];
+            grouped[dateStr].push(entry);
+        });
+        var dates = Object.keys(grouped).sort().reverse().slice(0, 14); // Last 14 days
+        dates.forEach(function(date) {
+            html += '<div class="journey-date">';
+            html += '<div class="journey-date-label">' + date + '</div>';
+            html += '<div class="journey-entries">';
+            grouped[date].slice(0, 8).forEach(function(e) {
+                var prog = PROGRAMS.find(function(p) { return p.id === e.programId; });
+                var progName = prog ? prog.hospital : 'Program #' + e.programId;
+                var icon = '&#9679;';
+                if (e.action && e.action.indexOf('Status') !== -1) icon = '&#9654;';
+                if (e.action && e.action.indexOf('note') !== -1) icon = '&#9998;';
+                if (e.action && e.action.indexOf('tag') !== -1) icon = '&#9733;';
+                if (e.action && e.action.indexOf('fav') !== -1) icon = '&#9829;';
+                html += '<div class="journey-entry">';
+                html += '<span class="journey-icon">' + icon + '</span>';
+                html += '<span class="journey-prog">' + progName + '</span>';
+                html += '<span class="journey-action">' + (e.action || '') + '</span>';
+                if (e.timestamp) html += '<span class="journey-time">' + e.timestamp.substring(11, 16) + '</span>';
+                html += '</div>';
+            });
+            if (grouped[date].length > 8) html += '<div class="journey-more">+' + (grouped[date].length - 8) + ' more</div>';
+            html += '</div></div>';
+        });
+        html += '</div></div>';
+    }
 
     html += '</div>';
 

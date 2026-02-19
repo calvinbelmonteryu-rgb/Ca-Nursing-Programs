@@ -3971,6 +3971,40 @@ mark.search-highlight {
 }
 [data-theme="dark"] .funnel-arrow { color: #6b7280; }
 
+/* Journey timeline */
+.journey-timeline {
+    max-height: 400px;
+    overflow-y: auto;
+}
+.journey-date {
+    margin-bottom: 12px;
+}
+.journey-date-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #6b7280;
+    padding: 2px 0;
+    border-bottom: 1px solid #e5e7eb;
+    margin-bottom: 4px;
+}
+.journey-entries {
+    padding-left: 8px;
+}
+.journey-entry {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 0;
+    font-size: 0.75rem;
+}
+.journey-icon { font-size: 0.65rem; color: var(--accent, #2563eb); flex-shrink: 0; }
+.journey-prog { font-weight: 600; white-space: nowrap; }
+.journey-action { color: #6b7280; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.journey-time { color: #9ca3af; font-size: 0.65rem; font-family: monospace; flex-shrink: 0; }
+.journey-more { color: #9ca3af; font-size: 0.68rem; padding: 2px 0 2px 20px; }
+[data-theme="dark"] .journey-date-label { color: #94a3b8; border-color: #334155; }
+[data-theme="dark"] .journey-action { color: #94a3b8; }
+
 /* Data quality */
 .dq-score {
     display: flex;
