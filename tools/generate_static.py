@@ -340,6 +340,7 @@ def generate():
             <li><a href="#" id="nav-pipeline" onclick="showView('pipeline'); return false;">Pipeline</a></li>
             <li><a href="#" id="nav-calendar" onclick="showView('calendar'); return false;">Calendar</a></li>
             <li><a href="#" id="nav-stats" onclick="showView('stats'); return false;">Stats</a></li>
+            <li><a href="#" id="nav-timeline" onclick="showView('timeline'); return false;">Timeline</a></li>
             <li class="nclex-nav" title="Days until NCLEX ({nclex_date})"><span class="nclex-badge">{nclex_days if nclex_days is not None else '?'}d</span> NCLEX</li>
             <li class="nav-progress-wrap" title="Application progress"><span class="nav-progress-bar" id="nav-progress-bar"><span class="nav-progress-fill" id="nav-progress-fill"></span></span><span class="nav-progress-text" id="nav-progress-text">0/{total}</span></li>
             <li class="notif-nav"><a href="#" onclick="toggleNotifications(); return false;" id="notif-toggle" title="Notifications">&#x1F514;<span class="notif-count" id="notif-count" style="display:none">0</span></a>
@@ -585,6 +586,28 @@ def generate():
         </div>
     </div>
 
+    <!-- Timeline/Gantt View -->
+    <div id="timeline-view" class="container-fluid" style="display:none">
+        <div class="timeline-toolbar">
+            <select id="timeline-region-filter" onchange="renderTimeline()" aria-label="Filter timeline by region">
+                <option value="">All Regions</option>
+                {region_options}
+            </select>
+            <select id="timeline-sort" onchange="renderTimeline()" aria-label="Sort timeline">
+                <option value="open">By App Open</option>
+                <option value="close">By App Close</option>
+                <option value="hospital">By Hospital</option>
+                <option value="reputation">By Reputation</option>
+            </select>
+        </div>
+        <div class="gantt-container" id="gantt-container"></div>
+        <div class="gantt-legend">
+            <span class="gantt-legend-item"><span class="gantt-legend-bar" style="background:var(--accent,#3b82f6)"></span> Application Window</span>
+            <span class="gantt-legend-item"><span class="gantt-legend-bar" style="background:#22c55e"></span> Cohort Start</span>
+            <span class="gantt-legend-item"><span class="gantt-legend-bar" style="background:#ef4444;width:2px;height:16px"></span> Today</span>
+        </div>
+    </div>
+
     <!-- Detail Modal -->
     <div id="detail-modal" class="modal-overlay" style="display:none" role="dialog" aria-modal="true" aria-label="Program Details">
         <div class="modal-content">
@@ -658,7 +681,7 @@ def generate():
                     <div class="shortcut-row"><kbd>f</kbd> <span>Toggle favorite (selected row)</span></div>
                     <div class="shortcut-row"><kbd>d</kbd> <span>Toggle dark mode</span></div>
                     <div class="shortcut-row"><kbd>n</kbd> <span>Toggle notifications</span></div>
-                    <div class="shortcut-row"><kbd>1</kbd>-<kbd>5</kbd> <span>Switch views (Table/Cards/Pipeline/Cal/Stats)</span></div>
+                    <div class="shortcut-row"><kbd>1</kbd>-<kbd>6</kbd> <span>Switch views (Table/Cards/Pipeline/Cal/Stats/Timeline)</span></div>
                     <div class="shortcut-row"><kbd>?</kbd> <span>Show this help</span></div>
                 </div>
                 <div class="shortcut-group">
@@ -689,7 +712,7 @@ def generate():
 
     <footer class="container">
         <small>{total} programs across {len(regions)} regions &bull; Data updated {metadata.get('last_updated', today.strftime('%Y-%m-%d'))} &bull; Generated {today.strftime("%b %d, %Y")}</small>
-        <small class="shortcuts-hint"><kbd>/</kbd> Search &bull; <kbd>j</kbd><kbd>k</kbd> Navigate &bull; <kbd>Enter</kbd> Details &bull; <kbd>f</kbd> Favorite &bull; <kbd>n</kbd> Notify &bull; <kbd>1</kbd>-<kbd>5</kbd> Views &bull; <kbd>d</kbd> Dark &bull; <kbd>?</kbd> Help</small>
+        <small class="shortcuts-hint"><kbd>/</kbd> Search &bull; <kbd>j</kbd><kbd>k</kbd> Navigate &bull; <kbd>Enter</kbd> Details &bull; <kbd>f</kbd> Favorite &bull; <kbd>n</kbd> Notify &bull; <kbd>1</kbd>-<kbd>6</kbd> Views &bull; <kbd>d</kbd> Dark &bull; <kbd>?</kbd> Help</small>
     </footer>
 
     <button class="back-to-top" id="back-to-top" onclick="window.scrollTo({{top:0,behavior:'smooth'}})" title="Back to top">&uarr;</button>
@@ -712,6 +735,7 @@ def generate():
         <button class="mnav-btn" data-view="pipeline" onclick="showView('pipeline')"><span class="mnav-icon">&#9654;</span><span class="mnav-label">Pipeline</span></button>
         <button class="mnav-btn" data-view="calendar" onclick="showView('calendar')"><span class="mnav-icon">&#128197;</span><span class="mnav-label">Calendar</span></button>
         <button class="mnav-btn" data-view="stats" onclick="showView('stats')"><span class="mnav-icon">&#9733;</span><span class="mnav-label">Stats</span></button>
+        <button class="mnav-btn" data-view="timeline" onclick="showView('timeline')"><span class="mnav-icon">&#8594;</span><span class="mnav-label">Timeline</span></button>
     </nav>
 
     <!-- Command Palette -->
@@ -1162,6 +1186,7 @@ document.addEventListener('DOMContentLoaded', function() {{
             if (e.key === '3') {{ showView('pipeline'); return; }}
             if (e.key === '4') {{ showView('calendar'); return; }}
             if (e.key === '5') {{ showView('stats'); return; }}
+            if (e.key === '6') {{ showView('timeline'); return; }}
 
             // Modal prev/next with arrow keys
             var detailModal = document.getElementById('detail-modal');
@@ -2548,6 +2573,7 @@ function renderCmdResults(query) {{
         {{ label: 'Switch to Pipeline View', action: function() {{ showView('pipeline'); }}, icon: '\\u2637' }},
         {{ label: 'Switch to Calendar View', action: function() {{ showView('calendar'); }}, icon: '\\u2637' }},
         {{ label: 'Switch to Stats View', action: function() {{ showView('stats'); }}, icon: '\\u2637' }},
+        {{ label: 'Switch to Timeline View', action: function() {{ showView('timeline'); }}, icon: '\\u2637' }},
         {{ label: 'Toggle Dark Mode', action: function() {{ toggleTheme(); }}, icon: '\\u263E' }},
         {{ label: 'Toggle Focus Mode', action: function() {{ toggleFocusMode(); }}, icon: '\\u25C9' }},
         {{ label: 'Export CSV', action: function() {{ exportCSV(); }}, icon: '\\u21E9' }},
@@ -2633,7 +2659,7 @@ function executeCmdItem(idx) {{
 
 // Swipe gestures for mobile view switching
 (function() {{
-    var viewOrder = ['table', 'cards', 'pipeline', 'calendar', 'stats'];
+    var viewOrder = ['table', 'cards', 'pipeline', 'calendar', 'stats', 'timeline'];
     var touchStartX = 0, touchStartY = 0, touchEndX = 0, touchEndY = 0;
     var swipeThreshold = 80;
 
@@ -3863,13 +3889,15 @@ function showView(view) {{
 
     var calendarView = document.getElementById('calendar-view');
     var statsView = document.getElementById('stats-view');
+    var timelineView = document.getElementById('timeline-view');
     var navCalendar = document.getElementById('nav-calendar');
     var navStats = document.getElementById('nav-stats');
+    var navTimeline = document.getElementById('nav-timeline');
 
     // Hide all
-    var allViews = [tableView, pipelineView, cardsView, calendarView, statsView];
+    var allViews = [tableView, pipelineView, cardsView, calendarView, statsView, timelineView];
     allViews.forEach(function(v) {{ if (v) {{ v.style.display = 'none'; v.classList.remove('view-enter'); }} }});
-    [navTable, navPipeline, navCards, navCalendar, navStats].forEach(function(n) {{ if (n) n.classList.remove('active'); }});
+    [navTable, navPipeline, navCards, navCalendar, navStats, navTimeline].forEach(function(n) {{ if (n) n.classList.remove('active'); }});
 
     var target = null;
     if (view === 'cards') {{
@@ -3878,6 +3906,8 @@ function showView(view) {{
         target = pipelineView; navPipeline.classList.add('active'); renderPipeline();
     }} else if (view === 'calendar') {{
         target = calendarView; navCalendar.classList.add('active'); renderCalendar();
+    }} else if (view === 'timeline') {{
+        target = timelineView; navTimeline.classList.add('active'); renderTimeline();
     }} else if (view === 'stats') {{
         target = statsView; navStats.classList.add('active'); renderStats();
     }} else {{
@@ -4603,6 +4633,106 @@ var calYear = new Date().getFullYear();
 function calPrev() {{ calMonth--; if (calMonth < 0) {{ calMonth = 11; calYear--; }} renderCalendar(); }}
 function calNext() {{ calMonth++; if (calMonth > 11) {{ calMonth = 0; calYear++; }} renderCalendar(); }}
 function calToday() {{ var now = new Date(); calMonth = now.getMonth(); calYear = now.getFullYear(); renderCalendar(); }}
+
+function renderTimeline() {{
+    var container = document.getElementById('gantt-container');
+    if (!container) return;
+    var savedStatuses = loadSavedStatuses();
+    var today = new Date(); today.setHours(0,0,0,0);
+    var regionFilter = (document.getElementById('timeline-region-filter') || {{}}).value || '';
+    var sortBy = (document.getElementById('timeline-sort') || {{}}).value || 'open';
+
+    // Timeline range: Feb 2026 to Jan 2027
+    var tlStart = new Date(2026, 1, 1);
+    var tlEnd = new Date(2027, 0, 31);
+    var tlDays = Math.ceil((tlEnd - tlStart) / 86400000);
+
+    // Filter programs
+    var progs = PROGRAMS.filter(function(p) {{
+        if (regionFilter && p.region !== regionFilter) return false;
+        return parseDate(p.app_open_date) || parseDate(p.app_close_date) || parseDate(p.cohort_start);
+    }});
+
+    // Sort
+    progs.sort(function(a, b) {{
+        if (sortBy === 'close') {{
+            var ac = parseDate(a.app_close_date), bc = parseDate(b.app_close_date);
+            if (!ac) return 1; if (!bc) return -1; return ac - bc;
+        }} else if (sortBy === 'hospital') {{
+            return a.hospital.localeCompare(b.hospital);
+        }} else if (sortBy === 'reputation') {{
+            return (b.reputation || 0) - (a.reputation || 0);
+        }} else {{
+            var ao = parseDate(a.app_open_date), bo = parseDate(b.app_open_date);
+            if (!ao) return 1; if (!bo) return -1; return ao - bo;
+        }}
+    }});
+
+    function dayPos(d) {{
+        return Math.max(0, Math.min(100, ((d - tlStart) / (tlEnd - tlStart)) * 100));
+    }}
+
+    var html = '<div class="gantt-header">';
+    // Month headers
+    for (var m = 1; m <= 12; m++) {{
+        var mStart = new Date(2026, m, 1);
+        var mEnd = new Date(2026, m + 1, 0);
+        if (m === 12) {{ mStart = new Date(2026, 11, 1); mEnd = new Date(2026, 11, 31); }}
+        var months = ['','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        if (m <= 12) {{
+            var left = dayPos(mStart);
+            var width = dayPos(mEnd) - left;
+            html += '<div class="gantt-month" style="left:' + left + '%;width:' + width + '%">' + months[m] + '</div>';
+        }}
+    }}
+    // Jan 2027
+    var jan27Start = new Date(2027, 0, 1);
+    html += '<div class="gantt-month" style="left:' + dayPos(jan27Start) + '%;width:' + (100 - dayPos(jan27Start)) + '%">Jan 27</div>';
+    html += '</div>';
+
+    // Today line
+    if (today >= tlStart && today <= tlEnd) {{
+        html += '<div class="gantt-today-line" style="left:' + dayPos(today) + '%"><span class="gantt-today-label">Today</span></div>';
+    }}
+
+    // Rows
+    progs.forEach(function(p) {{
+        var st = savedStatuses[p.id] || p.application_status || 'Not Started';
+        var stCls = st.toLowerCase().replace(/\\s+/g, '-');
+        var openD = parseDate(p.app_open_date);
+        var closeD = parseDate(p.app_close_date);
+        var cohortD = parseDate(p.cohort_start);
+        var stars = '';
+        for (var i = 0; i < (p.reputation || 0); i++) stars += '\\u2605';
+
+        html += '<div class="gantt-row gantt-st-' + stCls + '" onclick="showDetail(' + p.id + ')">';
+        html += '<div class="gantt-row-label"><span class="gantt-hospital">' + escHtml(p.hospital) + '</span>';
+        html += '<span class="gantt-stars">' + stars + '</span></div>';
+        html += '<div class="gantt-row-track">';
+
+        // App window bar
+        if (openD && closeD) {{
+            var l = dayPos(openD);
+            var r = dayPos(closeD);
+            var w = Math.max(r - l, 0.5);
+            var barColor = 'var(--accent,#3b82f6)';
+            if (st === 'Submitted') barColor = '#3b82f6';
+            else if (st === 'Interview') barColor = '#8b5cf6';
+            else if (st === 'Offer') barColor = '#22c55e';
+            else if (st === 'Rejected') barColor = '#ef4444';
+            html += '<div class="gantt-bar" style="left:' + l + '%;width:' + w + '%;background:' + barColor + '" title="App window: ' + (p.app_open_date || '') + ' to ' + (p.app_close_date || '') + '"></div>';
+        }}
+
+        // Cohort marker
+        if (cohortD) {{
+            html += '<div class="gantt-cohort-marker" style="left:' + dayPos(cohortD) + '%" title="Cohort: ' + (p.cohort_start || '') + '"></div>';
+        }}
+
+        html += '</div></div>';
+    }});
+
+    container.innerHTML = html;
+}}
 
 function renderCalendar() {{
     var months = ['January','February','March','April','May','June','July','August','September','October','November','December'];

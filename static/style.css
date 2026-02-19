@@ -4975,6 +4975,216 @@ mark.search-highlight {
     font-size: 1rem !important;
 }
 
+/* ===== TIMELINE/GANTT VIEW ===== */
+.timeline-toolbar {
+    display: flex;
+    gap: 8px;
+    padding: 12px 0;
+    flex-wrap: wrap;
+}
+
+.timeline-toolbar select {
+    height: 32px;
+    font-size: 0.78rem;
+    padding: 4px 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+}
+
+.gantt-container {
+    position: relative;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #fff;
+}
+
+.gantt-header {
+    position: relative;
+    height: 28px;
+    background: #f8fafc;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.gantt-month {
+    position: absolute;
+    top: 0;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #6b7280;
+    border-right: 1px solid #e5e7eb;
+    box-sizing: border-box;
+}
+
+.gantt-today-line {
+    position: absolute;
+    top: 28px;
+    bottom: 0;
+    width: 2px;
+    background: #ef4444;
+    z-index: 5;
+}
+
+.gantt-today-label {
+    position: absolute;
+    top: -20px;
+    left: -14px;
+    font-size: 0.6rem;
+    color: #ef4444;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.gantt-row {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #f3f4f6;
+    cursor: pointer;
+    transition: background 0.1s;
+    min-height: 32px;
+}
+
+.gantt-row:hover {
+    background: #f8fafc;
+}
+
+.gantt-row-label {
+    width: 180px;
+    min-width: 180px;
+    padding: 4px 10px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    border-right: 1px solid #e5e7eb;
+}
+
+.gantt-hospital {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #1f2937;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 140px;
+}
+
+.gantt-stars {
+    font-size: 0.55rem;
+    color: #f59e0b;
+    flex-shrink: 0;
+}
+
+.gantt-row-track {
+    flex: 1;
+    position: relative;
+    height: 24px;
+    margin: 4px 0;
+}
+
+.gantt-bar {
+    position: absolute;
+    top: 4px;
+    height: 16px;
+    border-radius: 3px;
+    min-width: 4px;
+    opacity: 0.85;
+    transition: opacity 0.15s;
+}
+
+.gantt-bar:hover {
+    opacity: 1;
+    filter: brightness(1.1);
+}
+
+.gantt-cohort-marker {
+    position: absolute;
+    top: 2px;
+    width: 3px;
+    height: 20px;
+    background: #22c55e;
+    border-radius: 2px;
+}
+
+.gantt-legend {
+    display: flex;
+    gap: 16px;
+    padding: 10px 0;
+    justify-content: center;
+}
+
+.gantt-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.72rem;
+    color: #6b7280;
+}
+
+.gantt-legend-bar {
+    width: 20px;
+    height: 10px;
+    border-radius: 2px;
+    display: inline-block;
+}
+
+/* Gantt status colors */
+.gantt-st-in-progress .gantt-row-label { border-left: 3px solid #f59e0b; }
+.gantt-st-submitted .gantt-row-label { border-left: 3px solid #3b82f6; }
+.gantt-st-interview .gantt-row-label { border-left: 3px solid #8b5cf6; }
+.gantt-st-offer .gantt-row-label { border-left: 3px solid #22c55e; }
+.gantt-st-rejected { opacity: 0.4; }
+
+/* Dark mode gantt */
+[data-theme="dark"] .gantt-container {
+    border-color: #374151;
+    background: #1f2937;
+}
+
+[data-theme="dark"] .gantt-header {
+    background: #1e293b;
+    border-bottom-color: #374151;
+}
+
+[data-theme="dark"] .gantt-month {
+    color: #9ca3af;
+    border-right-color: #374151;
+}
+
+[data-theme="dark"] .gantt-row {
+    border-bottom-color: #1e293b;
+}
+
+[data-theme="dark"] .gantt-row:hover {
+    background: #263548;
+}
+
+[data-theme="dark"] .gantt-row-label {
+    border-right-color: #374151;
+}
+
+[data-theme="dark"] .gantt-hospital {
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] .gantt-row-track {
+    background: transparent;
+}
+
+@media (max-width: 768px) {
+    .gantt-row-label {
+        width: 120px;
+        min-width: 120px;
+    }
+    .gantt-hospital {
+        max-width: 90px;
+        font-size: 0.65rem;
+    }
+}
+
 /* ===== SCATTER PLOT ===== */
 .scatter-wrap {
     width: 100%;
@@ -5506,7 +5716,7 @@ mark.search-highlight {
     nav, .sheet-toolbar, .col-check, .col-fav, .col-apply, footer, .modal-overlay,
     .toast, .back-to-top, .quick-chips, .urgency-banner, .recent-viewed,
     .summary-pills, .bulk-bar, .pipeline-page, .calendar-page, .stats-page,
-    .ctx-menu, .row-preview, .row-preview-card, .notif-panel, .skip-link, #back-to-top, .fab-wrap, .cmd-overlay, .mobile-bottom-nav {
+    .ctx-menu, .row-preview, .row-preview-card, .notif-panel, .skip-link, #back-to-top, .fab-wrap, .cmd-overlay, .mobile-bottom-nav, #timeline-view {
         display: none !important;
     }
 
