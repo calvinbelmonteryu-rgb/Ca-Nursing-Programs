@@ -944,6 +944,32 @@ a.bar-link:hover { background: #f3f4f6; }
     background: #eff6ff !important;
 }
 
+/* ===== ROW PREVIEW ===== */
+.row-preview {
+    position: absolute;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    padding: 8px 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 50;
+    font-size: 0.78rem;
+    max-width: 280px;
+    pointer-events: none;
+    animation: previewIn 0.15s ease;
+}
+
+@keyframes previewIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+[data-theme="dark"] .row-preview {
+    background: var(--surface);
+    border-color: var(--border);
+    color: var(--text);
+}
+
 /* ===== OVERFLOW ===== */
 .overflow-auto { overflow-x: auto; }
 
@@ -1203,7 +1229,17 @@ footer small {
     font-weight: 600;
     border-radius: 12px;
     cursor: pointer;
-    transition: opacity 0.15s;
+    transition: opacity 0.15s, transform 0.1s;
+    animation: pillIn 0.3s ease;
+}
+
+.summary-pill:active {
+    transform: scale(0.95);
+}
+
+@keyframes pillIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
 }
 
 .summary-pill:hover {
@@ -2398,6 +2434,18 @@ mark.search-highlight {
     box-shadow: 0 1px 0 var(--border);
 }
 
+/* ===== VIEW TRANSITIONS ===== */
+#pipeline-view,
+#calendar-view,
+#stats-view {
+    animation: viewIn 0.25s ease;
+}
+
+@keyframes viewIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 /* ===== STATS DASHBOARD ===== */
 .stats-header {
     margin-bottom: 20px;
@@ -2608,6 +2656,12 @@ mark.search-highlight {
     padding: 8px 10px;
     cursor: pointer;
     transition: box-shadow 0.15s, transform 0.1s;
+    animation: cardIn 0.3s ease backwards;
+}
+
+@keyframes cardIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .pipeline-card:hover {

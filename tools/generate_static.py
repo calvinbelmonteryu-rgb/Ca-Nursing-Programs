@@ -342,6 +342,15 @@ def generate():
                 <span class="sheet-count">{total} rows</span>
                 <button type="button" class="clear-filter" id="clear-all-btn" onclick="clearAllFilters()" style="display:none">Clear All</button>
                 <span class="filter-spacer"></span>
+                <select id="sort-preset" onchange="applySortPreset(this.value)" style="height:28px;font-size:0.75rem;padding:4px 8px;margin:0;border:1px solid #d1d5db;border-radius:3px">
+                    <option value="">Sort by...</option>
+                    <option value="deadline">Nearest Deadline</option>
+                    <option value="pay-high">Highest Pay</option>
+                    <option value="rep-high">Best Reputation</option>
+                    <option value="opening">Opening Soon</option>
+                    <option value="cohort">Cohort Start</option>
+                    <option value="hospital">Hospital A-Z</option>
+                </select>
                 <button type="button" id="compare-btn" disabled onclick="goCompare()">Compare</button>
                 <div class="more-actions-wrap">
                     <button type="button" onclick="toggleMoreMenu()" title="More actions" id="more-btn">More &darr;</button>
@@ -888,6 +897,37 @@ document.addEventListener('DOMContentLoaded', function() {{
         }});
     }});
 
+    // Row hover preview
+    var hoverTimer = null;
+    var previewEl = null;
+    document.querySelector('.sheet tbody').addEventListener('mouseover', function(e) {{
+        var row = e.target.closest('tr');
+        if (!row || !row.dataset.id) return;
+        clearTimeout(hoverTimer);
+        hoverTimer = setTimeout(function() {{
+            var id = parseInt(row.dataset.id);
+            var p = PROGRAMS.find(function(prog) {{ return prog.id === id; }});
+            if (!p) return;
+            if (previewEl) previewEl.remove();
+            previewEl = document.createElement('div');
+            previewEl.className = 'row-preview';
+            var stars = '\u2605'.repeat(p.reputation) + '\u2606'.repeat(5 - p.reputation);
+            var pay = p.pay_range || 'N/A';
+            var specs = (p.specialty_units || []).slice(0, 3).join(', ');
+            previewEl.innerHTML = '<strong>' + escHtml(p.hospital) + '</strong><br>' +
+                '<span class="stars" style="font-size:0.7rem">' + stars + '</span> ' + escHtml(pay) + '<br>' +
+                '<span style="color:#6b7280;font-size:0.7rem">' + escHtml(specs) + '</span>';
+            var rect = row.getBoundingClientRect();
+            previewEl.style.top = (rect.bottom + window.scrollY + 4) + 'px';
+            previewEl.style.left = (rect.left + 60) + 'px';
+            document.body.appendChild(previewEl);
+        }}, 600);
+    }});
+    document.querySelector('.sheet tbody').addEventListener('mouseout', function(e) {{
+        clearTimeout(hoverTimer);
+        if (previewEl) {{ previewEl.remove(); previewEl = null; }}
+    }});
+
     // Double-click row to open detail
     document.querySelector('.sheet tbody').addEventListener('dblclick', function(e) {{
         var row = e.target.closest('tr');
@@ -1384,6 +1424,29 @@ function updateCompareBtn() {{
             bulkBar.style.display = 'none';
         }}
     }}
+}}
+
+function applySortPreset(preset) {{
+    if (!preset) return;
+    var colMap = {{
+        'deadline': {{ col: 8, label: 'App Close' }},
+        'pay-high': {{ col: 11, label: 'Pay' }},
+        'rep-high': {{ col: 10, label: 'Reputation' }},
+        'opening': {{ col: 7, label: 'App Open' }},
+        'cohort': {{ col: 9, label: 'Cohort' }},
+        'hospital': {{ col: 2, label: 'Hospital' }}
+    }};
+    var cfg = colMap[preset];
+    if (!cfg) return;
+    var th = document.querySelector('[data-col="' + cfg.col + '"]');
+    if (th) {{
+        // Set sort direction: asc for dates/text, desc for pay/rep
+        var wantDesc = (preset === 'pay-high' || preset === 'rep-high');
+        currentSort.col = cfg.col;
+        currentSort.asc = wantDesc; // sortTable will toggle, so set opposite
+        sortTable(th);
+    }}
+    document.getElementById('sort-preset').value = '';
 }}
 
 function bulkSetStatus() {{

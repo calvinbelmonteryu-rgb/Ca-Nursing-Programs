@@ -954,6 +954,32 @@ a.bar-link:hover { background: #f3f4f6; }
     background: #eff6ff !important;
 }
 
+/* ===== ROW PREVIEW ===== */
+.row-preview {
+    position: absolute;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    padding: 8px 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 50;
+    font-size: 0.78rem;
+    max-width: 280px;
+    pointer-events: none;
+    animation: previewIn 0.15s ease;
+}
+
+@keyframes previewIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+[data-theme="dark"] .row-preview {
+    background: var(--surface);
+    border-color: var(--border);
+    color: var(--text);
+}
+
 /* ===== OVERFLOW ===== */
 .overflow-auto { overflow-x: auto; }
 
@@ -1213,7 +1239,17 @@ footer small {
     font-weight: 600;
     border-radius: 12px;
     cursor: pointer;
-    transition: opacity 0.15s;
+    transition: opacity 0.15s, transform 0.1s;
+    animation: pillIn 0.3s ease;
+}
+
+.summary-pill:active {
+    transform: scale(0.95);
+}
+
+@keyframes pillIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
 }
 
 .summary-pill:hover {
@@ -2408,6 +2444,18 @@ mark.search-highlight {
     box-shadow: 0 1px 0 var(--border);
 }
 
+/* ===== VIEW TRANSITIONS ===== */
+#pipeline-view,
+#calendar-view,
+#stats-view {
+    animation: viewIn 0.25s ease;
+}
+
+@keyframes viewIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 /* ===== STATS DASHBOARD ===== */
 .stats-header {
     margin-bottom: 20px;
@@ -2618,6 +2666,12 @@ mark.search-highlight {
     padding: 8px 10px;
     cursor: pointer;
     transition: box-shadow 0.15s, transform 0.1s;
+    animation: cardIn 0.3s ease backwards;
+}
+
+@keyframes cardIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .pipeline-card:hover {
@@ -3086,6 +3140,15 @@ mark.search-highlight {
                 <span class="sheet-count">57 rows</span>
                 <button type="button" class="clear-filter" id="clear-all-btn" onclick="clearAllFilters()" style="display:none">Clear All</button>
                 <span class="filter-spacer"></span>
+                <select id="sort-preset" onchange="applySortPreset(this.value)" style="height:28px;font-size:0.75rem;padding:4px 8px;margin:0;border:1px solid #d1d5db;border-radius:3px">
+                    <option value="">Sort by...</option>
+                    <option value="deadline">Nearest Deadline</option>
+                    <option value="pay-high">Highest Pay</option>
+                    <option value="rep-high">Best Reputation</option>
+                    <option value="opening">Opening Soon</option>
+                    <option value="cohort">Cohort Start</option>
+                    <option value="hospital">Hospital A-Z</option>
+                </select>
                 <button type="button" id="compare-btn" disabled onclick="goCompare()">Compare</button>
                 <div class="more-actions-wrap">
                     <button type="button" onclick="toggleMoreMenu()" title="More actions" id="more-btn">More &darr;</button>
@@ -4750,6 +4813,37 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // Row hover preview
+    var hoverTimer = null;
+    var previewEl = null;
+    document.querySelector('.sheet tbody').addEventListener('mouseover', function(e) {
+        var row = e.target.closest('tr');
+        if (!row || !row.dataset.id) return;
+        clearTimeout(hoverTimer);
+        hoverTimer = setTimeout(function() {
+            var id = parseInt(row.dataset.id);
+            var p = PROGRAMS.find(function(prog) { return prog.id === id; });
+            if (!p) return;
+            if (previewEl) previewEl.remove();
+            previewEl = document.createElement('div');
+            previewEl.className = 'row-preview';
+            var stars = '★'.repeat(p.reputation) + '☆'.repeat(5 - p.reputation);
+            var pay = p.pay_range || 'N/A';
+            var specs = (p.specialty_units || []).slice(0, 3).join(', ');
+            previewEl.innerHTML = '<strong>' + escHtml(p.hospital) + '</strong><br>' +
+                '<span class="stars" style="font-size:0.7rem">' + stars + '</span> ' + escHtml(pay) + '<br>' +
+                '<span style="color:#6b7280;font-size:0.7rem">' + escHtml(specs) + '</span>';
+            var rect = row.getBoundingClientRect();
+            previewEl.style.top = (rect.bottom + window.scrollY + 4) + 'px';
+            previewEl.style.left = (rect.left + 60) + 'px';
+            document.body.appendChild(previewEl);
+        }, 600);
+    });
+    document.querySelector('.sheet tbody').addEventListener('mouseout', function(e) {
+        clearTimeout(hoverTimer);
+        if (previewEl) { previewEl.remove(); previewEl = null; }
+    });
+
     // Double-click row to open detail
     document.querySelector('.sheet tbody').addEventListener('dblclick', function(e) {
         var row = e.target.closest('tr');
@@ -5246,6 +5340,29 @@ function updateCompareBtn() {
             bulkBar.style.display = 'none';
         }
     }
+}
+
+function applySortPreset(preset) {
+    if (!preset) return;
+    var colMap = {
+        'deadline': { col: 8, label: 'App Close' },
+        'pay-high': { col: 11, label: 'Pay' },
+        'rep-high': { col: 10, label: 'Reputation' },
+        'opening': { col: 7, label: 'App Open' },
+        'cohort': { col: 9, label: 'Cohort' },
+        'hospital': { col: 2, label: 'Hospital' }
+    };
+    var cfg = colMap[preset];
+    if (!cfg) return;
+    var th = document.querySelector('[data-col="' + cfg.col + '"]');
+    if (th) {
+        // Set sort direction: asc for dates/text, desc for pay/rep
+        var wantDesc = (preset === 'pay-high' || preset === 'rep-high');
+        currentSort.col = cfg.col;
+        currentSort.asc = wantDesc; // sortTable will toggle, so set opposite
+        sortTable(th);
+    }
+    document.getElementById('sort-preset').value = '';
 }
 
 function bulkSetStatus() {
