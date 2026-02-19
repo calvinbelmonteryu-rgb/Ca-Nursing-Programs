@@ -370,7 +370,7 @@ def generate():
     <main class="container-fluid sheet-page" role="main" id="main-table">
         <div class="sheet-toolbar">
             <div class="sheet-filters">
-                <input type="search" name="q" placeholder="Search... ( / )" value="">
+                <div class="search-wrap"><input type="search" name="q" placeholder="Search... ( / )" value="" id="main-search" autocomplete="off"><div class="search-suggest" id="search-suggest"></div></div>
                 <select data-instant="region">
                     <option value="">All Regions</option>
                     {region_options}
@@ -1055,9 +1055,30 @@ document.addEventListener('DOMContentLoaded', function() {{
         }}
     }}
 
-    // Search
+    // Search with suggestions
     if (searchInput) {{
-        searchInput.addEventListener('input', debounce(function() {{ filterTable(); updateUrlParams(); }}, 150));
+        searchInput.addEventListener('input', debounce(function() {{
+            filterTable();
+            updateUrlParams();
+            showSearchSuggestions(this.value);
+        }}, 150));
+        searchInput.addEventListener('focus', function() {{
+            if (this.value.length >= 1) showSearchSuggestions(this.value);
+            else showRecentSearches();
+        }});
+        searchInput.addEventListener('blur', function() {{
+            setTimeout(function() {{
+                var sg = document.getElementById('search-suggest');
+                if (sg) sg.style.display = 'none';
+            }}, 200);
+        }});
+        searchInput.addEventListener('keydown', function(e) {{
+            if (e.key === 'Enter' && this.value.trim()) {{
+                saveRecentSearch(this.value.trim());
+                var sg = document.getElementById('search-suggest');
+                if (sg) sg.style.display = 'none';
+            }}
+        }});
     }}
 
     // Filter dropdowns
@@ -1431,6 +1452,57 @@ function filterTable() {{
     updateCount(visibleCount, rows.length);
     highlightSearch(query);
     restripe();
+}}
+
+function showSearchSuggestions(query) {{
+    var sg = document.getElementById('search-suggest');
+    if (!sg) return;
+    if (!query || query.length < 1) {{ sg.style.display = 'none'; return; }}
+    var q = query.toLowerCase();
+    var matches = PROGRAMS.filter(function(p) {{
+        return p.hospital.toLowerCase().indexOf(q) !== -1 ||
+               (p.program_name || '').toLowerCase().indexOf(q) !== -1 ||
+               (p.region || '').toLowerCase().indexOf(q) !== -1;
+    }}).slice(0, 6);
+    if (matches.length === 0) {{ sg.style.display = 'none'; return; }}
+    var html = '';
+    matches.forEach(function(p) {{
+        html += '<div class="suggest-item" onmousedown="selectSuggestion(\'' + p.hospital.replace(/'/g, "\\\\'") + '\')">';
+        html += '<strong>' + p.hospital + '</strong> <span class="suggest-region">' + p.region + '</span>';
+        html += '</div>';
+    }});
+    sg.innerHTML = html;
+    sg.style.display = 'block';
+}}
+
+function showRecentSearches() {{
+    var sg = document.getElementById('search-suggest');
+    if (!sg) return;
+    var recent = JSON.parse(localStorage.getItem('rn_tracker_recent_searches') || '[]');
+    if (recent.length === 0) {{ sg.style.display = 'none'; return; }}
+    var html = '<div class="suggest-header">Recent</div>';
+    recent.slice(0, 5).forEach(function(s) {{
+        html += '<div class="suggest-item suggest-recent" onmousedown="selectSuggestion(\'' + s.replace(/'/g, "\\\\'") + '\')">';
+        html += s;
+        html += '</div>';
+    }});
+    sg.innerHTML = html;
+    sg.style.display = 'block';
+}}
+
+function selectSuggestion(val) {{
+    var si = document.getElementById('main-search');
+    if (si) {{ si.value = val; filterTable(); updateUrlParams(); saveRecentSearch(val); }}
+    var sg = document.getElementById('search-suggest');
+    if (sg) sg.style.display = 'none';
+}}
+
+function saveRecentSearch(val) {{
+    var recent = JSON.parse(localStorage.getItem('rn_tracker_recent_searches') || '[]');
+    recent = recent.filter(function(s) {{ return s !== val; }});
+    recent.unshift(val);
+    if (recent.length > 10) recent = recent.slice(0, 10);
+    localStorage.setItem('rn_tracker_recent_searches', JSON.stringify(recent));
 }}
 
 function highlightSearch(query) {{
@@ -2499,6 +2571,7 @@ function backupData() {{
         density: localStorage.getItem('rn_tracker_density') || 'normal',
         cols: JSON.parse(localStorage.getItem('rn_tracker_cols') || '{{}}'),
         accent: localStorage.getItem('rn_tracker_accent') || null,
+        recentSearches: JSON.parse(localStorage.getItem('rn_tracker_recent_searches') || '[]'),
         exported: new Date().toISOString()
     }};
     var blob = new Blob([JSON.stringify(data, null, 2)], {{type: 'application/json'}});
@@ -2527,6 +2600,7 @@ function restoreData(input) {{
             if (data.dismissedNotifs) localStorage.setItem('rn_tracker_notif_dismissed', JSON.stringify(data.dismissedNotifs));
             if (data.cols) localStorage.setItem('rn_tracker_cols', JSON.stringify(data.cols));
             if (data.accent) localStorage.setItem('rn_tracker_accent', data.accent);
+            if (data.recentSearches) localStorage.setItem('rn_tracker_recent_searches', JSON.stringify(data.recentSearches));
             showToast('Data restored! Reloading...');
             setTimeout(function() {{ window.location.reload(); }}, 1000);
         }} catch(ex) {{
