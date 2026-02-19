@@ -243,16 +243,6 @@ def generate():
     </nav>
 
     <main class="container-fluid sheet-page">
-        <div class="stats-bar">
-            <span><strong>{total}</strong> programs</span>
-            <span class="stats-sep">|</span>
-            <span class="stat-highlight-green"><strong>{open_now}</strong> open now</span>
-            <span class="stats-sep">|</span>
-            <span class="{urgent_class}"><strong>{upcoming}</strong> upcoming{urgent_text}</span>
-            <span class="stats-sep">|</span>
-            <span>NCLEX: {nclex_stat}</span>
-        </div>
-
         <div class="sheet-toolbar">
             <div class="sheet-filters">
                 <input type="search" name="q" placeholder="Search... ( / )" value="">
@@ -580,8 +570,65 @@ function clearAllFilters() {{
     document.querySelectorAll('.sheet-filters select[data-instant]').forEach(function(sel) {{
         sel.value = '';
     }});
+    // Clear special filters
+    window._specialFilter = null;
     filterTable();
     showToast('Filters cleared');
+}}
+
+function filterOpen() {{
+    clearAllFilters();
+    window._specialFilter = 'open';
+    filterTableSpecial();
+    showToast('Showing open programs');
+}}
+
+function filterUpcoming() {{
+    clearAllFilters();
+    window._specialFilter = 'upcoming';
+    filterTableSpecial();
+    showToast('Showing upcoming programs');
+}}
+
+function filterTableSpecial() {{
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+    var rows = document.querySelectorAll('.sheet tbody tr');
+    var visibleCount = 0;
+
+    rows.forEach(function(row) {{
+        var dateCells = row.querySelectorAll('.col-date');
+        var show = false;
+
+        if (window._specialFilter === 'open') {{
+            if (dateCells.length >= 2) {{
+                var openRaw = dateCells[0].dataset.raw || '';
+                var closeRaw = dateCells[1].dataset.raw || '';
+                var openDate = parseDate(openRaw);
+                var closeDate = parseDate(closeRaw);
+                if (openDate && openDate <= today && closeDate && closeDate >= today) {{
+                    show = true;
+                }}
+            }}
+        }} else if (window._specialFilter === 'upcoming') {{
+            if (dateCells.length >= 2) {{
+                var closeRaw2 = dateCells[1].dataset.raw || '';
+                var closeDate2 = parseDate(closeRaw2);
+                if (closeDate2 && closeDate2 >= today) {{
+                    show = true;
+                }}
+            }}
+        }}
+
+        row.style.display = show ? '' : 'none';
+        if (show) visibleCount++;
+    }});
+
+    var countEl = document.querySelector('.sheet-count');
+    if (countEl) countEl.textContent = visibleCount + ' of ' + rows.length + ' rows';
+    var clearBtn = document.getElementById('clear-all-btn');
+    if (clearBtn) clearBtn.style.display = '';
+    restripe();
 }}
 
 function highlightDeadlines() {{
