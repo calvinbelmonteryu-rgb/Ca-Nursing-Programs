@@ -241,7 +241,7 @@ def generate():
         elif "Statewide" in region: region_cls = "region-state"
         region_dot = f'<span class="region-badge {region_cls}"></span>' if region_cls else ""
 
-        row = f"""<tr data-id="{p['id']}" data-region="{esc(p.get('region',''))}" data-city="{esc(p.get('city',''))}" data-bsn="{esc(bsn)}" data-status="{esc(status)}">
+        row = f"""<tr data-id="{p['id']}" data-region="{esc(p.get('region',''))}" data-city="{esc(p.get('city',''))}" data-bsn="{esc(bsn)}" data-status="{esc(status)}" data-hospital="{esc(p.get('hospital',''))}">
 <td class="col-check"><input type="checkbox" class="compare-check" value="{p['id']}"></td>
 <td class="col-fav"><button class="fav-btn" data-id="{p['id']}" onclick="toggleFav({p['id']})" title="Toggle favorite">&#9734;</button></td>
 <td class="col-hospital frozen-col">{comp_ring}<a href="#" class="hospital-link" data-id="{p['id']}">{esc(p['hospital'])}</a><button class="qnote-btn" data-id="{p['id']}" onclick="event.stopPropagation(); showQuickNote({p['id']}, this)" title="Quick note">&#9998;</button></td>
@@ -417,6 +417,7 @@ def generate():
                     <option value="region">Region</option>
                     <option value="status">Status</option>
                     <option value="bsn">BSN Req</option>
+                    <option value="system">Hospital System</option>
                 </select>
                 <button type="button" id="compare-btn" disabled onclick="goCompare()">Compare</button>
                 <div class="more-actions-wrap">
@@ -2068,6 +2069,27 @@ function filterTable() {{
     updateTableFooter();
 }}
 
+function getHospitalSystem(name) {{
+    var n = name.toLowerCase();
+    if (n.indexOf('kaiser') !== -1) return 'Kaiser Permanente';
+    if (n.indexOf('uc ') !== -1 || n.indexOf('ucla') !== -1 || n.indexOf('ucsf') !== -1 || n.indexOf('uci') !== -1 || n.indexOf('ucsd') !== -1 || n.indexOf('uc davis') !== -1 || n.indexOf('uc san diego') !== -1 || n.indexOf('uc irvine') !== -1 || n.indexOf('zuckerberg') !== -1) return 'UC Health System';
+    if (n.indexOf('stanford') !== -1 || n.indexOf('packard') !== -1) return 'Stanford Medicine';
+    if (n.indexOf('usc') !== -1 || n.indexOf('keck') !== -1) return 'USC / Keck';
+    if (n.indexOf('commonspirit') !== -1 || n.indexOf('dignity') !== -1) return 'CommonSpirit / Dignity';
+    if (n.indexOf('providence') !== -1) return 'Providence';
+    if (n.indexOf('adventist') !== -1) return 'Adventist Health';
+    if (n.indexOf('memorialcare') !== -1) return 'MemorialCare';
+    if (n.indexOf('pih') !== -1) return 'PIH Health';
+    if (n.indexOf('sutter') !== -1) return 'Sutter Health';
+    if (n.indexOf('hca') !== -1) return 'HCA Healthcare';
+    if (n.indexOf('sharp') !== -1) return 'Sharp HealthCare';
+    if (n.indexOf('scripps') !== -1) return 'Scripps Health';
+    if (n.indexOf('children') !== -1 || n.indexOf('choc') !== -1 || n.indexOf('chla') !== -1 || n.indexOf('rady') !== -1 || n.indexOf('valley children') !== -1) return "Children's Hospitals";
+    if (n.indexOf('va ') !== -1) return 'VA / Government';
+    if (n.indexOf('county') !== -1 || n.indexOf('lac+usc') !== -1 || n.indexOf('arrowhead') !== -1 || n.indexOf('riverside university') !== -1 || n.indexOf('santa clara valley') !== -1 || n.indexOf('kern') !== -1 || n.indexOf('ventura county') !== -1) return 'County / Public';
+    return 'Independent';
+}}
+
 function applyGrouping() {{
     var tbody = document.querySelector('.sheet tbody');
     if (!tbody) return;
@@ -2090,6 +2112,8 @@ function applyGrouping() {{
             return ss ? ss.value : 'Not Started';
         }} else if (groupBy === 'bsn') {{
             return row.dataset.bsn === 'Yes' ? 'BSN Required' : 'ADN Accepted';
+        }} else if (groupBy === 'system') {{
+            return getHospitalSystem(row.dataset.hospital || '');
         }}
         return '';
     }}
