@@ -9484,8 +9484,9 @@ YEAR-ROUND ACCEPTANCE — 5 cohorts/year. Called &quot;Mentoring and Professiona
                     <div class="shortcut-row"><kbd>/</kbd> <span>Focus search</span></div>
                     <div class="shortcut-row"><kbd>f</kbd> <span>Toggle favorite (selected row)</span></div>
                     <div class="shortcut-row"><kbd>a</kbd> <span>Open apply URL (selected row)</span></div>
-                    <div class="shortcut-row"><kbd>e</kbd> <span>Cycle status (selected row)</span></div>
+                    <div class="shortcut-row"><kbd>e</kbd> <span>Quick status picker (selected row)</span></div>
                     <div class="shortcut-row"><kbd>x</kbd> <span>Toggle favorite (selected row)</span></div>
+                    <div class="shortcut-row"><kbd>p</kbd> <span>Toggle pin to top (selected row)</span></div>
                     <div class="shortcut-row"><kbd>g</kbd><kbd>g</kbd> <span>Go to first row</span></div>
                     <div class="shortcut-row"><kbd>G</kbd> <span>Go to last row</span></div>
                     <div class="shortcut-row"><kbd>d</kbd> <span>Toggle dark mode</span></div>
@@ -10697,6 +10698,11 @@ document.addEventListener('DOMContentLoaded', function() {
             if (e.key === 'x' && selectedRowIdx >= 0 && selectedRowIdx < visibleRows.length) {
                 var favBtn = visibleRows[selectedRowIdx].querySelector('.fav-btn');
                 if (favBtn) favBtn.click();
+            }
+            // 'p' — toggle pin for selected row
+            if (e.key === 'p' && selectedRowIdx >= 0 && selectedRowIdx < visibleRows.length) {
+                var pinId = parseInt(visibleRows[selectedRowIdx].dataset.id);
+                if (pinId) togglePin(pinId);
             }
             // 'g' then 'g' — go to top row
             if (e.key === 'g') {
