@@ -2302,6 +2302,10 @@ function goCompare() {{
     ];
 
     var html = '<h2>Compare Programs</h2>';
+
+    // Radar chart
+    html += buildRadarChart(progs);
+
     html += '<div class="compare-scroll"><table class="compare-table"><thead><tr><th></th>';
     progs.forEach(function(p) {{
         html += '<th>' + escHtml(p.hospital) + '</th>';
@@ -2343,6 +2347,75 @@ function goCompare() {{
     html += '</tbody></table></div>';
     document.getElementById('compare-body').innerHTML = html;
     openModal('compare-modal');
+}}
+
+function buildRadarChart(progs) {{
+    var size = 240, cx = size / 2, cy = size / 2, r = 90;
+    var axes = ['Reputation', 'Pay', 'Length', 'Deadline', 'Specialties'];
+    var n = axes.length;
+    var colors = ['#3b82f6', '#ef4444', '#22c55e', '#f59e0b', '#8b5cf6', '#ec4899'];
+    var today = new Date(); today.setHours(0,0,0,0);
+
+    // Normalize values to 0-1 for each program
+    var maxPay = 0;
+    progs.forEach(function(p) {{
+        var m = (p.pay_range || '').match(/(\\d[\\d.,]+)/);
+        if (m) {{ var v = parseFloat(m[1].replace(',','')); if (v > maxPay) maxPay = v; }}
+    }});
+
+    function getValues(p) {{
+        var rep = (p.reputation || 0) / 5;
+        var m = (p.pay_range || '').match(/(\\d[\\d.,]+)/);
+        var pay = m && maxPay > 0 ? parseFloat(m[1].replace(',','')) / maxPay : 0;
+        var len = Math.min((p.program_length_months || 0) / 24, 1);
+        var close = parseDate(p.app_close_date);
+        var deadline = 0;
+        if (close) {{
+            var dl = Math.ceil((close - today) / (1000*60*60*24));
+            if (dl >= 0 && dl <= 180) deadline = 1 - (dl / 180);
+        }}
+        var specs = Math.min((p.specialty_units || []).length / 10, 1);
+        return [rep, pay, len, deadline, specs];
+    }}
+
+    var svg = '<div class="radar-wrap"><svg viewBox="0 0 ' + size + ' ' + size + '" class="radar-svg">';
+    // Grid circles
+    for (var level = 1; level <= 4; level++) {{
+        var lr = r * level / 4;
+        svg += '<circle cx="' + cx + '" cy="' + cy + '" r="' + lr + '" fill="none" stroke="#e5e7eb" stroke-width="0.5"/>';
+    }}
+    // Axis lines and labels
+    for (var i = 0; i < n; i++) {{
+        var angle = (Math.PI * 2 * i / n) - Math.PI / 2;
+        var x = cx + r * Math.cos(angle);
+        var y = cy + r * Math.sin(angle);
+        svg += '<line x1="' + cx + '" y1="' + cy + '" x2="' + x + '" y2="' + y + '" stroke="#d1d5db" stroke-width="0.5"/>';
+        var lx = cx + (r + 18) * Math.cos(angle);
+        var ly = cy + (r + 18) * Math.sin(angle);
+        svg += '<text x="' + lx + '" y="' + ly + '" text-anchor="middle" dominant-baseline="middle" font-size="8" fill="#6b7280">' + axes[i] + '</text>';
+    }}
+    // Program polygons
+    progs.forEach(function(p, pi) {{
+        var vals = getValues(p);
+        var points = '';
+        for (var i = 0; i < n; i++) {{
+            var angle = (Math.PI * 2 * i / n) - Math.PI / 2;
+            var vr = r * vals[i];
+            var x = cx + vr * Math.cos(angle);
+            var y = cy + vr * Math.sin(angle);
+            points += x + ',' + y + ' ';
+        }}
+        var color = colors[pi % colors.length];
+        svg += '<polygon points="' + points.trim() + '" fill="' + color + '" fill-opacity="0.15" stroke="' + color + '" stroke-width="1.5"/>';
+    }});
+    svg += '</svg>';
+    // Legend
+    svg += '<div class="radar-legend">';
+    progs.forEach(function(p, pi) {{
+        svg += '<span class="radar-legend-item"><span class="radar-legend-dot" style="background:' + colors[pi % colors.length] + '"></span>' + p.hospital + '</span>';
+    }});
+    svg += '</div></div>';
+    return svg;
 }}
 
 function closeCompareModal() {{
